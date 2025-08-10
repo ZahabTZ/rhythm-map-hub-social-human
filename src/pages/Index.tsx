@@ -2,11 +2,14 @@ import React, { useState } from 'react';
 import MapView from '@/components/MapView';
 import SearchBar from '@/components/SearchBar';
 import ResultsSidebar from '@/components/ResultsSidebar';
+import CommunityChat from '@/components/CommunityChat';
 
 const Index = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const [selectedCommunity, setSelectedCommunity] = useState(null);
+  const [chatOpen, setChatOpen] = useState(false);
 
   const handleSearch = (query: string) => {
     // TODO: Implement actual search logic
@@ -27,6 +30,17 @@ const Index = () => {
     setSidebarOpen(true);
   };
 
+  const handleCommunityClick = (community: any) => {
+    setSelectedCommunity(community);
+    setChatOpen(true);
+    setSidebarOpen(false);
+  };
+
+  const handleChatClose = () => {
+    setChatOpen(false);
+    setSelectedCommunity(null);
+  };
+
   return (
     <div className="relative h-screen overflow-hidden bg-background">
       {/* Full-screen Map */}
@@ -43,7 +57,16 @@ const Index = () => {
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         searchResults={searchResults}
+        onCommunityClick={handleCommunityClick}
       />
+      
+      {/* Community Chat */}
+      {chatOpen && selectedCommunity && (
+        <CommunityChat
+          community={selectedCommunity}
+          onClose={handleChatClose}
+        />
+      )}
     </div>
   );
 };

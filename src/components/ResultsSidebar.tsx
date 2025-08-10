@@ -22,12 +22,14 @@ interface ResultsSidebarProps {
   isOpen: boolean;
   onClose: () => void;
   searchResults?: any[];
+  onCommunityClick?: (community: any) => void;
 }
 
 const ResultsSidebar: React.FC<ResultsSidebarProps> = ({ 
   isOpen, 
   onClose, 
-  searchResults = [] 
+  searchResults = [],
+  onCommunityClick
 }) => {
   const [activeTab, setActiveTab] = useState<'all' | 'news' | 'communities' | 'events'>('all');
 
@@ -235,7 +237,11 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
                     <p className="text-sm text-muted-foreground">{result.description}</p>
                     
                     <div className="flex gap-2">
-                      <Button size="sm" className="flex-1">
+                      <Button 
+                        size="sm" 
+                        className="flex-1"
+                        onClick={() => onCommunityClick?.(result)}
+                      >
                         <Mail className="h-3 w-3 mr-1" />
                         Join Community
                       </Button>
