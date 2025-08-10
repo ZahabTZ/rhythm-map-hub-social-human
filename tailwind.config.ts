@@ -52,17 +52,17 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				musician: {
-					DEFAULT: 'hsl(var(--musician-primary))',
-					secondary: 'hsl(var(--musician-secondary))'
+				news: {
+					DEFAULT: 'hsl(var(--news-primary))',
+					secondary: 'hsl(var(--news-secondary))'
 				},
-				business: {
-					DEFAULT: 'hsl(var(--business-primary))',
-					secondary: 'hsl(var(--business-secondary))'
+				communities: {
+					DEFAULT: 'hsl(var(--communities-primary))',
+					secondary: 'hsl(var(--communities-secondary))'
 				},
-				concert: {
-					DEFAULT: 'hsl(var(--concert-primary))',
-					secondary: 'hsl(var(--concert-secondary))'
+				events: {
+					DEFAULT: 'hsl(var(--events-primary))',
+					secondary: 'hsl(var(--events-secondary))'
 				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',

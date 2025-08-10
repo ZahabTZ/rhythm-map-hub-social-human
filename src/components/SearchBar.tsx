@@ -20,17 +20,17 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onFilterChange }) => {
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
   const quickFilters = [
-    { id: 'musicians', label: 'Musicians', color: 'musician' },
-    { id: 'business', label: 'Music Business', color: 'business' },
-    { id: 'concerts', label: 'Concerts', color: 'concert' },
+    { id: 'news', label: 'News', color: 'news' },
+    { id: 'communities', label: 'Communities', color: 'communities' },
+    { id: 'events', label: 'Events', color: 'events' },
   ];
 
-  const genreFilters = [
-    'Hip Hop', 'Electronic', 'Rock', 'Jazz', 'Classical', 'Latin', 'R&B', 'Country'
+  const newsFilters = [
+    'Local News', 'Politics', 'Weather', 'Traffic', 'Crime', 'Business', 'Sports', 'Education'
   ];
 
-  const businessFilters = [
-    'Producer', 'Sound Engineer', 'Mixer', 'Photographer', 'Videographer', 'Manager'
+  const communityFilters = [
+    'Neighborhood', 'Social Groups', 'Volunteer', 'Professional', 'Hobby', 'Support Groups'
   ];
 
   const handleSearch = () => {
@@ -47,10 +47,10 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onFilterChange }) => {
   };
 
   const searchExamples = [
-    "Bay Area salsa musicians",
-    "Jazz producers in New York",
-    "Electronic concerts this weekend",
-    "Latin music network in Miami"
+    "Mission District community events",
+    "San Francisco local news today",
+    "Castro neighborhood groups",
+    "Chinatown volunteer opportunities"
   ];
 
   return (
@@ -61,7 +61,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onFilterChange }) => {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Sparkles className="absolute right-12 top-1/2 transform -translate-y-1/2 h-4 w-4 text-primary" />
           <Input
-            placeholder="AI Search: Find musicians, venues, networking..."
+            placeholder="AI Search: Find local news, communities, events..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -84,9 +84,9 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onFilterChange }) => {
               variant={activeFilters.includes(filter.id) ? "default" : "secondary"}
               className={`cursor-pointer transition-all ${
                 activeFilters.includes(filter.id) 
-                  ? filter.color === 'musician' ? 'bg-musician hover:bg-musician/80' :
-                    filter.color === 'business' ? 'bg-business hover:bg-business/80 text-black' :
-                    filter.color === 'concert' ? 'bg-concert hover:bg-concert/80 text-black' :
+                  ? filter.color === 'news' ? 'bg-news hover:bg-news/80' :
+                    filter.color === 'communities' ? 'bg-communities hover:bg-communities/80 text-black' :
+                    filter.color === 'events' ? 'bg-events hover:bg-events/80 text-black' :
                     'bg-primary hover:bg-primary/80'
                   : 'hover:bg-muted'
               }`}
@@ -139,25 +139,9 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onFilterChange }) => {
         {showFilters && (
           <div className="space-y-3 border-t pt-4">
             <div>
-              <h5 className="text-sm font-medium mb-2">Genres</h5>
+              <h5 className="text-sm font-medium mb-2">News Categories</h5>
               <div className="flex flex-wrap gap-1">
-                {genreFilters.map((genre) => (
-                  <Badge
-                    key={genre}
-                    variant={activeFilters.includes(genre) ? "default" : "outline"}
-                    className="cursor-pointer text-xs"
-                    onClick={() => toggleFilter(genre)}
-                  >
-                    {genre}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-            
-            <div>
-              <h5 className="text-sm font-medium mb-2">Business Categories</h5>
-              <div className="flex flex-wrap gap-1">
-                {businessFilters.map((category) => (
+                {newsFilters.map((category) => (
                   <Badge
                     key={category}
                     variant={activeFilters.includes(category) ? "default" : "outline"}
@@ -169,21 +153,37 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onFilterChange }) => {
                 ))}
               </div>
             </div>
+            
+            <div>
+              <h5 className="text-sm font-medium mb-2">Community Types</h5>
+              <div className="flex flex-wrap gap-1">
+                {communityFilters.map((type) => (
+                  <Badge
+                    key={type}
+                    variant={activeFilters.includes(type) ? "default" : "outline"}
+                    className="cursor-pointer text-xs"
+                    onClick={() => toggleFilter(type)}
+                  >
+                    {type}
+                  </Badge>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
         {/* Legend */}
         <div className="flex items-center gap-4 text-xs text-muted-foreground border-t pt-3">
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-musician"></div>
-            <span>Musicians</span>
+            <div className="w-2 h-2 rounded-full bg-news"></div>
+            <span>News</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-business"></div>
-            <span>Business</span>
+            <div className="w-2 h-2 rounded-full bg-communities"></div>
+            <span>Communities</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-concert"></div>
+            <div className="w-2 h-2 rounded-full bg-events"></div>
             <span>Events</span>
           </div>
         </div>

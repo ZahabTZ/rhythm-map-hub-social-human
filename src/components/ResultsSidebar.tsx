@@ -29,50 +29,74 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
   onClose, 
   searchResults = [] 
 }) => {
-  const [activeTab, setActiveTab] = useState<'all' | 'musicians' | 'business' | 'events'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'news' | 'communities' | 'events'>('all');
 
   // Mock data for demonstration
   const mockResults = [
     {
       id: '1',
-      type: 'musician',
-      name: 'Carlos Santana Jr.',
-      location: 'San Francisco Bay Area',
-      genre: ['Latin Rock', 'Salsa', 'Jazz Fusion'],
-      rating: 4.8,
-      followers: 15420,
+      type: 'news',
+      title: 'New BART Extension Opens in Mission Bay',
+      source: 'SF Chronicle',
+      location: 'Mission Bay, San Francisco',
+      category: 'Transportation',
+      publishedAt: '2024-08-10T09:00:00Z',
       image: '/api/placeholder/80/80',
-      languages: ['English', 'Spanish'],
+      author: 'Maria Garcia',
       verified: true,
-      description: 'Third-generation guitarist specializing in Bay Area Latin fusion',
-      contact: { email: 'carlos@example.com', phone: '+1-415-555-0123' }
+      description: 'The long-awaited BART extension to Mission Bay officially opens today, connecting the neighborhood to downtown.'
     },
     {
       id: '2',
-      type: 'business',
-      name: 'Elena Rodriguez',
-      role: 'Music Producer',
-      location: 'Los Angeles, CA',
-      specialties: ['Latin Music', 'Urban Latino', 'Reggaeton'],
-      rating: 4.9,
-      projects: 234,
+      type: 'community',
+      name: 'Castro Neighborhood Association',
+      type_detail: 'Community Group',
+      location: 'Castro District, San Francisco',
+      category: 'Neighborhood',
+      members: 2847,
       image: '/api/placeholder/80/80',
-      company: 'Fuego Productions',
+      meetingTime: 'First Tuesday of each month',
       verified: true,
-      description: 'Grammy-nominated producer with 15+ years in Latin music industry'
+      description: 'Dedicated to preserving the character and community spirit of the Castro District'
     },
     {
       id: '3',
       type: 'event',
-      name: 'Salsa Under the Stars',
-      venue: 'Mission Dolores Park',
-      location: 'San Francisco, CA',
+      name: 'Chinatown Night Market',
+      venue: 'Grant Avenue',
+      location: 'Chinatown, San Francisco',
       date: '2024-08-15',
-      time: '7:00 PM',
-      price: '$25-45',
+      time: '6:00 PM - 11:00 PM',
+      price: 'Free',
       image: '/api/placeholder/80/80',
-      organizer: 'Bay Area Latin Music Collective',
-      genres: ['Salsa', 'Bachata', 'Merengue']
+      organizer: 'Chinatown Community Development Center',
+      categories: ['Food', 'Culture', 'Shopping']
+    },
+    {
+      id: '4',
+      type: 'news',
+      title: 'Golden Gate Park Restores Native Plant Garden',
+      source: 'Hoodline',
+      location: 'Golden Gate Park, San Francisco',
+      category: 'Environment',
+      publishedAt: '2024-08-09T14:30:00Z',
+      image: '/api/placeholder/80/80',
+      author: 'James Chen',
+      verified: false,
+      description: 'A new native plant restoration project aims to bring back indigenous species to the western section of the park.'
+    },
+    {
+      id: '5',
+      type: 'community',
+      name: 'Mission District Food Co-op',
+      type_detail: 'Cooperative',
+      location: 'Mission District, San Francisco',
+      category: 'Food & Agriculture',
+      members: 156,
+      image: '/api/placeholder/80/80',
+      meetingTime: 'Saturdays 10am-2pm',
+      verified: true,
+      description: 'Community-owned grocery cooperative focusing on locally sourced and organic foods'
     }
   ];
 
@@ -82,8 +106,8 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
   const filteredResults = activeTab === 'all' 
     ? dataToUse 
     : dataToUse.filter(result => 
-        activeTab === 'musicians' ? result.type === 'musician' :
-        activeTab === 'business' ? result.type === 'business' :
+        activeTab === 'news' ? result.type === 'news' :
+        activeTab === 'communities' ? result.type === 'community' :
         activeTab === 'events' ? result.type === 'event' : true
       );
 
@@ -105,8 +129,8 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
           <div className="flex gap-1">
             {[
               { id: 'all', label: 'All', count: dataToUse.length },
-              { id: 'musicians', label: 'Musicians', count: dataToUse.filter(r => r.type === 'musician').length },
-              { id: 'business', label: 'Business', count: dataToUse.filter(r => r.type === 'business').length },
+              { id: 'news', label: 'News', count: dataToUse.filter(r => r.type === 'news').length },
+              { id: 'communities', label: 'Communities', count: dataToUse.filter(r => r.type === 'community').length },
               { id: 'events', label: 'Events', count: dataToUse.filter(r => r.type === 'event').length }
             ].map(tab => (
               <Button
@@ -130,90 +154,82 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
           {filteredResults.map((result) => (
             <Card key={result.id} className="hover:shadow-md transition-shadow">
               <CardContent className="p-4">
-                {result.type === 'musician' && (
+                {result.type === 'news' && (
                   <div className="space-y-3">
                     <div className="flex items-start gap-3">
                       <Avatar className="h-12 w-12">
                         <AvatarImage src={result.image} />
-                        <AvatarFallback className="bg-musician/20 text-musician">
-                          <Music className="h-5 w-5" />
+                        <AvatarFallback className="bg-news/20 text-news">
+                          📰
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <h3 className="font-semibold truncate">{result.name}</h3>
+                          <h3 className="font-semibold truncate">{result.title}</h3>
                           {result.verified && (
-                            <Badge variant="secondary" className="bg-musician/20 text-musician text-xs">
+                            <Badge variant="secondary" className="bg-news/20 text-news text-xs">
                               Verified
                             </Badge>
                           )}
                         </div>
+                        <p className="text-sm font-medium text-news">{result.source}</p>
                         <div className="flex items-center gap-1 text-sm text-muted-foreground">
                           <MapPin className="h-3 w-3" />
                           {result.location}
                         </div>
-                        <div className="flex items-center gap-1 text-sm">
-                          <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />
-                          {result.rating} • {result.followers ? result.followers.toLocaleString() + ' followers' : result.genre || 'Music'}
+                        <div className="text-sm text-muted-foreground">
+                          {new Date(result.publishedAt).toLocaleDateString()} • By {result.author}
                         </div>
                       </div>
                     </div>
                     
                     <div className="flex flex-wrap gap-1">
-                      {(Array.isArray(result.genre) ? result.genre : [result.genre]).filter(Boolean).map((g: string) => (
-                        <Badge key={g} variant="outline" className="text-xs">
-                          {g}
-                        </Badge>
-                      ))}
+                      <Badge variant="outline" className="text-xs">
+                        {result.category}
+                      </Badge>
                     </div>
                     
                     <p className="text-sm text-muted-foreground">{result.description}</p>
                     
                     <div className="flex gap-2">
                       <Button size="sm" className="flex-1">
-                        <Mail className="h-3 w-3 mr-1" />
-                        Book Gig
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <Play className="h-3 w-3" />
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <Instagram className="h-3 w-3" />
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        Read Full Article
                       </Button>
                     </div>
                   </div>
                 )}
 
-                {result.type === 'business' && (
+                {result.type === 'community' && (
                   <div className="space-y-3">
                     <div className="flex items-start gap-3">
                       <Avatar className="h-12 w-12">
                         <AvatarImage src={result.image} />
-                        <AvatarFallback className="bg-business/20 text-business">
+                        <AvatarFallback className="bg-communities/20 text-communities">
                           <Users className="h-5 w-5" />
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold">{result.name}</h3>
-                        <p className="text-sm font-medium text-business">{result.role || result.category}</p>
-                        <p className="text-xs text-muted-foreground">{result.company || 'Music Business'}</p>
+                        <p className="text-sm font-medium text-communities">{result.type_detail}</p>
                         <div className="flex items-center gap-1 text-sm text-muted-foreground">
                           <MapPin className="h-3 w-3" />
                           {result.location}
                         </div>
                         <div className="flex items-center gap-1 text-sm">
-                          <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />
-                          {result.rating} • {result.projects || 'Professional'} {result.projects ? 'projects' : ''}
+                          <Users className="h-3 w-3" />
+                          {result.members ? result.members.toLocaleString() + ' members' : 'Community Group'}
                         </div>
+                        {result.meetingTime && (
+                          <p className="text-xs text-muted-foreground">Meets: {result.meetingTime}</p>
+                        )}
                       </div>
                     </div>
                     
                     <div className="flex flex-wrap gap-1">
-                      {(result.specialties || [result.category]).filter(Boolean).map((s: string) => (
-                        <Badge key={s} variant="outline" className="text-xs">
-                          {s}
-                        </Badge>
-                      ))}
+                      <Badge variant="outline" className="text-xs">
+                        {result.category}
+                      </Badge>
                     </div>
                     
                     <p className="text-sm text-muted-foreground">{result.description}</p>
@@ -221,7 +237,7 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
                     <div className="flex gap-2">
                       <Button size="sm" className="flex-1">
                         <Mail className="h-3 w-3 mr-1" />
-                        Contact
+                        Join Community
                       </Button>
                       <Button variant="outline" size="sm">
                         <ExternalLink className="h-3 w-3" />
@@ -235,7 +251,7 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
                     <div className="flex items-start gap-3">
                       <Avatar className="h-12 w-12 rounded-lg">
                         <AvatarImage src={result.image} />
-                        <AvatarFallback className="bg-concert/20 text-concert rounded-lg">
+                        <AvatarFallback className="bg-events/20 text-events rounded-lg">
                           <Calendar className="h-5 w-5" />
                         </AvatarFallback>
                       </Avatar>
@@ -249,12 +265,12 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
                         <div className="text-sm">
                           {result.date ? new Date(result.date).toLocaleDateString() : 'TBA'} • {result.time || 'TBA'}
                         </div>
-                        <div className="text-sm font-medium text-concert">{result.price || 'See event details'}</div>
+                        <div className="text-sm font-medium text-events">{result.price || 'See event details'}</div>
                       </div>
                     </div>
                     
                     <div className="flex flex-wrap gap-1">
-                      {(result.genres || ['Music Event']).map((g: string) => (
+                      {(result.categories || ['Community Event']).map((g: string) => (
                         <Badge key={g} variant="outline" className="text-xs">
                           {g}
                         </Badge>

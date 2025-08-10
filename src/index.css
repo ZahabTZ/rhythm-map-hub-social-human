@@ -37,13 +37,13 @@ All colors MUST be HSL.
     --input: 225 15% 15%;
     --ring: 280 100% 70%;
 
-    /* Music hub specific colors */
-    --musician-primary: 320 100% 70%;
-    --musician-secondary: 280 100% 60%;
-    --business-primary: 45 100% 65%;
-    --business-secondary: 35 100% 55%;
-    --concert-primary: 140 100% 60%;
-    --concert-secondary: 160 100% 50%;
+    /* Local content specific colors */
+    --news-primary: 220 100% 70%;
+    --news-secondary: 200 100% 60%;
+    --communities-primary: 140 100% 60%;
+    --communities-secondary: 160 100% 50%;
+    --events-primary: 45 100% 65%;
+    --events-secondary: 35 100% 55%;
     
     /* Gradients */
     --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));

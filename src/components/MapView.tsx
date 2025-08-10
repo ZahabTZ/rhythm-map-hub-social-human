@@ -15,43 +15,15 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect }) => {
   const [mapboxToken, setMapboxToken] = useState('');
   const [showTokenInput, setShowTokenInput] = useState(true);
 
-  // Regional music data
+  // Regional local data
   const getRegionData = (region: string) => {
     const regionData: { [key: string]: any[] } = {
-      us: [
-        { id: 1, name: 'Drake', type: 'musician', genre: 'Hip Hop', location: 'Toronto/Atlanta', rating: 9.8 },
-        { id: 2, name: 'Atlantic Records', type: 'business', category: 'Record Label', location: 'New York', rating: 9.5 },
-        { id: 3, name: 'Coachella', type: 'event', venue: 'Empire Polo Club', location: 'California', date: '2024-04-12' },
-        { id: 4, name: 'Taylor Swift', type: 'musician', genre: 'Pop', location: 'Nashville', rating: 9.9 },
-        { id: 5, name: 'Spotify Studios', type: 'business', category: 'Streaming/Production', location: 'Los Angeles', rating: 9.3 }
-      ],
-      europe: [
-        { id: 6, name: 'Adele', type: 'musician', genre: 'Soul/Pop', location: 'London', rating: 9.7 },
-        { id: 7, name: 'Abbey Road Studios', type: 'business', category: 'Recording Studio', location: 'London', rating: 9.8 },
-        { id: 8, name: 'Tomorrowland', type: 'event', venue: 'De Schorre', location: 'Belgium', date: '2024-07-19' },
-        { id: 9, name: 'Daft Punk', type: 'musician', genre: 'Electronic', location: 'Paris', rating: 9.6 },
-        { id: 10, name: 'Universal Music Group', type: 'business', category: 'Record Label', location: 'London', rating: 9.4 }
-      ],
-      asia: [
-        { id: 11, name: 'BTS', type: 'musician', genre: 'K-Pop', location: 'Seoul', rating: 9.9 },
-        { id: 12, name: 'YG Entertainment', type: 'business', category: 'Entertainment Company', location: 'Seoul', rating: 9.2 },
-        { id: 13, name: 'Summer Sonic', type: 'event', venue: 'ZoZo Marine Stadium', location: 'Tokyo', date: '2024-08-17' },
-        { id: 14, name: 'Hikaru Utada', type: 'musician', genre: 'J-Pop', location: 'Tokyo', rating: 9.5 },
-        { id: 15, name: 'Avex Group', type: 'business', category: 'Record Label', location: 'Tokyo', rating: 9.1 }
-      ],
-      southamerica: [
-        { id: 16, name: 'Bad Bunny', type: 'musician', genre: 'Reggaeton', location: 'San Juan', rating: 9.8 },
-        { id: 17, name: 'Som Livre', type: 'business', category: 'Record Label', location: 'Rio de Janeiro', rating: 9.0 },
-        { id: 18, name: 'Rock in Rio', type: 'event', venue: 'Cidade do Rock', location: 'Rio de Janeiro', date: '2024-09-13' },
-        { id: 19, name: 'Anitta', type: 'musician', genre: 'Pop/Funk', location: 'Rio de Janeiro', rating: 9.4 },
-        { id: 20, name: 'Monstercat Brasil', type: 'business', category: 'Label/Management', location: 'São Paulo', rating: 8.9 }
-      ],
-      africa: [
-        { id: 21, name: 'Burna Boy', type: 'musician', genre: 'Afrobeats', location: 'Lagos', rating: 9.6 },
-        { id: 22, name: 'Mavin Records', type: 'business', category: 'Record Label', location: 'Lagos', rating: 9.2 },
-        { id: 23, name: 'AfroFuture Festival', type: 'event', venue: 'FNB Stadium', location: 'Johannesburg', date: '2024-12-07' },
-        { id: 24, name: 'Wizkid', type: 'musician', genre: 'Afrobeats', location: 'Lagos', rating: 9.5 },
-        { id: 25, name: 'Chocolate City', type: 'business', category: 'Record Label', location: 'Abuja', rating: 8.8 }
+      sf: [
+        { id: 1, title: 'Mission District Street Fair Returns', type: 'news', category: 'Community Events', location: 'Mission District', source: 'Mission Local' },
+        { id: 2, name: 'Sunset District Neighborhood Watch', type: 'community', category: 'Safety', location: 'Sunset District', members: 450 },
+        { id: 3, name: 'Castro Street Fair', type: 'event', venue: 'Castro Street', location: 'Castro District', date: '2024-10-06' },
+        { id: 4, title: 'New Bike Lanes Coming to Valencia Street', type: 'news', category: 'Transportation', location: 'Mission District', source: 'Streetsblog SF' },
+        { id: 5, name: 'Chinatown Community Garden', type: 'community', category: 'Environment', location: 'Chinatown', members: 89 }
       ]
     };
     return regionData[region] || [];
@@ -74,8 +46,8 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect }) => {
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/dark-v11',
-        center: [0, 20],
-        zoom: 2,
+        center: [-122.4194, 37.7749], // San Francisco
+        zoom: 10,
         projection: 'globe' as any,
       });
 
@@ -97,19 +69,21 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect }) => {
         'star-intensity': 0.6,
       });
 
-      // Add sample music location markers
-      const musicLocations = [
-        { id: 'la', coords: [-118.2437, 34.0522], name: 'Los Angeles', type: 'musician', genre: 'Hip Hop' },
-        { id: 'ny', coords: [-74.0059, 40.7128], name: 'New York', type: 'business', category: 'Producer' },
-        { id: 'london', coords: [-0.1276, 51.5074], name: 'London', type: 'concert', venue: 'Royal Albert Hall' },
-        { id: 'tokyo', coords: [139.6917, 35.6895], name: 'Tokyo', type: 'musician', genre: 'Electronic' },
-        { id: 'berlin', coords: [13.4050, 52.5200], name: 'Berlin', type: 'business', category: 'Sound Engineer' },
-        { id: 'rio', coords: [-43.1729, -22.9068], name: 'Rio de Janeiro', type: 'concert', venue: 'Rock in Rio' },
+      // Add sample local content markers in San Francisco
+      const localLocations = [
+        { id: 'mission', coords: [-122.4194, 37.7593], name: 'Mission District', type: 'news', category: 'New Bike Lanes' },
+        { id: 'castro', coords: [-122.4348, 37.7609], name: 'Castro District', type: 'events', category: 'Street Fair' },
+        { id: 'chinatown', coords: [-122.4058, 37.7941], name: 'Chinatown', type: 'communities', category: 'Community Garden' },
+        { id: 'haight', coords: [-122.4477, 37.7694], name: 'Haight-Ashbury', type: 'news', category: 'Local Business' },
+        { id: 'north_beach', coords: [-122.4102, 37.8006], name: 'North Beach', type: 'events', category: 'Italian Festival' },
+        { id: 'sunset', coords: [-122.4759, 37.7431], name: 'Sunset District', type: 'communities', category: 'Neighborhood Watch' },
+        { id: 'richmond', coords: [-122.4786, 37.7816], name: 'Richmond District', type: 'news', category: 'Park Renovation' },
+        { id: 'soma', coords: [-122.4089, 37.7749], name: 'SOMA', type: 'events', category: 'Tech Meetup' },
       ];
 
-      musicLocations.forEach((location) => {
-        const color = location.type === 'musician' ? '#ff4d9f' : 
-                      location.type === 'business' ? '#ffd700' : '#4df780';
+      localLocations.forEach((location) => {
+        const color = location.type === 'news' ? '#3b82f6' : 
+                      location.type === 'communities' ? '#10b981' : '#f59e0b';
         
         const marker = new mapboxgl.Marker({
           color: color,
@@ -122,9 +96,7 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect }) => {
                 <div class="p-2 bg-card text-card-foreground rounded">
                   <h3 class="font-semibold">${location.name}</h3>
                   <p class="text-sm text-muted-foreground">
-                    ${location.type === 'musician' ? `Genre: ${location.genre}` :
-                      location.type === 'business' ? `Category: ${location.category}` :
-                      `Venue: ${location.venue}`}
+                    ${location.type}: ${location.category}
                   </p>
                 </div>
               `)
@@ -142,25 +114,13 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect }) => {
       
       const { lng, lat } = e.lngLat;
       
-      // Simple region detection based on coordinates
+      // Simple region detection based on coordinates (focused on SF)
       let region = 'Unknown';
       let regionData = [];
       
-      if (lng >= -130 && lng <= -60 && lat >= 25 && lat <= 50) {
-        region = 'United States';
-        regionData = getRegionData('us');
-      } else if (lng >= -10 && lng <= 30 && lat >= 35 && lat <= 70) {
-        region = 'Europe';
-        regionData = getRegionData('europe');
-      } else if (lng >= 100 && lng <= 150 && lat >= 20 && lat <= 50) {
-        region = 'East Asia';
-        regionData = getRegionData('asia');
-      } else if (lng >= -80 && lng <= -30 && lat >= -30 && lat <= 15) {
-        region = 'South America';
-        regionData = getRegionData('southamerica');
-      } else if (lng >= -10 && lng <= 50 && lat >= -35 && lat <= 35) {
-        region = 'Africa';
-        regionData = getRegionData('africa');
+      if (lng >= -122.52 && lng <= -122.35 && lat >= 37.7 && lat <= 37.85) {
+        region = 'San Francisco';
+        regionData = getRegionData('sf');
       }
       
       onLocationSelect({
