@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Dark theme for music hub - inspired by Radio Garden */
+    --background: 225 15% 8%;
+    --foreground: 210 40% 98%;
+
+    --card: 225 15% 10%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 225 15% 10%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 280 100% 70%;
+    --primary-foreground: 225 15% 8%;
+
+    --secondary: 225 15% 15%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 225 15% 12%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 220 70% 60%;
+    --accent-foreground: 225 15% 8%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 225 15% 20%;
+    --input: 225 15% 15%;
+    --ring: 280 100% 70%;
+
+    /* Music hub specific colors */
+    --musician-primary: 320 100% 70%;
+    --musician-secondary: 280 100% 60%;
+    --business-primary: 45 100% 65%;
+    --business-secondary: 35 100% 55%;
+    --concert-primary: 140 100% 60%;
+    --concert-secondary: 160 100% 50%;
+    
+    /* Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+    --gradient-card: linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted)));
+    --gradient-dot: linear-gradient(45deg, hsl(var(--musician-primary)), hsl(var(--musician-secondary)));
+    
+    /* Shadows and effects */
+    --shadow-glow: 0 0 20px hsl(var(--primary) / 0.3);
+    --shadow-card: 0 4px 20px hsl(0 0% 0% / 0.3);
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    /* Enhanced dark theme - default to dark mode */
+    --background: 225 15% 6%;
+    --foreground: 210 40% 98%;
+
+    --card: 225 15% 8%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 225 15% 8%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 280 100% 75%;
+    --primary-foreground: 225 15% 6%;
+
+    --secondary: 225 15% 12%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 225 15% 10%;
+    --muted-foreground: 215 20.2% 70.1%;
+
+    --accent: 220 70% 65%;
+    --accent-foreground: 225 15% 6%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 225 15% 18%;
+    --input: 225 15% 12%;
+    --ring: 280 100% 75%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
