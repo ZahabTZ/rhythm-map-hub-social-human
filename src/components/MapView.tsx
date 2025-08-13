@@ -15,6 +15,12 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect }) => {
   const [mapboxToken, setMapboxToken] = useState('');
   const [showTokenInput, setShowTokenInput] = useState(true);
   const [humanitarianMode, setHumanitarianMode] = useState(false);
+  const humanitarianModeRef = useRef(false);
+  
+  // Update ref whenever state changes
+  useEffect(() => {
+    humanitarianModeRef.current = humanitarianMode;
+  }, [humanitarianMode]);
 
   // Regional local data
   const getRegionData = (region: string) => {
@@ -377,7 +383,14 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect }) => {
 
       // Add click handler for crisis points
       map.current.on('click', 'crisis-points', (e) => {
-        if (!humanitarianMode || !e.features || e.features.length === 0) return;
+        console.log('Crisis point clicked, humanitarian mode ref:', humanitarianModeRef.current);
+        // Use ref to get current state value
+        if (!humanitarianModeRef.current) {
+          console.log('Humanitarian mode is off, ignoring click');
+          return;
+        }
+        
+        if (!e.features || e.features.length === 0) return;
         
         const feature = e.features[0];
         const properties = feature.properties;
@@ -433,6 +446,8 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect }) => {
     
     const newMode = !humanitarianMode;
     setHumanitarianMode(newMode);
+    // Update the ref so click handlers can access current state
+    humanitarianModeRef.current = newMode;
     
     if (newMode) {
       // Show crisis layers
