@@ -404,13 +404,14 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect }) => {
         
         // Create popup content with close button and clickable title
         const popupContent = `
-          <div class="crisis-popup p-4 max-w-sm bg-white dark:bg-gray-800 rounded-lg shadow-lg border">
-            <div class="flex justify-between items-start mb-2">
-              <h3 class="font-semibold text-lg text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 cursor-pointer" 
+          <div class="crisis-popup p-4 max-w-sm bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-600">
+            <div class="flex justify-between items-start mb-3">
+              <h3 class="font-bold text-lg text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors leading-tight" 
                   onclick="window.location.href='/crisis/${crisisId}'">${properties.name}</h3>
-              <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 ml-2 p-1" 
-                      onclick="this.closest('.mapboxgl-popup').remove()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 ml-3 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex-shrink-0" 
+                      onclick="this.closest('.mapboxgl-popup').remove()"
+                      title="Close">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
@@ -418,11 +419,14 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect }) => {
             </div>
             <img src="${properties.image}" 
                  alt="${properties.name}" 
-                 class="w-full h-32 object-cover rounded mb-2"
+                 class="w-full h-32 object-cover rounded-md mb-3 shadow-sm"
                  onerror="this.style.display='none'" />
-            <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">${properties.description}</p>
-            <div class="text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-600 pt-2">
-              <p><span class="text-red-500">●</span> Affected: ${properties.affected}</p>
+            <p class="text-sm text-gray-700 dark:text-gray-200 mb-3 leading-relaxed">${properties.description}</p>
+            <div class="text-sm text-gray-600 dark:text-gray-300 border-t border-gray-200 dark:border-gray-600 pt-3">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 bg-red-500 rounded-full"></span>
+                <span class="font-medium">Affected: ${properties.affected}</span>
+              </div>
             </div>
           </div>
         `;

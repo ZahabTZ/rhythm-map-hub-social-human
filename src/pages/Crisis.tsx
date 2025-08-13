@@ -180,15 +180,15 @@ const Crisis = () => {
       </div>
 
       {/* Content */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="stats">Statistics</TabsTrigger>
-            <TabsTrigger value="community">Community</TabsTrigger>
-            <TabsTrigger value="news">News</TabsTrigger>
-            <TabsTrigger value="events">Events</TabsTrigger>
-            <TabsTrigger value="stories">Stories</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 h-auto">
+            <TabsTrigger value="overview" className="text-xs md:text-sm py-2">Overview</TabsTrigger>
+            <TabsTrigger value="stats" className="text-xs md:text-sm py-2">Statistics</TabsTrigger>
+            <TabsTrigger value="community" className="text-xs md:text-sm py-2">Community</TabsTrigger>
+            <TabsTrigger value="news" className="text-xs md:text-sm py-2">News</TabsTrigger>
+            <TabsTrigger value="events" className="text-xs md:text-sm py-2">Events</TabsTrigger>
+            <TabsTrigger value="stories" className="text-xs md:text-sm py-2">Stories</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
