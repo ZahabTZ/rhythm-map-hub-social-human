@@ -383,6 +383,8 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect }) => {
 
       // Add click handler for crisis points
       map.current.on('click', 'crisis-points', (e) => {
+        // Prevent event from bubbling to the general map click handler
+        e.preventDefault();
         
         if (!humanitarianModeRef.current) return;
         if (!e.features || e.features.length === 0) return;
@@ -393,49 +395,71 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect }) => {
         
         if (!coordinates || !properties) return;
         
+        // Close any existing popups first
+        const existingPopups = document.querySelectorAll('.mapboxgl-popup');
+        existingPopups.forEach(popup => popup.remove());
+        
         // Generate a unique ID for this crisis (or use properties.id if available)
         const crisisId = properties.id || Math.random().toString(36).substr(2, 9);
         
         // Create popup content with close button and clickable title
         const popupContent = `
-          <div class="crisis-popup p-4 max-w-sm bg-white rounded-lg shadow-lg">
+          <div class="crisis-popup p-4 max-w-sm bg-white dark:bg-gray-800 rounded-lg shadow-lg border">
             <div class="flex justify-between items-start mb-2">
-              <h3 class="font-semibold text-lg text-blue-600 hover:text-blue-800 cursor-pointer" 
+              <h3 class="font-semibold text-lg text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 cursor-pointer" 
                   onclick="window.location.href='/crisis/${crisisId}'">${properties.name}</h3>
-              <button class="text-gray-400 hover:text-gray-600 ml-2" onclick="this.closest('.mapboxgl-popup').remove()">
+              <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 ml-2 p-1" 
+                      onclick="this.closest('.mapboxgl-popup').remove()">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
               </button>
             </div>
-            <img src="${properties.image}" alt="${properties.name}" class="w-full h-32 object-cover rounded mb-2" />
-            <p class="text-sm text-gray-600 mb-2">${properties.description}</p>
-            <div class="text-xs text-gray-500">
-              <p>Affected: ${properties.affected}</p>
+            <img src="${properties.image}" 
+                 alt="${properties.name}" 
+                 class="w-full h-32 object-cover rounded mb-2"
+                 onerror="this.style.display='none'" />
+            <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">${properties.description}</p>
+            <div class="text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-600 pt-2">
+              <p><span class="text-red-500">●</span> Affected: ${properties.affected}</p>
             </div>
           </div>
         `;
         
         // Create and show popup
-        new mapboxgl.Popup({ closeButton: false })
+        const popup = new mapboxgl.Popup({ 
+          closeButton: false,
+          closeOnClick: false,
+          maxWidth: '320px'
+        })
           .setLngLat(coordinates)
           .setHTML(popupContent)
           .addTo(map.current);
+          
+        console.log('Crisis popup created for:', properties.name);
       });
 
-      // Add general map click handler to close popups in humanitarian mode
+      // Prevent map click when clicking on crisis points
       map.current.on('click', (e) => {
+        // Check if we clicked on a crisis point
+        const features = map.current!.queryRenderedFeatures(e.point, { layers: ['crisis-points'] });
+        
+        // If we clicked on a crisis point, don't do anything (let the crisis-points handler deal with it)
+        if (features.length > 0 && humanitarianModeRef.current) {
+          return;
+        }
+        
+        // Only close popups if we clicked on empty space in humanitarian mode
         if (humanitarianModeRef.current) {
-          // Close all popups when clicking on empty areas
           const popups = document.querySelectorAll('.mapboxgl-popup');
           popups.forEach(popup => popup.remove());
         }
       });
 
-      // Change cursor on hover
+      // Change cursor on hover for crisis points
       map.current.on('mouseenter', 'crisis-points', () => {
-        if (humanitarianMode && map.current) {
+        if (humanitarianModeRef.current && map.current) {
           map.current.getCanvas().style.cursor = 'pointer';
         }
       });
