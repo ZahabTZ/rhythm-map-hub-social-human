@@ -14,6 +14,7 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect }) => {
   const map = useRef<mapboxgl.Map | null>(null);
   const [mapboxToken, setMapboxToken] = useState('');
   const [showTokenInput, setShowTokenInput] = useState(true);
+  const [humanitarianMode, setHumanitarianMode] = useState(false);
 
   // Regional local data
   const getRegionData = (region: string) => {
@@ -46,8 +47,8 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect }) => {
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/dark-v11',
-        center: [-122.4194, 37.7749], // San Francisco
-        zoom: 10,
+        center: [0, 20], // Global view
+        zoom: 1.2, // Show full globe
         projection: 'globe' as any,
       });
 
@@ -130,6 +131,159 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect }) => {
         regionData
       });
     });
+
+    // Add humanitarian crisis heatmap data and sources
+    map.current.on('load', () => {
+      if (!map.current) return;
+
+      // Humanitarian crisis data points (current major crises)
+      const crisisData = {
+        "type": "FeatureCollection" as const,
+        "features": [
+          // Ukraine conflict
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [31.1656, 48.3794]}, "properties": {"intensity": 100}},
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [36.2527, 49.9935]}, "properties": {"intensity": 95}},
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [30.5234, 50.4501]}, "properties": {"intensity": 90}},
+          
+          // Gaza/Palestine
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [34.4669, 31.5017]}, "properties": {"intensity": 100}},
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [35.2137, 31.7683]}, "properties": {"intensity": 85}},
+          
+          // Sudan
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [32.5599, 15.5007]}, "properties": {"intensity": 95}},
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [30.2176, 12.8628]}, "properties": {"intensity": 80}},
+          
+          // Afghanistan
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [69.2075, 34.5553]}, "properties": {"intensity": 85}},
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [67.7100, 33.7680]}, "properties": {"intensity": 75}},
+          
+          // Myanmar
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [95.9560, 21.9162]}, "properties": {"intensity": 80}},
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [96.1951, 16.8661]}, "properties": {"intensity": 70}},
+          
+          // Yemen
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [44.2075, 15.3694]}, "properties": {"intensity": 90}},
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [48.5164, 14.5995]}, "properties": {"intensity": 75}},
+          
+          // Ethiopia (Tigray)
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [39.4851, 14.1251]}, "properties": {"intensity": 75}},
+          
+          // Somalia
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [45.3182, 2.0469]}, "properties": {"intensity": 70}},
+          
+          // Haiti
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [-72.2852, 18.9712]}, "properties": {"intensity": 75}},
+          
+          // Syria
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [38.9637, 35.9375]}, "properties": {"intensity": 80}},
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [36.2765, 33.5138]}, "properties": {"intensity": 70}}
+        ]
+      };
+
+      // Add source for crisis data
+      map.current.addSource('crisis-data', {
+        'type': 'geojson',
+        'data': crisisData
+      });
+
+      // Add heatmap layer (initially hidden)
+      map.current.addLayer({
+        'id': 'crisis-heatmap',
+        'type': 'heatmap',
+        'source': 'crisis-data',
+        'layout': {
+          'visibility': 'none'
+        },
+        'paint': {
+          'heatmap-weight': [
+            'interpolate',
+            ['linear'],
+            ['get', 'intensity'],
+            0, 0,
+            100, 1
+          ],
+          'heatmap-intensity': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            0, 1,
+            9, 3
+          ],
+          'heatmap-color': [
+            'interpolate',
+            ['linear'],
+            ['heatmap-density'],
+            0, 'rgba(0, 0, 0, 0)',
+            0.2, '#800000',
+            0.4, '#cc0000',
+            0.6, '#ff0000',
+            0.8, '#ff3333',
+            1, '#ff6666'
+          ],
+          'heatmap-radius': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            0, 20,
+            9, 50
+          ],
+          'heatmap-opacity': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            0, 0.8,
+            9, 0.6
+          ]
+        }
+      });
+
+      // Add crisis points layer (initially hidden)
+      map.current.addLayer({
+        'id': 'crisis-points',
+        'type': 'circle',
+        'source': 'crisis-data',
+        'layout': {
+          'visibility': 'none'
+        },
+        'paint': {
+          'circle-radius': [
+            'interpolate',
+            ['linear'],
+            ['get', 'intensity'],
+            0, 3,
+            100, 15
+          ],
+          'circle-color': [
+            'interpolate',
+            ['linear'],
+            ['get', 'intensity'],
+            0, '#660000',
+            50, '#cc0000',
+            100, '#ff0000'
+          ],
+          'circle-opacity': 0.8,
+          'circle-stroke-color': '#330000',
+          'circle-stroke-width': 1
+        }
+      });
+    });
+  };
+
+  const toggleHumanitarianMode = () => {
+    if (!map.current) return;
+    
+    const newMode = !humanitarianMode;
+    setHumanitarianMode(newMode);
+    
+    if (newMode) {
+      // Show crisis layers
+      map.current.setLayoutProperty('crisis-heatmap', 'visibility', 'visible');
+      map.current.setLayoutProperty('crisis-points', 'visibility', 'visible');
+    } else {
+      // Hide crisis layers
+      map.current.setLayoutProperty('crisis-heatmap', 'visibility', 'none');
+      map.current.setLayoutProperty('crisis-points', 'visibility', 'none');
+    }
   };
 
   const handleTokenSubmit = () => {
@@ -193,6 +347,17 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect }) => {
   return (
     <div className="relative w-full h-screen">
       <div ref={mapContainer} className="absolute inset-0" />
+      
+      {/* Humanitarian Mode Toggle */}
+      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-10">
+        <Button
+          onClick={toggleHumanitarianMode}
+          variant={humanitarianMode ? "destructive" : "secondary"}
+          className="shadow-lg backdrop-blur-sm bg-background/90 border"
+        >
+          {humanitarianMode ? "Exit Humanitarian Mode" : "Humanitarian Mode"}
+        </Button>
+      </div>
     </div>
   );
 };
