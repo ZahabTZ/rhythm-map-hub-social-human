@@ -141,42 +141,150 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect }) => {
         "type": "FeatureCollection" as const,
         "features": [
           // Ukraine conflict
-          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [31.1656, 48.3794]}, "properties": {"intensity": 100}},
-          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [36.2527, 49.9935]}, "properties": {"intensity": 95}},
-          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [30.5234, 50.4501]}, "properties": {"intensity": 90}},
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [31.1656, 48.3794]}, "properties": {
+            "intensity": 100, 
+            "name": "Ukraine - Kherson Region", 
+            "description": "Ongoing conflict with severe humanitarian impact. Over 6 million people displaced internally.",
+            "affected": "14.6 million people in need",
+            "image": "https://images.unsplash.com/photo-1645731291221-1ac90ac0476e?w=400&h=300&fit=crop"
+          }},
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [36.2527, 49.9935]}, "properties": {
+            "intensity": 95, 
+            "name": "Ukraine - Kharkiv Region", 
+            "description": "Heavy bombardment affecting civilian infrastructure and forcing mass displacement.",
+            "affected": "3.2 million people in need",
+            "image": "https://images.unsplash.com/photo-1648737967328-690b8204f6bb?w=400&h=300&fit=crop"
+          }},
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [30.5234, 50.4501]}, "properties": {
+            "intensity": 90, 
+            "name": "Ukraine - Kyiv Region", 
+            "description": "Capital region under siege with critical infrastructure damage affecting millions.",
+            "affected": "2.8 million people in need",
+            "image": "https://images.unsplash.com/photo-1648738267661-9b6dc1a5743d?w=400&h=300&fit=crop"
+          }},
           
           // Gaza/Palestine
-          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [34.4669, 31.5017]}, "properties": {"intensity": 100}},
-          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [35.2137, 31.7683]}, "properties": {"intensity": 85}},
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [34.4669, 31.5017]}, "properties": {
+            "intensity": 100, 
+            "name": "Gaza Strip", 
+            "description": "Severe humanitarian crisis with limited access to food, water, and medical supplies.",
+            "affected": "2.3 million people in need",
+            "image": "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop"
+          }},
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [35.2137, 31.7683]}, "properties": {
+            "intensity": 85, 
+            "name": "West Bank", 
+            "description": "Ongoing displacement and restricted movement affecting daily life and livelihoods.",
+            "affected": "3.1 million people in need",
+            "image": "https://images.unsplash.com/photo-1544966503-7cc535ceea3e?w=400&h=300&fit=crop"
+          }},
           
           // Sudan
-          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [32.5599, 15.5007]}, "properties": {"intensity": 95}},
-          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [30.2176, 12.8628]}, "properties": {"intensity": 80}},
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [32.5599, 15.5007]}, "properties": {
+            "intensity": 95, 
+            "name": "Sudan - Khartoum", 
+            "description": "Armed conflict causing mass displacement and breakdown of essential services.",
+            "affected": "25 million people in need",
+            "image": "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop"
+          }},
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [30.2176, 12.8628]}, "properties": {
+            "intensity": 80, 
+            "name": "Sudan - Darfur", 
+            "description": "Renewed violence affecting vulnerable populations with limited humanitarian access.",
+            "affected": "2.5 million people in need",
+            "image": "https://images.unsplash.com/photo-1568454537842-d933259bb258?w=400&h=300&fit=crop"
+          }},
           
           // Afghanistan
-          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [69.2075, 34.5553]}, "properties": {"intensity": 85}},
-          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [67.7100, 33.7680]}, "properties": {"intensity": 75}},
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [69.2075, 34.5553]}, "properties": {
+            "intensity": 85, 
+            "name": "Afghanistan - Kabul", 
+            "description": "Economic collapse and drought affecting millions, with severe food insecurity.",
+            "affected": "28.8 million people in need",
+            "image": "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop"
+          }},
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [67.7100, 33.7680]}, "properties": {
+            "intensity": 75, 
+            "name": "Afghanistan - Kandahar", 
+            "description": "Severe drought and economic hardship creating widespread malnutrition.",
+            "affected": "4.2 million people in need",
+            "image": "https://images.unsplash.com/photo-1568454537842-d933259bb258?w=400&h=300&fit=crop"
+          }},
           
           // Myanmar
-          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [95.9560, 21.9162]}, "properties": {"intensity": 80}},
-          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [96.1951, 16.8661]}, "properties": {"intensity": 70}},
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [95.9560, 21.9162]}, "properties": {
+            "intensity": 80, 
+            "name": "Myanmar - Mandalay", 
+            "description": "Political crisis and armed conflict displacing communities and disrupting services.",
+            "affected": "17.6 million people in need",
+            "image": "https://images.unsplash.com/photo-1544966503-7cc535ceea3e?w=400&h=300&fit=crop"
+          }},
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [96.1951, 16.8661]}, "properties": {
+            "intensity": 70, 
+            "name": "Myanmar - Yangon", 
+            "description": "Ongoing instability affecting access to basic services and livelihoods.",
+            "affected": "8.1 million people in need",
+            "image": "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop"
+          }},
           
           // Yemen
-          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [44.2075, 15.3694]}, "properties": {"intensity": 90}},
-          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [48.5164, 14.5995]}, "properties": {"intensity": 75}},
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [44.2075, 15.3694]}, "properties": {
+            "intensity": 90, 
+            "name": "Yemen - Sana'a", 
+            "description": "Protracted conflict creating one of the world's worst humanitarian crises.",
+            "affected": "21.6 million people in need",
+            "image": "https://images.unsplash.com/photo-1568454537842-d933259bb258?w=400&h=300&fit=crop"
+          }},
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [48.5164, 14.5995]}, "properties": {
+            "intensity": 75, 
+            "name": "Yemen - Aden", 
+            "description": "Severe food insecurity and cholera outbreaks affecting vulnerable populations.",
+            "affected": "4.3 million people in need",
+            "image": "https://images.unsplash.com/photo-1544966503-7cc535ceea3e?w=400&h=300&fit=crop"
+          }},
           
           // Ethiopia (Tigray)
-          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [39.4851, 14.1251]}, "properties": {"intensity": 75}},
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [39.4851, 14.1251]}, "properties": {
+            "intensity": 75, 
+            "name": "Ethiopia - Tigray", 
+            "description": "Post-conflict recovery with ongoing humanitarian needs and limited access.",
+            "affected": "4.5 million people in need",
+            "image": "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop"
+          }},
           
           // Somalia
-          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [45.3182, 2.0469]}, "properties": {"intensity": 70}},
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [45.3182, 2.0469]}, "properties": {
+            "intensity": 70, 
+            "name": "Somalia - Mogadishu", 
+            "description": "Severe drought and conflict creating acute food insecurity and displacement.",
+            "affected": "7.1 million people in need",
+            "image": "https://images.unsplash.com/photo-1568454537842-d933259bb258?w=400&h=300&fit=crop"
+          }},
           
           // Haiti
-          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [-72.2852, 18.9712]}, "properties": {"intensity": 75}},
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [-72.2852, 18.9712]}, "properties": {
+            "intensity": 75, 
+            "name": "Haiti - Port-au-Prince", 
+            "description": "Gang violence and political instability affecting access to basic services.",
+            "affected": "5.2 million people in need",
+            "image": "https://images.unsplash.com/photo-1544966503-7cc535ceea3e?w=400&h=300&fit=crop"
+          }},
           
           // Syria
-          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [38.9637, 35.9375]}, "properties": {"intensity": 80}},
-          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [36.2765, 33.5138]}, "properties": {"intensity": 70}}
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [38.9637, 35.9375]}, "properties": {
+            "intensity": 80, 
+            "name": "Syria - Aleppo", 
+            "description": "Ongoing conflict aftermath with massive infrastructure damage and displacement.",
+            "affected": "15.3 million people in need",
+            "image": "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop"
+          }},
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [36.2765, 33.5138]}, "properties": {
+            "intensity": 70, 
+            "name": "Syria - Damascus", 
+            "description": "Protracted displacement and economic hardship affecting millions of civilians.",
+            "affected": "6.8 million people in need",
+            "image": "https://images.unsplash.com/photo-1568454537842-d933259bb258?w=400&h=300&fit=crop"
+          }}
         ]
       };
 
@@ -264,6 +372,57 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect }) => {
           'circle-opacity': 0.8,
           'circle-stroke-color': '#330000',
           'circle-stroke-width': 1
+        }
+      });
+
+      // Add click handler for crisis points
+      map.current.on('click', 'crisis-points', (e) => {
+        if (!humanitarianMode || !e.features || e.features.length === 0) return;
+        
+        const feature = e.features[0];
+        const properties = feature.properties;
+        
+        if (!properties) return;
+        
+        const popup = new mapboxgl.Popup({
+          closeButton: true,
+          closeOnClick: false,
+          maxWidth: '400px',
+          className: 'crisis-popup'
+        })
+          .setLngLat((feature.geometry as any).coordinates)
+          .setHTML(`
+            <div class="p-4 bg-card text-card-foreground rounded-lg shadow-lg">
+              <div class="mb-3">
+                <img 
+                  src="${properties.image}" 
+                  alt="${properties.name}"
+                  class="w-full h-32 object-cover rounded-md mb-3"
+                  onerror="this.style.display='none'"
+                />
+              </div>
+              <h3 class="text-lg font-bold text-destructive mb-2">${properties.name}</h3>
+              <p class="text-sm text-muted-foreground mb-3">${properties.description}</p>
+              <div class="border-t border-border pt-2">
+                <p class="text-xs font-semibold text-muted-foreground">
+                  <span class="text-destructive">●</span> ${properties.affected}
+                </p>
+              </div>
+            </div>
+          `)
+          .addTo(map.current!);
+      });
+
+      // Change cursor on hover
+      map.current.on('mouseenter', 'crisis-points', () => {
+        if (humanitarianMode && map.current) {
+          map.current.getCanvas().style.cursor = 'pointer';
+        }
+      });
+
+      map.current.on('mouseleave', 'crisis-points', () => {
+        if (map.current) {
+          map.current.getCanvas().style.cursor = '';
         }
       });
     });
