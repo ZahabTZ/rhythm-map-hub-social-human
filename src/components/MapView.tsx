@@ -12,8 +12,10 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect }) => {
   console.log('MapView component rendered');
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
-  const [mapboxToken, setMapboxToken] = useState('');
-  const [showTokenInput, setShowTokenInput] = useState(true);
+  const [mapboxToken, setMapboxToken] = useState<string | undefined>(
+    import.meta.env.VITE_MAPBOX_TOKEN
+  )
+  // const [showTokenInput, setShowTokenInput] = useState(true);
   const [humanitarianMode, setHumanitarianMode] = useState(false);
   const humanitarianModeRef = useRef(false);
   
@@ -36,7 +38,7 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect }) => {
     return regionData[region] || [];
   };
   
-  console.log('MapView state:', { showTokenInput, tokenLength: mapboxToken.length });
+  console.log('MapView state:', {  tokenLength: mapboxToken.length });
 
   const initializeMap = (token: string) => {
     console.log('initializeMap function called');
@@ -499,7 +501,7 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect }) => {
     console.log('handleTokenSubmit called with token:', mapboxToken.substring(0, 10) + '...');
     if (mapboxToken.trim()) {
       console.log('Token is valid, hiding token input...');
-      setShowTokenInput(false);
+      // setShowTokenInput(false);
     } else {
       console.log('Token is empty or invalid');
     }
@@ -507,11 +509,12 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect }) => {
 
   // Initialize map when token input is hidden and container is available
   useEffect(() => {
-    if (!showTokenInput && mapboxToken && mapContainer.current) {
-      console.log('Container is now available, initializing map...');
+    // if (!showTokenInput && mapboxToken && mapContainer.current) {
+    // if ( mapboxToken && mapContainer.current) {
+    //   console.log('Container is now available, initializing map...');
       initializeMap(mapboxToken);
-    }
-  }, [showTokenInput, mapboxToken]);
+    // }
+  }, [ ]);
 
   useEffect(() => {
     return () => {
@@ -519,39 +522,7 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect }) => {
     };
   }, []);
 
-  if (showTokenInput) {
-    return (
-      <div className="relative w-full h-screen bg-background flex items-center justify-center">
-        <div className="max-w-md w-full mx-4 p-6 bg-card rounded-lg shadow-lg border">
-          <h2 className="text-xl font-semibold mb-4 text-center">Setup Required</h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            To use the map, please enter your Mapbox public token. 
-            You can get one at{' '}
-            <a 
-              href="https://mapbox.com" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-primary hover:underline"
-            >
-              mapbox.com
-            </a>
-          </p>
-          <div className="space-y-3">
-            <Input
-              type="text"
-              placeholder="pk.ey..."
-              value={mapboxToken}
-              onChange={(e) => setMapboxToken(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleTokenSubmit()}
-            />
-            <Button onClick={handleTokenSubmit} className="w-full" variant="default">
-              Initialize Map
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="relative w-full h-screen">
