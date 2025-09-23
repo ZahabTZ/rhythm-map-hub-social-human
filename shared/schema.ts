@@ -52,6 +52,134 @@ export const ModerationActionSchema = z.object({
 
 export type ModerationAction = z.infer<typeof ModerationActionSchema>;
 
+// User schema with verified host status
+export const UserSchema = z.object({
+  id: z.string(),
+  email: z.string().email(),
+  name: z.string(),
+  profilePicture: z.string().optional(),
+  googleId: z.string(),
+  isVerifiedHost: z.boolean().default(false),
+  verifiedHostExpiresAt: z.string().datetime().optional(),
+  verifiedAt: z.string().datetime().optional(),
+  createdAt: z.string().datetime().default(() => new Date().toISOString()),
+  lastActiveAt: z.string().datetime().default(() => new Date().toISOString()),
+});
+
+export type User = z.infer<typeof UserSchema>;
+
+// Community schema with global/local filtering
+export const CommunitySchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, "Community name is required").max(100, "Community name too long"),
+  description: z.string().max(500, "Description too long"),
+  category: z.string(), // e.g., "Health", "Education", "Environment", etc.
+  createdBy: z.string(), // User ID of verified host who created it
+  isActive: z.boolean().default(true),
+  memberCount: z.number().default(0),
+  globalDiscussions: z.array(z.string()).default([]), // Array of discussion IDs
+  localDiscussions: z.array(z.string()).default([]), // Array of local discussion IDs
+  createdAt: z.string().datetime().default(() => new Date().toISOString()),
+  updatedAt: z.string().datetime().default(() => new Date().toISOString()),
+});
+
+export type Community = z.infer<typeof CommunitySchema>;
+
+// Insert schema for creating new communities
+export const InsertCommunitySchema = CommunitySchema.omit({
+  id: true,
+  memberCount: true,
+  globalDiscussions: true,
+  localDiscussions: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertCommunity = z.infer<typeof InsertCommunitySchema>;
+
+// Discussion schema for community conversations
+export const DiscussionSchema = z.object({
+  id: z.string(),
+  communityId: z.string(),
+  title: z.string().min(1, "Title is required").max(200, "Title too long"),
+  content: z.string().min(1, "Content is required").max(2000, "Content too long"),
+  authorId: z.string(),
+  authorName: z.string(),
+  authorLocation: z.object({
+    lat: z.number(),
+    lng: z.number(),
+    name: z.string(),
+  }).optional(), // For local discussions, author's location
+  isLocal: z.boolean().default(false), // Whether this is a local discussion
+  replies: z.array(z.string()).default([]), // Array of reply IDs
+  likes: z.number().default(0),
+  createdAt: z.string().datetime().default(() => new Date().toISOString()),
+  updatedAt: z.string().datetime().default(() => new Date().toISOString()),
+});
+
+export type Discussion = z.infer<typeof DiscussionSchema>;
+
+// Insert schema for creating new discussions
+export const InsertDiscussionSchema = DiscussionSchema.omit({
+  id: true,
+  replies: true,
+  likes: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertDiscussion = z.infer<typeof InsertDiscussionSchema>;
+
+// Event schema
+export const EventSchema = z.object({
+  id: z.string(),
+  title: z.string().min(1, "Event title is required").max(200, "Title too long"),
+  description: z.string().max(1000, "Description too long"),
+  category: z.string(),
+  createdBy: z.string(), // User ID of verified host
+  location: z.object({
+    lat: z.number(),
+    lng: z.number(),
+    name: z.string(),
+    address: z.string().optional(),
+  }),
+  startDate: z.string().datetime(),
+  endDate: z.string().datetime(),
+  maxAttendees: z.number().optional(),
+  currentAttendees: z.number().default(0),
+  attendeeIds: z.array(z.string()).default([]),
+  isActive: z.boolean().default(true),
+  createdAt: z.string().datetime().default(() => new Date().toISOString()),
+  updatedAt: z.string().datetime().default(() => new Date().toISOString()),
+});
+
+export type Event = z.infer<typeof EventSchema>;
+
+// Insert schema for creating new events
+export const InsertEventSchema = EventSchema.omit({
+  id: true,
+  currentAttendees: true,
+  attendeeIds: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertEvent = z.infer<typeof InsertEventSchema>;
+
+// Payment record schema for verified host fees
+export const PaymentSchema = z.object({
+  id: z.string(),
+  userId: z.string(),
+  stripePaymentIntentId: z.string(),
+  amount: z.number(), // Amount in cents
+  currency: z.string().default('usd'),
+  status: z.enum(['pending', 'succeeded', 'failed']),
+  description: z.string(),
+  createdAt: z.string().datetime().default(() => new Date().toISOString()),
+});
+
+export type Payment = z.infer<typeof PaymentSchema>;
+
 // Schema for location verification
 export const LocationVerificationSchema = z.object({
   userLat: z.number(),
