@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Sparkles, Filter, HelpCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,7 @@ interface SearchBarProps {
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onFilterChange }) => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
@@ -38,6 +40,12 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onFilterChange }) => {
   };
 
   const toggleFilter = (filterId: string) => {
+    // Navigate to dedicated pages for communities and events
+    if (filterId === 'communities') {
+      navigate('/communities');
+      return;
+    }
+    
     const newFilters = activeFilters.includes(filterId)
       ? activeFilters.filter(f => f !== filterId)
       : [...activeFilters, filterId];

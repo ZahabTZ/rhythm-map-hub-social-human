@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Crisis from "./pages/Crisis";
+import Communities from "./pages/Communities";
 import { Moderation } from "./pages/Moderation";
 import VerifiedHostPayment from "./pages/VerifiedHostPayment";
 import CreateCommunity from "./pages/CreateCommunity";
@@ -23,6 +24,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/crisis/:id" element={<Crisis />} />
+            <Route path="/communities" element={<Communities />} />
             <Route path="/moderation" element={<Moderation />} />
             <Route path="/become-host" element={<VerifiedHostPayment />} />
             <Route path="/create-community" element={<CreateCommunity />} />
