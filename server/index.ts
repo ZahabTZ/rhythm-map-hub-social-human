@@ -9,8 +9,7 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Note: JSON parsing is handled per-route to allow different limits
 
 // API routes
 app.use('/api', apiRoutes);

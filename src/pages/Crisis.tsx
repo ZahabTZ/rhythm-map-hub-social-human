@@ -5,11 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowLeft, Users, TrendingUp, Calendar, MessageSquare, Heart } from 'lucide-react';
+import { ArrowLeft, Users, TrendingUp, Calendar, MessageSquare, Heart, Plus } from 'lucide-react';
+import { StorySubmissionForm } from '@/components/StorySubmissionForm';
 
 const Crisis = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [isStoryFormOpen, setIsStoryFormOpen] = useState(false);
   
   // Mock crisis data - in real app, this would come from API based on id
   const crisisData = {
@@ -350,6 +352,18 @@ const Crisis = () => {
           </TabsContent>
 
           <TabsContent value="stories" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold">Community Stories</h3>
+              <Button
+                onClick={() => setIsStoryFormOpen(true)}
+                className="flex items-center gap-2"
+                data-testid="button-submit-story"
+              >
+                <Plus className="h-4 w-4" />
+                Submit Your Story
+              </Button>
+            </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {stories.map((story) => (
                 <Card key={story.id} className="overflow-hidden">
@@ -379,6 +393,28 @@ const Crisis = () => {
             </div>
           </TabsContent>
         </Tabs>
+        
+        {/* Story Submission Form */}
+        <StorySubmissionForm
+          isOpen={isStoryFormOpen}
+          onClose={() => setIsStoryFormOpen(false)}
+          crisis={{
+            id: crisisData.id,
+            name: crisisData.name,
+            location: {
+              lat: 49.8397, // Mock coordinates for Eastern Europe
+              lng: 24.0297,
+              name: crisisData.location,
+            },
+            severity: crisisData.severity as 'Low' | 'Medium' | 'High' | 'Critical',
+            isActive: true,
+            allowStorySubmissions: true,
+          }}
+          onSubmissionSuccess={() => {
+            // In a real app, this would refresh the stories list
+            console.log('Story submitted successfully');
+          }}
+        />
       </div>
     </div>
   );

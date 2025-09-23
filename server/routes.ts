@@ -1,26 +1,12 @@
 import express from 'express';
-import multer from 'multer';
 import { z } from 'zod';
 import { InsertStorySchema, ModerationActionSchema, LocationVerificationSchema } from '../shared/schema';
 import { storage } from './storage';
 
 const router = express.Router();
 
-// Configure multer for image uploads
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
-  },
-  fileFilter: (req, file, cb) => {
-    // Only accept image files
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only image files are allowed'));
-    }
-  },
-});
+// JSON parsing middleware for most routes (small limit)
+const defaultJsonParser = express.json({ limit: '1mb' });
 
 // Middleware to validate request body
 const validateBody = (schema: z.ZodSchema) => {
@@ -39,7 +25,7 @@ const validateBody = (schema: z.ZodSchema) => {
 };
 
 // Get all approved stories for a crisis
-router.get('/stories/crisis/:crisisId', async (req, res) => {
+router.get('/stories/crisis/:crisisId', defaultJsonParser, async (req, res) => {
   try {
     const { crisisId } = req.params;
     const stories = await storage.getApprovedStoriesByCrisis(crisisId);
@@ -50,7 +36,7 @@ router.get('/stories/crisis/:crisisId', async (req, res) => {
 });
 
 // Get pending stories (for moderation)
-router.get('/stories/pending', async (req, res) => {
+router.get('/stories/pending', defaultJsonParser, async (req, res) => {
   try {
     const stories = await storage.getPendingStories();
     res.json(stories);
@@ -59,11 +45,37 @@ router.get('/stories/pending', async (req, res) => {
   }
 });
 
-// Submit a new story
-router.post('/stories', upload.array('images', 5), validateBody(InsertStorySchema), async (req, res) => {
+// Submit a new story - with increased body limit for images
+router.post('/stories', express.json({ limit: '45mb' }), validateBody(InsertStorySchema), async (req, res) => {
   try {
     const storyData = req.body;
-    const files = req.files as Express.Multer.File[];
+    
+    // Validate image constraints
+    if (storyData.images && storyData.images.length > 5) {
+      return res.status(400).json({ 
+        error: 'Maximum 5 images allowed per story' 
+      });
+    }
+    
+    // Check data URL sizes (DoS protection - allow up to ~6.5MB base64 per image)
+    if (storyData.images) {
+      for (const imageUrl of storyData.images) {
+        if (typeof imageUrl === 'string') {
+          // Check for valid data URL format
+          if (!imageUrl.startsWith('data:image/')) {
+            return res.status(400).json({ 
+              error: 'Only image data URLs are allowed' 
+            });
+          }
+          // Check size (~6.5MB base64 = ~5MB original)
+          if (imageUrl.length > 6.5 * 1024 * 1024) {
+            return res.status(400).json({ 
+              error: 'Individual image size too large. Please use images under 5MB.' 
+            });
+          }
+        }
+      }
+    }
     
     // Verify user location against crisis location
     const isLocationValid = await storage.isLocationWithinCrisis(
@@ -78,20 +90,9 @@ router.post('/stories', upload.array('images', 5), validateBody(InsertStorySchem
       });
     }
 
-    // Process uploaded images (in a real app, you'd upload to cloud storage)
-    const imageUrls: string[] = [];
-    if (files && files.length > 0) {
-      for (const file of files) {
-        // Mock image processing - in real app, upload to cloud storage
-        const imageUrl = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
-        imageUrls.push(imageUrl);
-      }
-    }
-
     // Create story with location verification
     const story = await storage.createStory({
       ...storyData,
-      images: imageUrls,
       isLocationVerified: isLocationValid,
       submitterIP: req.ip,
       submitterUserAgent: req.get('User-Agent'),
@@ -105,7 +106,7 @@ router.post('/stories', upload.array('images', 5), validateBody(InsertStorySchem
 });
 
 // Moderate a story
-router.post('/stories/:storyId/moderate', validateBody(ModerationActionSchema), async (req, res) => {
+router.post('/stories/:storyId/moderate', defaultJsonParser, validateBody(ModerationActionSchema), async (req, res) => {
   try {
     const { storyId } = req.params;
     const moderationData = { ...req.body, storyId };
@@ -119,7 +120,7 @@ router.post('/stories/:storyId/moderate', validateBody(ModerationActionSchema), 
 });
 
 // Like a story
-router.post('/stories/:storyId/like', async (req, res) => {
+router.post('/stories/:storyId/like', defaultJsonParser, async (req, res) => {
   try {
     const { storyId } = req.params;
     const story = await storage.likeStory(storyId);
@@ -131,7 +132,7 @@ router.post('/stories/:storyId/like', async (req, res) => {
 });
 
 // Verify user location against crisis
-router.post('/location/verify', validateBody(LocationVerificationSchema), async (req, res) => {
+router.post('/location/verify', defaultJsonParser, validateBody(LocationVerificationSchema), async (req, res) => {
   try {
     const { userLat, userLng, crisisLat, crisisLng, maxDistanceKm = 50 } = req.body;
     
@@ -160,7 +161,7 @@ router.post('/location/verify', validateBody(LocationVerificationSchema), async 
 });
 
 // Get all active crises
-router.get('/crises', async (req, res) => {
+router.get('/crises', defaultJsonParser, async (req, res) => {
   try {
     const crises = await storage.getAllActiveCrises();
     res.json(crises);
@@ -170,7 +171,7 @@ router.get('/crises', async (req, res) => {
 });
 
 // Get specific crisis
-router.get('/crises/:crisisId', async (req, res) => {
+router.get('/crises/:crisisId', defaultJsonParser, async (req, res) => {
   try {
     const { crisisId } = req.params;
     const crisis = await storage.getCrisisById(crisisId);
