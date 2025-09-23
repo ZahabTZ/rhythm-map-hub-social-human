@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { onAuthStateChange, signInWithGoogle, signOutUser, initializeGoogleAuth, getCurrentToken } from '@/lib/firebase';
+import { apiRequest } from '@/lib/queryClient';
 import type { User } from '../../shared/schema';
 
 interface GoogleUser {
@@ -31,17 +32,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchUserData = async (googleUser: GoogleUser): Promise<User | null> => {
     try {
       const token = getCurrentToken();
-      const response = await fetch('/api/auth/user', {
+      const userData = await apiRequest('/api/auth/user', {
+        method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
         },
       });
       
-      if (response.ok) {
-        return await response.json();
-      }
-      return null;
+      return userData;
     } catch (error) {
       console.error('Error fetching user data:', error);
       return null;

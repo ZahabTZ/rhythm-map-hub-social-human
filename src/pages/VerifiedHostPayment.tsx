@@ -33,7 +33,7 @@ const PaymentForm = () => {
     const { error } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        return_url: `${window.location.origin}/profile?payment=success`,
+        return_url: `${window.location.origin}/?payment=success`,
       },
     });
 
@@ -77,7 +77,10 @@ export default function VerifiedHostPayment() {
     if (!user) return;
 
     // Create PaymentIntent for verified host fee
-    apiRequest("POST", "/api/create-verified-host-payment", { userId: user.id })
+    apiRequest("/api/create-verified-host-payment", {
+      method: "POST",
+      body: JSON.stringify({}),
+    })
       .then((data) => {
         setClientSecret(data.clientSecret);
         setIsLoading(false);

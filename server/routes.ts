@@ -10,6 +10,7 @@ import {
   InsertEventSchema
 } from '../shared/schema';
 import { storage } from './storage';
+import { requireAuth, optionalAuth } from './auth';
 
 // Initialize Stripe
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -216,26 +217,10 @@ router.get('/crises/:crisisId', defaultJsonParser, async (req, res) => {
 });
 
 // Authentication routes
-router.post('/auth/user', defaultJsonParser, async (req, res) => {
+router.get('/auth/user', requireAuth, async (req: any, res) => {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'No token provided' });
-    }
-
-    const token = authHeader.substring(7);
-    
-    // Decode Google JWT token (simplified - in production use proper JWT verification)
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    const googleUser = {
-      id: payload.sub,
-      email: payload.email,
-      name: payload.name,
-      picture: payload.picture,
-    };
-
-    const user = await storage.createOrUpdateUser(googleUser);
-    res.json(user);
+    // User is already attached to req by requireAuth middleware
+    res.json(req.user);
   } catch (error) {
     console.error('Auth error:', error);
     res.status(500).json({ error: 'Authentication failed' });
@@ -253,11 +238,18 @@ router.get('/communities', defaultJsonParser, async (req, res) => {
   }
 });
 
-router.post('/communities', defaultJsonParser, validateBody(InsertCommunitySchema.extend({ 
-  createdBy: z.string() 
-})), async (req, res) => {
+router.post('/communities', requireAuth, defaultJsonParser, validateBody(InsertCommunitySchema), async (req: any, res) => {
   try {
-    const community = await storage.createCommunity(req.body);
+    // Check if user is verified host
+    const user = req.user;
+    if (!user.isVerifiedHost || (user.verifiedHostExpiresAt && new Date(user.verifiedHostExpiresAt) <= new Date())) {
+      return res.status(403).json({ error: 'Verified host status required' });
+    }
+
+    const community = await storage.createCommunity({
+      ...req.body,
+      createdBy: user.id, // Set server-side from authenticated user
+    });
     res.status(201).json(community);
   } catch (error) {
     console.error('Error creating community:', error);
@@ -351,11 +343,18 @@ router.get('/events', defaultJsonParser, async (req, res) => {
   }
 });
 
-router.post('/events', defaultJsonParser, validateBody(InsertEventSchema.extend({ 
-  createdBy: z.string() 
-})), async (req, res) => {
+router.post('/events', requireAuth, defaultJsonParser, validateBody(InsertEventSchema), async (req: any, res) => {
   try {
-    const event = await storage.createEvent(req.body);
+    // Check if user is verified host
+    const user = req.user;
+    if (!user.isVerifiedHost || (user.verifiedHostExpiresAt && new Date(user.verifiedHostExpiresAt) <= new Date())) {
+      return res.status(403).json({ error: 'Verified host status required' });
+    }
+
+    const event = await storage.createEvent({
+      ...req.body,
+      createdBy: user.id, // Set server-side from authenticated user
+    });
     res.status(201).json(event);
   } catch (error) {
     console.error('Error creating event:', error);
@@ -435,27 +434,23 @@ router.get('/users/:userId/events', defaultJsonParser, async (req, res) => {
 });
 
 // Payment routes for verified host subscription
-router.post('/create-verified-host-payment', defaultJsonParser, async (req, res) => {
+router.post('/create-verified-host-payment', requireAuth, defaultJsonParser, async (req: any, res) => {
   try {
-    const { userId } = req.body;
-    
-    if (!userId) {
-      return res.status(400).json({ error: 'User ID required' });
-    }
+    const user = req.user;
     
     // Create payment intent for annual verified host fee ($50)
     const paymentIntent = await stripe.paymentIntents.create({
       amount: 5000, // $50 in cents
       currency: 'usd',
       metadata: {
-        userId,
+        userId: user.id,
         type: 'verified_host_annual_fee',
       },
     });
     
     // Store payment in our system
     await storage.createPayment({
-      userId,
+      userId: user.id, // Use authenticated user ID
       stripePaymentIntentId: paymentIntent.id,
       amount: 50.00,
       currency: 'usd',
