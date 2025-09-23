@@ -1,10 +1,17 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User as FirebaseUser } from 'firebase/auth';
-import { onAuthStateChange, signInWithGoogle, signOutUser, handleRedirect } from '@/lib/firebase';
+import { onAuthStateChange, signInWithGoogle, signOutUser, initializeGoogleAuth, getCurrentToken } from '@/lib/firebase';
 import type { User } from '../../shared/schema';
 
+interface GoogleUser {
+  id: string;
+  email: string;
+  name: string;
+  picture?: string;
+  googleId: string;
+}
+
 interface AuthContextType {
-  firebaseUser: FirebaseUser | null;
+  googleUser: GoogleUser | null;
   user: User | null;
   loading: boolean;
   isVerifiedHost: boolean;
@@ -16,17 +23,18 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
+  const [googleUser, setGoogleUser] = useState<GoogleUser | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Fetch user data from our backend
-  const fetchUserData = async (firebaseUser: FirebaseUser): Promise<User | null> => {
+  const fetchUserData = async (googleUser: GoogleUser): Promise<User | null> => {
     try {
-      const token = await firebaseUser.getIdToken();
+      const token = getCurrentToken();
       const response = await fetch('/api/auth/user', {
         headers: {
           'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
       });
       
@@ -41,38 +49,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const refreshUser = async () => {
-    if (firebaseUser) {
-      const userData = await fetchUserData(firebaseUser);
+    if (googleUser) {
+      const userData = await fetchUserData(googleUser);
       setUser(userData);
     }
   };
 
   useEffect(() => {
-    // Handle redirect result on page load
-    handleRedirect().then((result) => {
-      if (result?.user) {
-        // Successfully signed in via redirect
-        console.log('Redirect sign-in successful');
-      }
-    }).catch((error) => {
-      console.error('Redirect sign-in error:', error);
+    let isMounted = true;
+
+    // Initialize Google Auth
+    initializeGoogleAuth().catch((error) => {
+      console.error('Failed to initialize Google Auth:', error);
     });
 
     // Listen for auth state changes
-    const unsubscribe = onAuthStateChange(async (firebaseUser) => {
-      setFirebaseUser(firebaseUser);
+    const unsubscribe = onAuthStateChange(async (googleUser) => {
+      if (!isMounted) return;
       
-      if (firebaseUser) {
-        const userData = await fetchUserData(firebaseUser);
-        setUser(userData);
+      setGoogleUser(googleUser);
+      
+      if (googleUser) {
+        const userData = await fetchUserData(googleUser);
+        if (isMounted) {
+          setUser(userData);
+        }
       } else {
-        setUser(null);
+        if (isMounted) {
+          setUser(null);
+        }
       }
       
-      setLoading(false);
+      if (isMounted) {
+        setLoading(false);
+      }
     });
 
-    return unsubscribe;
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, []);
 
   const signIn = () => {
@@ -80,9 +96,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    await signOutUser();
+    signOutUser();
     setUser(null);
-    setFirebaseUser(null);
+    setGoogleUser(null);
   };
 
   const isVerifiedHost = user?.isVerifiedHost && 
@@ -90,7 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     new Date(user.verifiedHostExpiresAt) > new Date();
 
   const value = {
-    firebaseUser,
+    googleUser,
     user,
     loading,
     isVerifiedHost,

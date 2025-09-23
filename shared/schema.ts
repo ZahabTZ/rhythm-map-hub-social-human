@@ -171,7 +171,7 @@ export const PaymentSchema = z.object({
   id: z.string(),
   userId: z.string(),
   stripePaymentIntentId: z.string(),
-  amount: z.number(), // Amount in cents
+  amount: z.number(), // Amount in dollars
   currency: z.string().default('usd'),
   status: z.enum(['pending', 'succeeded', 'failed']),
   description: z.string(),
