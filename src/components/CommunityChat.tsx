@@ -159,22 +159,36 @@ const CommunityChat: React.FC<CommunityChatProps> = ({ community, onClose }) => 
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">Global</span>
-              <Toggle
-                pressed={isLocalMode}
-                onPressedChange={setIsLocalMode}
-                aria-label="Toggle local mode"
-                className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground h-6 w-6"
-                data-testid="toggle-local-mode"
+            <div className="flex items-center bg-muted/50 rounded-full p-1">
+              <button
+                onClick={() => setIsLocalMode(false)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 flex items-center gap-1.5 ${
+                  !isLocalMode 
+                    ? 'bg-background text-foreground shadow-sm' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+                data-testid="button-global-mode"
               >
-                {isLocalMode ? <User className="h-3 w-3" /> : <Globe className="h-3 w-3" />}
-              </Toggle>
-              <span className="text-xs text-muted-foreground">Local</span>
+                <Globe className="h-3 w-3" />
+                Global
+              </button>
+              <button
+                onClick={() => setIsLocalMode(true)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 flex items-center gap-1.5 ${
+                  isLocalMode 
+                    ? 'bg-background text-foreground shadow-sm' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+                data-testid="button-local-mode"
+              >
+                <User className="h-3 w-3" />
+                Local
+              </button>
             </div>
-            <Badge variant="outline" className="text-xs">
+            
+            {/* <Badge variant="outline" className="text-xs">
               {community.category}
-            </Badge>
+            </Badge> */}
             <Button variant="ghost" size="sm">
               <Settings className="h-4 w-4" />
             </Button>

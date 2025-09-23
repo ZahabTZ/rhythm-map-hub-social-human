@@ -32,7 +32,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onFilterChange }) => {
   ];
 
   const communityFilters = [
-    'Neighborhood', 'Social Groups', 'Volunteer', 'Professional', 'Hobby', 'Support Groups'
+    'Decentralized Tech', 'Social Groups', 'Volunteer', 'Professional', 'Hobby', 'Support Groups'
   ];
 
   const handleSearch = () => {
