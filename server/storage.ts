@@ -64,7 +64,8 @@ export interface IStorage {
   // Payment operations
   createPayment(payment: Omit<Payment, 'id'>): Promise<Payment>;
   getPaymentsByUser(userId: string): Promise<Payment[]>;
-  updatePaymentStatus(paymentId: string, status: 'succeeded' | 'failed'): Promise<Payment>;
+  updatePaymentStatus(stripePaymentIntentId: string, status: 'succeeded' | 'failed'): Promise<boolean>;
+  getPaymentByStripeId(stripePaymentIntentId: string): Promise<Payment | null>;
 }
 
 // In-memory storage implementation
@@ -517,16 +518,26 @@ export class MemStorage implements IStorage {
     return Array.from(this.payments.values()).filter(p => p.userId === userId);
   }
 
-  async updatePaymentStatus(paymentIntentId: string, status: 'succeeded' | 'failed'): Promise<Payment> {
+  async updatePaymentStatus(stripePaymentIntentId: string, status: 'succeeded' | 'failed'): Promise<boolean> {
     // Find payment by stripe payment intent ID
-    const payment = Array.from(this.payments.values()).find(p => p.stripePaymentIntentId === paymentIntentId);
+    const payment = Array.from(this.payments.values()).find(p => p.stripePaymentIntentId === stripePaymentIntentId);
     if (!payment) {
       throw new Error('Payment not found');
     }
 
+    // Check if status is already the target status (idempotency)
+    if (payment.status === status) {
+      return false; // No update needed
+    }
+
     payment.status = status;
     this.payments.set(payment.id, payment);
-    return payment;
+    return true; // Status was updated
+  }
+
+  async getPaymentByStripeId(stripePaymentIntentId: string): Promise<Payment | null> {
+    const payment = Array.from(this.payments.values()).find(p => p.stripePaymentIntentId === stripePaymentIntentId);
+    return payment || null;
   }
 }
 

@@ -23,10 +23,15 @@ const router = express.Router();
 // JSON parsing middleware for most routes (small limit)
 const defaultJsonParser = express.json({ limit: '1mb' });
 
-// Simple moderator authentication middleware
+// Moderator authentication middleware with environment variable
 const checkModeratorAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
   const moderatorKey = req.headers['x-moderator-key'];
-  const validKey = 'crisis-moderator-key'; // In production, use environment variable
+  const validKey = process.env.MODERATOR_SECRET_KEY;
+  
+  if (!validKey) {
+    console.error('MODERATOR_SECRET_KEY not configured');
+    return res.status(500).json({ error: 'Server configuration error' });
+  }
   
   if (moderatorKey === validKey) {
     next();
@@ -468,32 +473,70 @@ router.post('/create-verified-host-payment', requireAuth, defaultJsonParser, asy
 // Webhook to handle Stripe payment confirmations
 router.post('/stripe-webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  if (!endpointSecret) {
+    console.error('STRIPE_WEBHOOK_SECRET not configured');
+    return res.status(500).send('Webhook secret not configured');
+  }
+
+  if (!sig) {
+    console.error('Missing stripe-signature header');
+    return res.status(400).send('Missing stripe-signature header');
+  }
+
   let event;
   
   try {
-    // Note: In production, you should set STRIPE_WEBHOOK_SECRET
-    event = stripe.webhooks.constructEvent(req.body, sig!, process.env.STRIPE_WEBHOOK_SECRET || 'whsec_test');
+    event = stripe.webhooks.constructEvent(req.body, sig as string, endpointSecret);
   } catch (err: any) {
-    console.log(`Webhook signature verification failed.`, err.message);
+    console.error(`Webhook signature verification failed:`, err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
   
-  if (event.type === 'payment_intent.succeeded') {
-    const paymentIntent = event.data.object as Stripe.PaymentIntent;
-    const { userId, type } = paymentIntent.metadata;
-    
-    if (type === 'verified_host_annual_fee') {
-      // Update payment status
-      await storage.updatePaymentStatus(paymentIntent.id, 'succeeded');
+  try {
+    if (event.type === 'payment_intent.succeeded') {
+      const paymentIntent = event.data.object as Stripe.PaymentIntent;
+      const { userId, type } = paymentIntent.metadata;
       
-      // Grant verified host status for one year
-      const expiresAt = new Date();
-      expiresAt.setFullYear(expiresAt.getFullYear() + 1);
-      
-      await storage.updateUserVerifiedHostStatus(userId, true, expiresAt.toISOString());
-      
-      console.log(`User ${userId} is now a verified host until ${expiresAt.toISOString()}`);
+      if (type === 'verified_host_annual_fee' && userId) {
+        // Check if this payment was already processed (idempotency)
+        const existingPayment = await storage.getPaymentByStripeId(paymentIntent.id);
+        if (existingPayment && existingPayment.status === 'succeeded') {
+          console.log(`Payment ${paymentIntent.id} already processed, skipping`);
+          return res.json({ received: true });
+        }
+
+        // Validate payment amount matches expected value ($50 = 5000 cents)
+        if (paymentIntent.amount !== 5000 || paymentIntent.currency !== 'usd') {
+          console.error(`Invalid payment amount/currency: ${paymentIntent.amount} ${paymentIntent.currency}`);
+          return res.status(400).send('Invalid payment amount');
+        }
+        
+        // Update payment status atomically - only proceed if status changed
+        const wasUpdated = await storage.updatePaymentStatus(paymentIntent.id, 'succeeded');
+        
+        if (wasUpdated) {
+          // Grant verified host status for one year from now
+          const expiresAt = new Date();
+          expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+          
+          await storage.updateUserVerifiedHostStatus(userId, true, expiresAt.toISOString());
+          console.log(`Granted verified host status to user ${userId} until ${expiresAt.toISOString()}`);
+        } else {
+          console.log(`Payment ${paymentIntent.id} was already processed by another request`);
+        }
+      } else {
+        console.log('Payment succeeded but missing userId or not a verified host payment');
+      }
+    } else if (event.type === 'payment_intent.payment_failed') {
+      const failedPayment = event.data.object as Stripe.PaymentIntent;
+      console.log('Payment failed:', failedPayment.id);
+      await storage.updatePaymentStatus(failedPayment.id, 'failed');
     }
+  } catch (error) {
+    console.error('Error processing webhook:', error);
+    return res.status(500).send('Error processing webhook');
   }
   
   res.json({ received: true });
