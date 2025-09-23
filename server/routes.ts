@@ -8,6 +8,18 @@ const router = express.Router();
 // JSON parsing middleware for most routes (small limit)
 const defaultJsonParser = express.json({ limit: '1mb' });
 
+// Simple moderator authentication middleware
+const checkModeratorAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const moderatorKey = req.headers['x-moderator-key'];
+  const validKey = 'crisis-moderator-key'; // In production, use environment variable
+  
+  if (moderatorKey === validKey) {
+    next();
+  } else {
+    res.status(403).json({ error: 'Unauthorized: Invalid moderator key' });
+  }
+};
+
 // Middleware to validate request body
 const validateBody = (schema: z.ZodSchema) => {
   return (req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -36,7 +48,7 @@ router.get('/stories/crisis/:crisisId', defaultJsonParser, async (req, res) => {
 });
 
 // Get pending stories (for moderation)
-router.get('/stories/pending', defaultJsonParser, async (req, res) => {
+router.get('/stories/pending', defaultJsonParser, checkModeratorAuth, async (req, res) => {
   try {
     const stories = await storage.getPendingStories();
     res.json(stories);
@@ -106,10 +118,13 @@ router.post('/stories', express.json({ limit: '45mb' }), validateBody(InsertStor
 });
 
 // Moderate a story
-router.post('/stories/:storyId/moderate', defaultJsonParser, validateBody(ModerationActionSchema), async (req, res) => {
+router.post('/stories/:storyId/moderate', defaultJsonParser, checkModeratorAuth, (req, res, next) => {
+  // Inject storyId from params into body before validation
+  req.body = { ...req.body, storyId: req.params.storyId };
+  next();
+}, validateBody(ModerationActionSchema), async (req, res) => {
   try {
-    const { storyId } = req.params;
-    const moderationData = { ...req.body, storyId };
+    const moderationData = req.body;
     
     const story = await storage.updateStoryModerationStatus(moderationData);
     res.json(story);

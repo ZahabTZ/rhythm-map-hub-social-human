@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import MapView from '@/components/MapView';
 import SearchBar from '@/components/SearchBar';
 import ResultsSidebar from '@/components/ResultsSidebar';
 import CommunityChat from '@/components/CommunityChat';
+import { ModerationStatus } from '@/components/ModerationStatus';
 
 const Index = () => {
+  const navigate = useNavigate();
   const [searchResults, setSearchResults] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(null);
@@ -41,6 +44,18 @@ const Index = () => {
     setSelectedCommunity(null);
   };
 
+  // Admin access: Ctrl+Shift+M to access moderation dashboard
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.shiftKey && event.key === 'M') {
+        navigate('/moderation');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [navigate]);
+
   return (
     <div className="relative h-screen overflow-hidden bg-background">
       {/* Full-screen Map */}
@@ -67,6 +82,9 @@ const Index = () => {
           onClose={handleChatClose}
         />
       )}
+
+      {/* Moderation Status - Shows when stories need review */}
+      <ModerationStatus />
     </div>
   );
 };
