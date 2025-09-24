@@ -184,13 +184,10 @@ const Crisis = () => {
       {/* Content */}
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 h-auto">
+          <TabsList className="grid w-full grid-cols-3 h-auto">
             <TabsTrigger value="overview" className="text-xs md:text-sm py-2">Overview</TabsTrigger>
-            <TabsTrigger value="stats" className="text-xs md:text-sm py-2">Statistics</TabsTrigger>
-            <TabsTrigger value="community" className="text-xs md:text-sm py-2">Community</TabsTrigger>
-            <TabsTrigger value="news" className="text-xs md:text-sm py-2">News</TabsTrigger>
-            <TabsTrigger value="events" className="text-xs md:text-sm py-2">Events</TabsTrigger>
             <TabsTrigger value="stories" className="text-xs md:text-sm py-2">Stories</TabsTrigger>
+            <TabsTrigger value="get-involved" className="text-xs md:text-sm py-2">Get Involved</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -199,159 +196,94 @@ const Crisis = () => {
                 <CardTitle>Crisis Overview</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground leading-relaxed">
+                <p className="text-muted-foreground leading-relaxed mb-8">
                   {crisisData.description}
                 </p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">{crisisData.statistics.displaced.toLocaleString()}</div>
-                    <div className="text-sm text-muted-foreground">Displaced</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">{crisisData.statistics.needingAid.toLocaleString()}</div>
-                    <div className="text-sm text-muted-foreground">Need Aid</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">{crisisData.statistics.childrenAffected.toLocaleString()}</div>
-                    <div className="text-sm text-muted-foreground">Children</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">{crisisData.statistics.partnersOnGround}</div>
-                    <div className="text-sm text-muted-foreground">Partners</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="stats" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5" />
-                    Population Impact
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span>Total Displaced</span>
-                      <span className="font-semibold">{crisisData.statistics.displaced.toLocaleString()}</span>
+                
+                {/* Statistics Section */}
+                <div className="space-y-6">
+                  <h3 className="text-xl font-semibold">Statistics</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-primary">{crisisData.statistics.displaced.toLocaleString()}</div>
+                      <div className="text-sm text-muted-foreground">Displaced</div>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Needing Aid</span>
-                      <span className="font-semibold">{crisisData.statistics.needingAid.toLocaleString()}</span>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-primary">{crisisData.statistics.needingAid.toLocaleString()}</div>
+                      <div className="text-sm text-muted-foreground">Need Aid</div>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Children Affected</span>
-                      <span className="font-semibold">{crisisData.statistics.childrenAffected.toLocaleString()}</span>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-primary">{crisisData.statistics.childrenAffected.toLocaleString()}</div>
+                      <div className="text-sm text-muted-foreground">Children</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-primary">{crisisData.statistics.partnersOnGround}</div>
+                      <div className="text-sm text-muted-foreground">Partners</div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5" />
-                    Response Metrics
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span>Partners on Ground</span>
-                      <span className="font-semibold">{crisisData.statistics.partnersOnGround}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Aid Coverage</span>
-                      <span className="font-semibold">72%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Funding Received</span>
-                      <span className="font-semibold">$127M</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="community" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Active Community Members</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {communityMembers.map((member) => (
-                    <div key={member.id} className="flex items-center gap-3 p-3 rounded-lg border">
-                      <div className="relative">
-                        <Avatar>
-                          <AvatarImage src={member.avatar} />
-                          <AvatarFallback>{member.avatar}</AvatarFallback>
-                        </Avatar>
-                        {member.online && (
-                          <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-background"></div>
-                        )}
-                      </div>
-                      <div>
-                        <div className="font-medium">{member.name}</div>
-                        <div className="text-sm text-muted-foreground">{member.role}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <Button className="w-full mt-4">
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  Join Community Chat
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="news" className="space-y-6">
-            <div className="space-y-4">
-              {newsItems.map((item) => (
-                <Card key={item.id}>
-                  <CardContent className="p-6">
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-semibold text-lg">{item.title}</h3>
-                      <span className="text-sm text-muted-foreground">{item.date}</span>
-                    </div>
-                    <p className="text-muted-foreground">{item.summary}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="events" className="space-y-6">
-            <div className="space-y-4">
-              {events.map((event) => (
-                <Card key={event.id}>
-                  <CardContent className="p-6">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h3 className="font-semibold text-lg">{event.title}</h3>
-                        <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="h-4 w-4" />
-                            {event.date} at {event.time}
-                          </span>
-                          <span>{event.location}</span>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Users className="h-5 w-5" />
+                          Population Impact
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span>Total Displaced</span>
+                            <span className="font-semibold">{crisisData.statistics.displaced.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Needing Aid</span>
+                            <span className="font-semibold">{crisisData.statistics.needingAid.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Children Affected</span>
+                            <span className="font-semibold">{crisisData.statistics.childrenAffected.toLocaleString()}</span>
+                          </div>
                         </div>
-                      </div>
-                      <Badge variant="outline">{event.type}</Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <TrendingUp className="h-5 w-5" />
+                          Response Metrics
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span>Partners on Ground</span>
+                            <span className="font-semibold">{crisisData.statistics.partnersOnGround}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Aid Coverage</span>
+                            <span className="font-semibold">72%</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Funding Received</span>
+                            <span className="font-semibold">$127M</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="stories" className="space-y-6">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold mb-2">Archive Your Stories</h2>
+              <p className="text-lg text-muted-foreground">Get visibility, forever your pains won't go unheard</p>
+            </div>
+            
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold">Community Stories</h3>
               <Button
@@ -387,6 +319,80 @@ const Crisis = () => {
                       </div>
                     </div>
                     <div className="text-xs text-muted-foreground mt-1">{story.date}</div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="get-involved" className="space-y-8">
+            {/* Community Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Active Community Members</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {communityMembers.map((member) => (
+                    <div key={member.id} className="flex items-center gap-3 p-3 rounded-lg border">
+                      <div className="relative">
+                        <Avatar>
+                          <AvatarImage src={member.avatar} />
+                          <AvatarFallback>{member.avatar}</AvatarFallback>
+                        </Avatar>
+                        {member.online && (
+                          <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-background"></div>
+                        )}
+                      </div>
+                      <div>
+                        <div className="font-medium">{member.name}</div>
+                        <div className="text-sm text-muted-foreground">{member.role}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <Button className="w-full mt-4">
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Join Community Chat
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* News Section */}
+            <div className="space-y-4">
+              <h3 className="text-xl font-semibold">Latest News</h3>
+              {newsItems.map((item) => (
+                <Card key={item.id}>
+                  <CardContent className="p-6">
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-semibold text-lg">{item.title}</h4>
+                      <span className="text-sm text-muted-foreground">{item.date}</span>
+                    </div>
+                    <p className="text-muted-foreground">{item.summary}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Events Section */}
+            <div className="space-y-4">
+              <h3 className="text-xl font-semibold">Upcoming Events</h3>
+              {events.map((event) => (
+                <Card key={event.id}>
+                  <CardContent className="p-6">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <h4 className="font-semibold text-lg">{event.title}</h4>
+                        <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4" />
+                            {event.date} at {event.time}
+                          </span>
+                          <span>{event.location}</span>
+                        </div>
+                      </div>
+                      <Badge variant="outline">{event.type}</Badge>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
