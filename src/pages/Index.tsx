@@ -5,6 +5,7 @@ import MapView from '@/components/MapView';
 import SearchBar from '@/components/SearchBar';
 import ResultsSidebar from '@/components/ResultsSidebar';
 import CommunityChat from '@/components/CommunityChat';
+import SupportCard from '@/components/SupportCard';
 import { ModerationStatus } from '@/components/ModerationStatus';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -27,6 +28,7 @@ const Index = () => {
   const [selectedCommunity, setSelectedCommunity] = useState(null);
   const [chatOpen, setChatOpen] = useState(false);
   const [titleCardVisible, setTitleCardVisible] = useState(true);
+  const [supportCardVisible, setSupportCardVisible] = useState(true);
 
   const handleSearch = (query: string) => {
     // TODO: Implement actual search logic
@@ -202,6 +204,13 @@ const Index = () => {
           community={selectedCommunity}
           onClose={handleChatClose}
         />
+      )}
+
+      {/* Support Card - Bottom Left */}
+      {supportCardVisible && (
+        <div className="absolute bottom-6 left-6 z-10">
+          <SupportCard onClose={() => setSupportCardVisible(false)} />
+        </div>
       )}
 
       {/* Moderation Status - Shows when stories need review */}
