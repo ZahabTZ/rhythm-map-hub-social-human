@@ -142,6 +142,21 @@ const Index = () => {
         )}
       </div>
       
+      {/* Main Title Banner */}
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 text-center pointer-events-none">
+        <div className="bg-background/90 backdrop-blur-sm rounded-lg border shadow-2xl p-8 max-w-2xl mx-auto">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            Get involved in the conversation.
+          </h1>
+          <p className="text-lg md:text-xl text-muted-foreground mb-2">
+            Locally and globally. Let's get organized.
+          </p>
+          <p className="text-base md:text-lg text-primary font-medium">
+            It's what the world needs, it's what the devious powers that be are specifically against.
+          </p>
+        </div>
+      </div>
+      
       {/* Search Bar */}
       <SearchBar 
         onSearch={handleSearch}
