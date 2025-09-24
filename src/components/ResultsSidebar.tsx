@@ -10,7 +10,9 @@ import {
   Mail,
   Phone,
   Instagram,
-  X
+  X,
+  Globe,
+  User
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -32,6 +34,7 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
   onCommunityClick
 }) => {
   const [activeTab, setActiveTab] = useState<'all' | 'news' | 'communities' | 'events'>('all');
+  const [isLocalMode, setIsLocalMode] = useState(true);
 
   // Mock data for demonstration
   const mockResults = [
@@ -127,6 +130,36 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
             </Button>
           </div>
           
+          {/* Local/Global Filter Toggle */}
+          <div className="flex items-center justify-center mb-3">
+            <div className="flex items-center bg-muted/50 rounded-full p-1">
+              <button
+                onClick={() => setIsLocalMode(false)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 flex items-center gap-1.5 ${
+                  !isLocalMode 
+                    ? 'bg-background text-foreground shadow-sm' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+                data-testid="button-global-mode-sidebar"
+              >
+                <Globe className="h-3 w-3" />
+                Global
+              </button>
+              <button
+                onClick={() => setIsLocalMode(true)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 flex items-center gap-1.5 ${
+                  isLocalMode 
+                    ? 'bg-background text-foreground shadow-sm' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+                data-testid="button-local-mode-sidebar"
+              >
+                <User className="h-3 w-3" />
+                Local
+              </button>
+            </div>
+          </div>
+
           {/* Tab Navigation */}
           <div className="flex gap-1">
             {[
