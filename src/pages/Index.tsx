@@ -16,7 +16,7 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { User, LogOut, Users, Plus, Crown } from 'lucide-react';
+import { User, LogOut, Users, Plus, Crown, X } from 'lucide-react';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -26,6 +26,7 @@ const Index = () => {
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [selectedCommunity, setSelectedCommunity] = useState(null);
   const [chatOpen, setChatOpen] = useState(false);
+  const [titleCardVisible, setTitleCardVisible] = useState(true);
 
   const handleSearch = (query: string) => {
     // TODO: Implement actual search logic
@@ -57,6 +58,16 @@ const Index = () => {
     setSelectedCommunity(null);
   };
 
+  const dismissTitleCard = () => {
+    setTitleCardVisible(false);
+  };
+
+  const handleContainerClick = () => {
+    if (titleCardVisible) {
+      dismissTitleCard();
+    }
+  };
+
   // Admin access: Ctrl+Shift+M to access moderation dashboard
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -70,7 +81,7 @@ const Index = () => {
   }, [navigate]);
 
   return (
-    <div className="relative h-screen overflow-hidden bg-background">
+    <div className="relative h-screen overflow-hidden bg-background" onClick={handleContainerClick}>
       {/* Full-screen Map */}
       <MapView onLocationSelect={handleLocationSelect} />
       
@@ -143,19 +154,33 @@ const Index = () => {
       </div>
       
       {/* Main Title Banner */}
-      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 z-10 text-center pointer-events-none">
-        <div className="bg-background/90 backdrop-blur-sm rounded-lg border shadow-2xl p-8 max-w-2xl mx-auto">
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Get involved in the conversation.
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground mb-2">
-            Locally and globally. Let's get organized.
-          </p>
-          <p className="text-base md:text-lg text-primary font-medium">
-            It's what the world needs, it's what the devious powers that be are specifically against.
-          </p>
+      {titleCardVisible && (
+        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 z-10 text-center">
+          <div 
+            className="bg-background/90 backdrop-blur-sm rounded-lg border shadow-2xl p-8 max-w-2xl mx-auto relative" 
+            onClick={(e) => e.stopPropagation()}
+            data-testid="title-banner"
+          >
+            <button
+              onClick={dismissTitleCard}
+              className="absolute top-4 right-4 p-1 rounded-full hover:bg-muted transition-colors"
+              aria-label="Dismiss banner"
+              data-testid="button-dismiss-title"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Get involved in the conversation.
+            </h1>
+            <p className="text-lg md:text-xl text-muted-foreground mb-2">
+              Locally and globally. Let's get organized.
+            </p>
+            <p className="text-base md:text-lg text-primary font-medium">
+              It's what the world needs, it's what the devious powers that be are specifically against.
+            </p>
+          </div>
         </div>
-      </div>
+      )}
       
       {/* Search Bar */}
       <SearchBar 
