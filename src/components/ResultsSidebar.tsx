@@ -35,24 +35,11 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
   onCommunityClick
 }) => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'all' | 'news' | 'communities' | 'events'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'communities' | 'events'>('all');
   const [isLocalMode, setIsLocalMode] = useState(true);
 
   // Mock data for demonstration
   const mockResults = [
-    {
-      id: '1',
-      type: 'news',
-      title: 'New BART Extension Opens in Mission Bay',
-      source: 'SF Chronicle',
-      location: 'Mission Bay, San Francisco',
-      category: 'Transportation',
-      publishedAt: '2024-08-10T09:00:00Z',
-      image: '/api/placeholder/80/80',
-      author: 'Maria Garcia',
-      verified: true,
-      description: 'The long-awaited BART extension to Mission Bay officially opens today, connecting the neighborhood to downtown.'
-    },
     {
       id: '2',
       type: 'community',
@@ -80,19 +67,6 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
       categories: ['Food', 'Culture', 'Shopping']
     },
     {
-      id: '4',
-      type: 'news',
-      title: 'Golden Gate Park Restores Native Plant Garden',
-      source: 'Hoodline',
-      location: 'Golden Gate Park, San Francisco',
-      category: 'Environment',
-      publishedAt: '2024-08-09T14:30:00Z',
-      image: '/api/placeholder/80/80',
-      author: 'James Chen',
-      verified: false,
-      description: 'A new native plant restoration project aims to bring back indigenous species to the western section of the park.'
-    },
-    {
       id: '5',
       type: 'community',
       name: 'Mission District Food Co-op',
@@ -104,6 +78,19 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
       meetingTime: 'Saturdays 10am-2pm',
       verified: true,
       description: 'Community-owned grocery cooperative focusing on locally sourced and organic foods'
+    },
+    {
+      id: '6',
+      type: 'event',
+      name: 'Golden Gate Park Volunteer Day',
+      venue: 'Golden Gate Park',
+      location: 'Golden Gate Park, San Francisco',
+      date: '2024-08-20',
+      time: '9:00 AM - 2:00 PM',
+      price: 'Free',
+      image: '/api/placeholder/80/80',
+      organizer: 'SF Parks Alliance',
+      categories: ['Volunteer', 'Environment', 'Community']
     }
   ];
 
@@ -113,7 +100,6 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
   const filteredResults = activeTab === 'all' 
     ? dataToUse 
     : dataToUse.filter(result => 
-        activeTab === 'news' ? result.type === 'news' :
         activeTab === 'communities' ? result.type === 'community' :
         activeTab === 'events' ? result.type === 'event' : true
       );
@@ -166,7 +152,6 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
           <div className="flex gap-1">
             {[
               { id: 'all', label: 'All', count: dataToUse.length },
-              { id: 'news', label: 'News', count: dataToUse.filter(r => r.type === 'news').length },
               { id: 'communities', label: 'Communities', count: dataToUse.filter(r => r.type === 'community').length },
               { id: 'events', label: 'Events', count: dataToUse.filter(r => r.type === 'event').length }
             ].map(tab => (
@@ -191,51 +176,6 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
           {filteredResults.map((result) => (
             <Card key={result.id} className="hover:shadow-md transition-shadow">
               <CardContent className="p-4">
-                {result.type === 'news' && (
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-3">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage src={result.image} />
-                        <AvatarFallback className="bg-news/20 text-news">
-                          📰
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold truncate">{result.title}</h3>
-                          {result.verified && (
-                            <Badge variant="secondary" className="bg-news/20 text-news text-xs">
-                              Verified
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-sm font-medium text-news">{result.source}</p>
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <MapPin className="h-3 w-3" />
-                          {result.location}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {new Date(result.publishedAt).toLocaleDateString()} • By {result.author}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex flex-wrap gap-1">
-                      <Badge variant="outline" className="text-xs">
-                        {result.category}
-                      </Badge>
-                    </div>
-                    
-                    <p className="text-sm text-muted-foreground">{result.description}</p>
-                    
-                    <div className="flex gap-2">
-                      <Button size="sm" className="flex-1">
-                        <ExternalLink className="h-3 w-3 mr-1" />
-                        Read Full Article
-                      </Button>
-                    </div>
-                  </div>
-                )}
 
                 {result.type === 'community' && (
                   <div className="space-y-3">
