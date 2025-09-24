@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Users, 
   Music, 
@@ -33,6 +34,7 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
   searchResults = [],
   onCommunityClick
 }) => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'all' | 'news' | 'communities' | 'events'>('all');
   const [isLocalMode, setIsLocalMode] = useState(true);
 
@@ -273,7 +275,19 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
                       <Button 
                         size="sm" 
                         className="flex-1"
-                        onClick={() => onCommunityClick?.(result)}
+                        onClick={() => {
+                          const params = new URLSearchParams({
+                            id: result.id,
+                            name: result.name,
+                            type: result.type_detail,
+                            location: result.location,
+                            category: result.category,
+                            members: result.members?.toString() || '0',
+                            description: result.description || ''
+                          });
+                          navigate(`/community-chat?${params.toString()}`);
+                        }}
+                        data-testid={`button-join-community-${result.id}`}
                       >
                         <Mail className="h-3 w-3 mr-1" />
                         Join Community

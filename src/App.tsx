@@ -10,6 +10,7 @@ import Communities from "./pages/Communities";
 import { Moderation } from "./pages/Moderation";
 import VerifiedHostPayment from "./pages/VerifiedHostPayment";
 import CreateCommunity from "./pages/CreateCommunity";
+import CommunityChat from "./pages/CommunityChat";
 import { queryClient } from "@/lib/queryClient";
 import { AuthProvider } from "./contexts/AuthContext";
 
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/moderation" element={<Moderation />} />
             <Route path="/become-host" element={<VerifiedHostPayment />} />
             <Route path="/create-community" element={<CreateCommunity />} />
+            <Route path="/community-chat" element={<CommunityChat />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
