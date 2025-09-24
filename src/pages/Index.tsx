@@ -143,7 +143,7 @@ const Index = () => {
       </div>
       
       {/* Main Title Banner */}
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 text-center pointer-events-none">
+      <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-10 text-center pointer-events-none">
         <div className="bg-background/90 backdrop-blur-sm rounded-lg border shadow-2xl p-8 max-w-2xl mx-auto">
           <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
             Get involved in the conversation.
