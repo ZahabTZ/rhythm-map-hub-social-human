@@ -6,6 +6,7 @@ import SearchBar from '@/components/SearchBar';
 import ResultsSidebar from '@/components/ResultsSidebar';
 import CommunityChat from '@/components/CommunityChat';
 import SupportCard from '@/components/SupportCard';
+import CrisesSidebar from '@/components/CrisesSidebar';
 import { ModerationStatus } from '@/components/ModerationStatus';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -29,6 +30,7 @@ const Index = () => {
   const [chatOpen, setChatOpen] = useState(false);
   const [titleCardVisible, setTitleCardVisible] = useState(true);
   const [supportCardVisible, setSupportCardVisible] = useState(true);
+  const [crisesSidebarOpen, setCrisesSidebarOpen] = useState(false);
 
   const handleSearch = (query: string) => {
     // TODO: Implement actual search logic
@@ -70,6 +72,10 @@ const Index = () => {
     }
   };
 
+  const handleHumanitarianClick = () => {
+    setCrisesSidebarOpen(true);
+  };
+
   // Admin access: Ctrl+Shift+M to access moderation dashboard
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -85,7 +91,10 @@ const Index = () => {
   return (
     <div className="relative h-screen overflow-hidden bg-background" onClick={handleContainerClick}>
       {/* Full-screen Map */}
-      <MapView onLocationSelect={handleLocationSelect} />
+      <MapView 
+        onLocationSelect={handleLocationSelect}
+        onHumanitarianClick={handleHumanitarianClick}
+      />
       
       {/* Authentication & User Status Bar */}
       <div className="absolute top-6 right-6 z-20 flex items-center gap-3">
@@ -196,6 +205,12 @@ const Index = () => {
         onClose={() => setSidebarOpen(false)}
         searchResults={searchResults}
         onCommunityClick={handleCommunityClick}
+      />
+      
+      {/* Crises Sidebar */}
+      <CrisesSidebar
+        isOpen={crisesSidebarOpen}
+        onClose={() => setCrisesSidebarOpen(false)}
       />
       
       {/* Community Chat */}

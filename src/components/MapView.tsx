@@ -6,9 +6,11 @@ import { Button } from '@/components/ui/button';
 
 interface MapViewProps {
   onLocationSelect?: (location: { lat: number; lng: number; name: string; regionData?: any[] }) => void;
+  onHumanitarianClick?: () => void;
+  humanitarianMode?: boolean;
 }
 
-const MapView: React.FC<MapViewProps> = ({ onLocationSelect }) => {
+const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick, humanitarianMode: externalHumanitarianMode }) => {
   console.log('MapView component rendered');
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -23,6 +25,13 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect }) => {
   useEffect(() => {
     humanitarianModeRef.current = humanitarianMode;
   }, [humanitarianMode]);
+
+  // Sync external humanitarian mode if provided
+  useEffect(() => {
+    if (externalHumanitarianMode !== undefined && externalHumanitarianMode !== humanitarianMode) {
+      setHumanitarianMode(externalHumanitarianMode);
+    }
+  }, [externalHumanitarianMode]);
 
   // Regional local data
   const getRegionData = (region: string) => {
@@ -119,7 +128,14 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect }) => {
 
     // Add click handler for geographical areas (only when not in humanitarian mode)
     map.current.on('click', async (e) => {
-      if (!onLocationSelect || humanitarianModeRef.current) return;
+      // Handle humanitarian mode clicks
+      if (humanitarianModeRef.current) {
+        onHumanitarianClick?.();
+        return;
+      }
+      
+      // Handle normal mode clicks
+      if (!onLocationSelect) return;
       
       const { lng, lat } = e.lngLat;
       
