@@ -13,23 +13,47 @@ const Crisis = () => {
   const navigate = useNavigate();
   const [isStoryFormOpen, setIsStoryFormOpen] = useState(false);
   
-  // Mock crisis data - in real app, this would come from API based on id
-  const crisisData = {
-    id: id || '1',
-    name: 'Eastern Europe Refugee Crisis',
-    severity: 'Critical',
-    affected: 2500000,
-    description: 'Ongoing humanitarian crisis affecting millions of displaced people in Eastern Europe due to conflict. Urgent need for shelter, food, and medical supplies.',
-    image: 'https://images.unsplash.com/photo-1544027993-37dbfe43562a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    location: 'Eastern Europe',
-    lastUpdated: '2024-01-15',
-    statistics: {
-      displaced: 2500000,
-      needingAid: 1800000,
-      childrenAffected: 800000,
-      partnersOnGround: 45
+  // Crisis data based on ID - using accurate data from UN sources
+  const getCrisisData = (crisisId: string) => {
+    if (crisisId === 'gaza-2024') {
+      return {
+        id: crisisId,
+        name: 'Gaza Humanitarian Crisis',
+        severity: 'Critical',
+        affected: 1900000,
+        description: 'Severe humanitarian crisis in Gaza with 90% of the population displaced since October 2023. Critical shortages of food, medical supplies, and shelter. Confirmed famine conditions in Gaza City with widespread acute malnutrition among children.',
+        image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+        location: 'Gaza, Palestine',
+        lastUpdated: '2025-09-25',
+        statistics: {
+          displaced: 1900000,
+          needingAid: 1800000,
+          childrenAffected: 520000,
+          partnersOnGround: 88
+        }
+      };
     }
+    
+    // Default fallback for other crisis IDs
+    return {
+      id: id || '1',
+      name: 'Eastern Europe Refugee Crisis',
+      severity: 'Critical',
+      affected: 2500000,
+      description: 'Ongoing humanitarian crisis affecting millions of displaced people in Eastern Europe due to conflict. Urgent need for shelter, food, and medical supplies.',
+      image: 'https://images.unsplash.com/photo-1544027993-37dbfe43562a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      location: 'Eastern Europe',
+      lastUpdated: '2024-01-15',
+      statistics: {
+        displaced: 2500000,
+        needingAid: 1800000,
+        childrenAffected: 800000,
+        partnersOnGround: 45
+      }
+    };
   };
+
+  const crisisData = getCrisisData(id || '');
 
   const communityMembers = [
     { id: 1, name: 'Sarah Johnson', avatar: 'SJ', role: 'Relief Coordinator', online: true },
@@ -38,53 +62,113 @@ const Crisis = () => {
     { id: 4, name: 'James Liu', avatar: 'JL', role: 'Field Reporter', online: true }
   ];
 
-  const newsItems = [
-    {
-      id: 1,
-      title: 'New aid shipment arrives at border crossing',
-      date: '2024-01-15',
-      summary: 'Critical medical supplies and food provisions distributed to refugee camps.'
-    },
-    {
-      id: 2,
-      title: 'International donors pledge additional $50M in emergency funding',
-      date: '2024-01-14',
-      summary: 'Major breakthrough in securing resources for long-term humanitarian response.'
-    },
-    {
-      id: 3,
-      title: 'Winter shelter program expanded to accommodate 10,000 more families',
-      date: '2024-01-13',
-      summary: 'Urgent winterization efforts underway as temperatures drop below freezing.'
+  const getNewsItems = (crisisId: string) => {
+    if (crisisId === 'gaza-2024') {
+      return [
+        {
+          id: 1,
+          title: 'UN confirms famine conditions in Gaza City',
+          date: '2025-09-20',
+          summary: 'Widespread acute malnutrition documented with 28,000 cases among children under 5.'
+        },
+        {
+          id: 2,
+          title: 'Less than 35% of required food supplies entering Gaza',
+          date: '2025-09-18',
+          summary: 'Severe access restrictions hampering humanitarian aid delivery to 1.9 million displaced people.'
+        },
+        {
+          id: 3,
+          title: 'Only 17 of 35 hospitals partially functioning',
+          date: '2025-09-15',
+          summary: 'Healthcare system severely compromised with critical shortages of medical supplies and equipment.'
+        }
+      ];
     }
-  ];
+    
+    return [
+      {
+        id: 1,
+        title: 'New aid shipment arrives at border crossing',
+        date: '2024-01-15',
+        summary: 'Critical medical supplies and food provisions distributed to refugee camps.'
+      },
+      {
+        id: 2,
+        title: 'International donors pledge additional $50M in emergency funding',
+        date: '2024-01-14',
+        summary: 'Major breakthrough in securing resources for long-term humanitarian response.'
+      },
+      {
+        id: 3,
+        title: 'Winter shelter program expanded to accommodate 10,000 more families',
+        date: '2024-01-13',
+        summary: 'Urgent winterization efforts underway as temperatures drop below freezing.'
+      }
+    ];
+  };
 
-  const events = [
-    {
-      id: 1,
-      title: 'Emergency Relief Distribution',
-      date: '2024-01-18',
-      time: '09:00 AM',
-      location: 'Border Camp A',
-      type: 'Aid Distribution'
-    },
-    {
-      id: 2,
-      title: 'Medical Clinic Setup',
-      date: '2024-01-20',
-      time: '10:00 AM',
-      location: 'Refugee Center B',
-      type: 'Medical'
-    },
-    {
-      id: 3,
-      title: 'Volunteer Coordination Meeting',
-      date: '2024-01-22',
-      time: '02:00 PM',
-      location: 'Virtual',
-      type: 'Coordination'
+  const newsItems = getNewsItems(id || '');
+
+  const getEvents = (crisisId: string) => {
+    if (crisisId === 'gaza-2024') {
+      return [
+        {
+          id: 1,
+          title: 'Emergency Food Distribution',
+          date: '2025-09-30',
+          time: '08:00 AM',
+          location: 'Gaza City Distribution Point',
+          type: 'Food Aid'
+        },
+        {
+          id: 2,
+          title: 'Mobile Medical Clinic',
+          date: '2025-10-02',
+          time: '10:00 AM',
+          location: 'Khan Younis Refugee Camp',
+          type: 'Medical'
+        },
+        {
+          id: 3,
+          title: 'Child Malnutrition Screening',
+          date: '2025-10-05',
+          time: '09:00 AM',
+          location: 'Rafah Health Center',
+          type: 'Health'
+        }
+      ];
     }
-  ];
+    
+    return [
+      {
+        id: 1,
+        title: 'Emergency Relief Distribution',
+        date: '2024-01-18',
+        time: '09:00 AM',
+        location: 'Border Camp A',
+        type: 'Aid Distribution'
+      },
+      {
+        id: 2,
+        title: 'Medical Clinic Setup',
+        date: '2024-01-20',
+        time: '10:00 AM',
+        location: 'Refugee Center B',
+        type: 'Medical'
+      },
+      {
+        id: 3,
+        title: 'Volunteer Coordination Meeting',
+        date: '2024-01-22',
+        time: '02:00 PM',
+        location: 'Virtual',
+        type: 'Coordination'
+      }
+    ];
+  };
+
+  const events = getEvents(id || '');
 
   const stories = [
     {
@@ -263,12 +347,18 @@ const Crisis = () => {
                           </div>
                           <div className="flex justify-between">
                             <span>Aid Coverage</span>
-                            <span className="font-semibold">72%</span>
+                            <span className="font-semibold">{id === 'gaza-2024' ? '35%' : '72%'}</span>
                           </div>
                           <div className="flex justify-between">
                             <span>Funding Received</span>
-                            <span className="font-semibold">$127M</span>
+                            <span className="font-semibold">{id === 'gaza-2024' ? '$1.05B' : '$127M'}</span>
                           </div>
+                          {id === 'gaza-2024' && (
+                            <div className="flex justify-between">
+                              <span>Funding Required</span>
+                              <span className="font-semibold">$6.6B</span>
+                            </div>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
@@ -423,8 +513,8 @@ const Crisis = () => {
             id: crisisData.id,
             name: crisisData.name,
             location: {
-              lat: 49.8397, // Mock coordinates for Eastern Europe
-              lng: 24.0297,
+              lat: id === 'gaza-2024' ? 31.5017 : 49.8397, // Gaza coordinates vs Eastern Europe
+              lng: id === 'gaza-2024' ? 34.4668 : 24.0297,
               name: crisisData.location,
             },
             severity: crisisData.severity as 'Low' | 'Medium' | 'High' | 'Critical',
