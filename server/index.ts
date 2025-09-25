@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 import apiRoutes from './routes';
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
@@ -19,7 +19,8 @@ if (process.env.NODE_ENV === 'production') {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
   app.use(express.static(path.join(__dirname, '../dist')));
   
-  app.get('*', (req, res) => {
+  // Handle React Router - serve index.html for all non-API routes
+  app.get(/^(?!\/api).*/, (req, res) => {
     res.sendFile(path.join(__dirname, '../dist/index.html'));
   });
 }
