@@ -167,6 +167,7 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
           // Gaza/Palestine
           {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [34.4669, 31.5017]}, "properties": {
             "intensity": 100, 
+            "id": "gaza-2024",
             "name": "Gaza Strip", 
             "description": "Severe humanitarian crisis with limited access to food, water, and medical supplies.",
             "affected": "2.3 million people in need",
