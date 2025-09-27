@@ -18,10 +18,14 @@ import {
   MessageSquare,
   UserPlus,
   Settings,
-  ArrowLeft
+  ArrowLeft,
+  HelpCircle,
+  Hash,
+  MapPin
 } from 'lucide-react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
+import ThreadNav from '@/components/ThreadNav';
 import type { ChatMessage } from '../../shared/schema';
 
 interface CommunityUser {
@@ -55,13 +59,36 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
   const [selectedRegion, setSelectedRegion] = useState<'neighborhood' | 'city' | 'state' | 'national' | 'global'>('global');
   const [newMessage, setNewMessage] = useState('');
   const [onlineUsers, setOnlineUsers] = useState<CommunityUser[]>([]);
+  const [activeThread, setActiveThread] = useState<'intro' | 'content' | 'faq'>('content');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Thread definitions for the community
+  const threads = [
+    {
+      id: 'intro' as const,
+      label: 'Introductions',
+      icon: UserPlus,
+      count: 3
+    },
+    {
+      id: 'content' as const,
+      label: 'General Discussion',
+      icon: Hash,
+      count: 2
+    },
+    {
+      id: 'faq' as const,
+      label: 'FAQ & Help',
+      icon: HelpCircle,
+      count: 3
+    }
+  ];
 
   // Fetch chat messages with React Query
   const { data: messages = [], isLoading, refetch } = useQuery<ChatMessage[]>({
-    queryKey: ['/api/chat', communityId, selectedRegion],
+    queryKey: ['/api/chat', communityId, selectedRegion, activeThread],
     queryFn: async () => {
-      const response = await fetch(`/api/chat/${communityId}?region=${selectedRegion}`);
+      const response = await fetch(`/api/chat/${communityId}?region=${selectedRegion}&thread=${activeThread}`);
       if (!response.ok) throw new Error('Failed to fetch chat messages');
       return response.json();
     },
@@ -81,7 +108,7 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
     },
     onSuccess: () => {
       // Invalidate and refetch chat messages
-      queryClient.invalidateQueries({ queryKey: ['/api/chat', communityId, selectedRegion] });
+      queryClient.invalidateQueries({ queryKey: ['/api/chat', communityId, selectedRegion, activeThread] });
       setNewMessage('');
     },
   });
@@ -154,6 +181,7 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
     const messageData = {
       communityId,
       region: selectedRegion,
+      thread: activeThread,
       content: newMessage,
       authorId: currentUserId,
       authorName: currentUserName,
@@ -214,7 +242,41 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
         </div>
       )}
 
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-6 p-6">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-5 gap-6 p-6">
+        {/* Left Sidebar - Community Info & Threads */}
+        <div className="lg:col-span-1">
+          <Card className="h-full">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm">About</CardTitle>
+            </CardHeader>
+            <CardContent className="px-4 pb-4">
+              <p className="text-sm text-muted-foreground mb-4">
+                Dedicated to preserving the character and community spirit of the Castro District.
+              </p>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">Neighborhood</span>
+                </div>
+                <div className="text-sm">
+                  <span className="font-medium">Community Type</span>
+                  <br />
+                  <span className="text-muted-foreground">Community Group</span>
+                </div>
+              </div>
+            </CardContent>
+            
+            <Separator />
+            
+            {/* Thread Navigation */}
+            <ThreadNav 
+              threads={threads}
+              activeThread={activeThread}
+              onThreadChange={setActiveThread}
+            />
+          </Card>
+        </div>
+
         {/* Chat Messages Area */}
         <div className="lg:col-span-3">
           <Card className="h-full flex flex-col">
@@ -331,7 +393,7 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    placeholder={`Message ${selectedRegion} chat...`}
+                    placeholder={`Message ${threads.find(t => t.id === activeThread)?.label || 'chat'}...`}
                     className="flex-1"
                     data-testid="input-chat-message"
                   />

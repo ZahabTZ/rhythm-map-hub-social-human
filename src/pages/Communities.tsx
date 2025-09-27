@@ -336,8 +336,8 @@ export default function Communities() {
           setSelectedDmUser(null);
           setSelectedDmUserName(null);
         }}
-        currentUserId={user?.uid || 'guest'}
-        currentUserName={user?.displayName || 'Guest'}
+        currentUserId={user?.id || 'guest'}
+        currentUserName={user?.name || 'Guest'}
         selectedUserId={selectedDmUser || undefined}
         selectedUserName={selectedDmUserName || undefined}
       />
