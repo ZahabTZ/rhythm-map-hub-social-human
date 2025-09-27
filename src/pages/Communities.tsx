@@ -9,14 +9,18 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Toggle } from "@/components/ui/toggle";
-import { Users, MapPin, Plus, Search, Globe, User, ArrowLeft } from "lucide-react";
+import { Users, MapPin, Plus, Search, Globe, User, ArrowLeft, MessageSquare } from "lucide-react";
 import type { Community } from "../../shared/schema";
+// import CommunityFeed from "@/components/CommunityFeed"; // Temporarily disabled
+// import DirectMessaging from "@/components/DirectMessaging"; // Temporarily disabled due to syntax issues
 
 export default function Communities() {
   const { user, isVerifiedHost } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [isLocalMode, setIsLocalMode] = useState(false);
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState("feed");
+  const [dmOpen, setDmOpen] = useState(false);
+  const [selectedDmUser, setSelectedDmUser] = useState<string | null>(null);
 
   // Fetch communities
   const { data: communities = [], isLoading } = useQuery<Community[]>({
@@ -32,6 +36,16 @@ export default function Communities() {
     // For now, we'll show all communities regardless of local mode
     return matchesSearch;
   });
+
+  const handleOpenDM = (userId: string) => {
+    setSelectedDmUser(userId);
+    setDmOpen(true);
+  };
+
+  const handleJoinEvent = (eventId: string) => {
+    console.log('Joining event:', eventId);
+    // TODO: Implement event joining logic
+  };
 
   if (isLoading) {
     return (
@@ -70,14 +84,25 @@ export default function Communities() {
               </div>
             </div>
             
-            {isVerifiedHost && (
-              <Link to="/create-community" data-testid="link-create-community">
-                <Button className="bg-blue-600 hover:bg-blue-700">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Community
-                </Button>
-              </Link>
-            )}
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => setDmOpen(true)}
+                data-testid="button-open-messages"
+              >
+                <MessageSquare className="h-4 w-4 mr-2" />
+                Messages
+              </Button>
+              
+              {isVerifiedHost && (
+                <Link to="/create-community" data-testid="link-create-community">
+                  <Button className="bg-blue-600 hover:bg-blue-700">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Community
+                  </Button>
+                </Link>
+              )}
+            </div>
           </div>
 
           {/* Search and Global/Local Toggle */}
@@ -123,12 +148,88 @@ export default function Communities() {
       <div className="max-w-4xl mx-auto p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3 bg-gray-800">
-            <TabsTrigger value="all" data-testid="tab-all-communities">All Communities</TabsTrigger>
+            <TabsTrigger value="feed" data-testid="tab-feed">Feed</TabsTrigger>
+            <TabsTrigger value="communities" data-testid="tab-all-communities">All Communities</TabsTrigger>
             <TabsTrigger value="joined" data-testid="tab-joined-communities">Joined</TabsTrigger>
-            <TabsTrigger value="trending" data-testid="tab-trending-communities">Trending</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="all" className="mt-6">
+          <TabsContent value="feed" className="mt-6">
+            <div className="space-y-4">
+              <div className="text-center py-12" data-testid="text-feed-placeholder">
+                <MessageSquare className="h-12 w-12 text-gray-600 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-400 mb-2">Community Feed</h3>
+                <p className="text-gray-500 mb-4">Posts and events from communities you've joined will appear here</p>
+                
+                {/* Sample Feed Item for demonstration */}
+                <div className="max-w-2xl mx-auto">
+                  <Card className="bg-gray-800 border-gray-700 text-left">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start gap-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarFallback className="bg-green-600 text-white">SC</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-semibold text-sm text-white">Sarah Chen</span>
+                            <span className="text-gray-400 text-xs">•</span>
+                            <span className="text-gray-400 text-xs">Climate Action SF</span>
+                            <span className="text-gray-400 text-xs">•</span>
+                            <span className="text-gray-400 text-xs">2h ago</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="default" className="text-xs bg-blue-600">
+                              <Users className="h-3 w-3 mr-1" />
+                              Event
+                            </Badge>
+                            <Badge variant="outline" className="text-xs text-green-400 border-green-600">
+                              <MapPin className="h-3 w-3 mr-1" />
+                              Neighborhood
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <p className="mb-4 text-sm leading-relaxed text-gray-300">
+                        🌳 Join us for a community tree planting event this Saturday! We'll be working to restore the urban canopy in Mission Dolores Park. Bring gloves and water bottles - tools and saplings provided!
+                      </p>
+                      <div className="mb-4 p-3 bg-gray-700/50 rounded-lg">
+                        <div className="flex items-center gap-2 text-sm text-gray-400 mb-1">
+                          <MapPin className="h-4 w-4" />
+                          <span>Mission Dolores Park, San Francisco</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-400">
+                          <Users className="h-4 w-4" />
+                          <span>Saturday, September 28, 2024 • 9:00 AM</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <Button variant="ghost" size="sm" className="h-8 gap-2 text-gray-400 hover:text-white">
+                            <span className="text-xs">❤️ 24</span>
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-8 gap-2 text-gray-400 hover:text-white">
+                            <MessageSquare className="h-4 w-4" />
+                            <span className="text-xs">8</span>
+                          </Button>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button variant="default" size="sm" className="bg-green-600 hover:bg-green-700">
+                            Join Event
+                          </Button>
+                          <Button variant="outline" size="sm" className="border-gray-600 text-gray-300 hover:bg-gray-700">
+                            Message
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="communities" className="mt-6">
             {filteredCommunities.length === 0 ? (
               <div className="text-center py-12" data-testid="text-no-communities">
                 <Users className="h-12 w-12 text-gray-600 mx-auto mb-4" />
@@ -215,15 +316,19 @@ export default function Communities() {
             </div>
           </TabsContent>
 
-          <TabsContent value="trending" className="mt-6">
-            <div className="text-center py-12" data-testid="text-trending-placeholder">
-              <Users className="h-12 w-12 text-gray-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-400 mb-2">Trending Communities</h3>
-              <p className="text-gray-500">Most active communities will appear here</p>
-            </div>
-          </TabsContent>
         </Tabs>
       </div>
+      
+      {/* Direct Messaging Overlay - Temporarily disabled */}
+      {dmOpen && (
+        <div className="fixed inset-0 bg-background z-50 flex items-center justify-center">
+          <div className="bg-card p-6 rounded-lg shadow-lg">
+            <h2 className="text-lg font-semibold mb-4">Direct Messaging</h2>
+            <p className="text-muted-foreground mb-4">DM functionality coming soon!</p>
+            <Button onClick={() => setDmOpen(false)}>Close</Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
