@@ -13,6 +13,20 @@ const LocationSearchCard: React.FC<LocationSearchCardProps> = ({ onLocationFound
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Predefined locations for quick testing and fallback
+  const predefinedLocations: Record<string, { coordinates: [number, number]; name: string }> = {
+    'san francisco': { coordinates: [-122.4194, 37.7749], name: 'San Francisco, California, USA' },
+    'new york': { coordinates: [-74.0060, 40.7128], name: 'New York City, New York, USA' },
+    'new york city': { coordinates: [-74.0060, 40.7128], name: 'New York City, New York, USA' },
+    'london': { coordinates: [-0.1276, 51.5074], name: 'London, England, UK' },
+    'tokyo': { coordinates: [139.6503, 35.6762], name: 'Tokyo, Japan' },
+    'paris': { coordinates: [2.3522, 48.8566], name: 'Paris, France' },
+    'germany': { coordinates: [10.4515, 51.1657], name: 'Germany' },
+    'los angeles': { coordinates: [-118.2437, 34.0522], name: 'Los Angeles, California, USA' },
+    'chicago': { coordinates: [-87.6298, 41.8781], name: 'Chicago, Illinois, USA' },
+    'miami': { coordinates: [-80.1918, 25.7617], name: 'Miami, Florida, USA' },
+  };
+
   const searchLocation = async () => {
     if (!locationQuery.trim()) return;
 
@@ -20,35 +34,63 @@ const LocationSearchCard: React.FC<LocationSearchCardProps> = ({ onLocationFound
     setError(null);
 
     try {
+      const queryLower = locationQuery.toLowerCase().trim();
+      
+      // Check predefined locations first for quick results
+      if (predefinedLocations[queryLower]) {
+        const location = predefinedLocations[queryLower];
+        console.log(`Found predefined location: ${location.name} at [${location.coordinates[0]}, ${location.coordinates[1]}]`);
+        onLocationFound(location.coordinates, location.name);
+        setLocationQuery(''); // Clear input after successful search
+        setIsSearching(false);
+        return;
+      }
+
       const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
+      console.log('MapBox token available:', !!mapboxToken);
+      
       if (!mapboxToken) {
         throw new Error('Mapbox token not configured');
       }
 
       // Use Mapbox Geocoding API
-      const response = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(locationQuery)}.json?access_token=${mapboxToken}&types=country,region,district,place,locality&limit=1`
-      );
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(locationQuery)}.json?access_token=${mapboxToken}&types=country,region,district,place,locality&limit=1`;
+      console.log('Making geocoding request for:', locationQuery);
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
+      console.log('Geocoding response status:', response.status);
+      
       if (!response.ok) {
-        throw new Error('Failed to search location');
+        const errorText = await response.text();
+        console.error('Geocoding API error:', errorText);
+        throw new Error(`Failed to search location: ${response.status}`);
       }
 
       const data = await response.json();
+      console.log('Geocoding data:', data);
 
       if (data.features && data.features.length > 0) {
         const feature = data.features[0];
         const [lng, lat] = feature.center;
         const locationName = feature.place_name;
         
+        console.log(`Found location: ${locationName} at [${lng}, ${lat}]`);
         onLocationFound([lng, lat], locationName);
         setLocationQuery(''); // Clear input after successful search
       } else {
         setError('Location not found. Try searching for a city or country name.');
       }
     } catch (err) {
-      setError('Failed to search location. Please try again.');
-      console.error('Geocoding error:', err);
+      console.error('Geocoding error details:', err);
+      // Suggest predefined locations as alternatives
+      const suggestions = Object.keys(predefinedLocations).slice(0, 3).join(', ');
+      setError(`Search failed. Try one of these: ${suggestions}`);
     } finally {
       setIsSearching(false);
     }
