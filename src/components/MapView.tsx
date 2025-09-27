@@ -86,6 +86,16 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
       });
     } catch (error) {
       console.error('Error creating map:', error);
+      
+      // Even if map fails to initialize, provide a fallback centerOnLocation function
+      if (onMapReady) {
+        const fallbackCenterOnLocation = (coordinates: [number, number], locationName?: string) => {
+          console.log(`Fallback: Would center map on ${locationName || 'location'} at [${coordinates[0]}, ${coordinates[1]}]`);
+          // Could implement alternative behavior here, like updating URL or showing notification
+        };
+        
+        onMapReady({ centerOnLocation: fallbackCenterOnLocation });
+      }
       return;
     }
 

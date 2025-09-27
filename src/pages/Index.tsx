@@ -79,9 +79,15 @@ const Index = () => {
   };
 
   const handleLocationFound = (coordinates: [number, number], locationName: string) => {
+    console.log('handleLocationFound called with:', coordinates, locationName);
+    console.log('mapViewRef:', mapViewRef);
+    
     // Center the map on the found location
     if (mapViewRef && mapViewRef.centerOnLocation) {
+      console.log('Calling centerOnLocation...');
       mapViewRef.centerOnLocation(coordinates, locationName);
+    } else {
+      console.log('mapViewRef or centerOnLocation not available');
     }
   };
 
@@ -231,7 +237,10 @@ const Index = () => {
       {/* Community Chat */}
       {chatOpen && selectedCommunity && (
         <CommunityChat
-          community={selectedCommunity}
+          communityId={selectedCommunity.id || 'unknown'}
+          communityName={selectedCommunity.name || 'Unknown Community'}
+          currentUserId="user-1"
+          currentUserName="Demo User"
           onClose={handleChatClose}
         />
       )}
