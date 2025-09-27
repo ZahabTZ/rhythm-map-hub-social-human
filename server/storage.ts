@@ -9,9 +9,13 @@ import {
   Discussion,
   Event,
   Payment,
+  ChatMessage,
+  DirectMessage,
   InsertCommunity,
   InsertDiscussion,
-  InsertEvent
+  InsertEvent,
+  InsertChatMessage,
+  InsertDirectMessage
 } from '../shared/schema';
 
 export interface IStorage {
@@ -66,6 +70,18 @@ export interface IStorage {
   getPaymentsByUser(userId: string): Promise<Payment[]>;
   updatePaymentStatus(stripePaymentIntentId: string, status: 'succeeded' | 'failed'): Promise<boolean>;
   getPaymentByStripeId(stripePaymentIntentId: string): Promise<Payment | null>;
+  
+  // Chat message operations
+  createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
+  getChatMessagesByCommunity(communityId: string, region?: string): Promise<ChatMessage[]>;
+  deleteChatMessage(messageId: string): Promise<boolean>;
+  
+  // Direct message operations
+  createDirectMessage(message: InsertDirectMessage): Promise<DirectMessage>;
+  getDirectMessagesByConversation(conversationId: string): Promise<DirectMessage[]>;
+  getDirectMessagesBetweenUsers(senderId: string, recipientId: string): Promise<DirectMessage[]>;
+  markDirectMessageAsRead(messageId: string): Promise<DirectMessage>;
+  getUserConversations(userId: string): Promise<DirectMessage[]>;
 }
 
 // In-memory storage implementation
@@ -77,12 +93,16 @@ export class MemStorage implements IStorage {
   private discussions: Map<string, Discussion> = new Map();
   private events: Map<string, Event> = new Map();
   private payments: Map<string, Payment> = new Map();
+  private chatMessages: Map<string, ChatMessage> = new Map();
+  private directMessages: Map<string, DirectMessage> = new Map();
   private nextStoryId = 1;
   private nextUserId = 1;
   private nextCommunityId = 1;
   private nextDiscussionId = 1;
   private nextEventId = 1;
   private nextPaymentId = 1;
+  private nextChatMessageId = 1;
+  private nextDirectMessageId = 1;
 
   constructor() {
     // Initialize with some sample crisis data
@@ -615,6 +635,93 @@ export class MemStorage implements IStorage {
   async getPaymentByStripeId(stripePaymentIntentId: string): Promise<Payment | null> {
     const payment = Array.from(this.payments.values()).find(p => p.stripePaymentIntentId === stripePaymentIntentId);
     return payment || null;
+  }
+
+  // Chat message operations
+  async createChatMessage(messageData: InsertChatMessage): Promise<ChatMessage> {
+    const id = `chat_${this.nextChatMessageId++}`;
+    const message: ChatMessage = {
+      ...messageData,
+      id,
+      reactions: [],
+      isEdited: false,
+      createdAt: new Date().toISOString(),
+    };
+
+    this.chatMessages.set(id, message);
+    return message;
+  }
+
+  async getChatMessagesByCommunity(communityId: string, region?: string): Promise<ChatMessage[]> {
+    const messages = Array.from(this.chatMessages.values())
+      .filter(msg => msg.communityId === communityId)
+      .filter(msg => !region || msg.region === region)
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    
+    return messages;
+  }
+
+  async deleteChatMessage(messageId: string): Promise<boolean> {
+    return this.chatMessages.delete(messageId);
+  }
+
+  // Direct message operations
+  async createDirectMessage(messageData: InsertDirectMessage): Promise<DirectMessage> {
+    const id = `dm_${this.nextDirectMessageId++}`;
+    const message: DirectMessage = {
+      ...messageData,
+      id,
+      isRead: false,
+      createdAt: new Date().toISOString(),
+    };
+
+    this.directMessages.set(id, message);
+    return message;
+  }
+
+  async getDirectMessagesByConversation(conversationId: string): Promise<DirectMessage[]> {
+    return Array.from(this.directMessages.values())
+      .filter(msg => msg.conversationId === conversationId)
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  }
+
+  async getDirectMessagesBetweenUsers(senderId: string, recipientId: string): Promise<DirectMessage[]> {
+    return Array.from(this.directMessages.values())
+      .filter(msg => 
+        (msg.senderId === senderId && msg.recipientId === recipientId) ||
+        (msg.senderId === recipientId && msg.recipientId === senderId)
+      )
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  }
+
+  async markDirectMessageAsRead(messageId: string): Promise<DirectMessage> {
+    const message = this.directMessages.get(messageId);
+    if (!message) {
+      throw new Error('Direct message not found');
+    }
+
+    message.isRead = true;
+    message.readAt = new Date().toISOString();
+    this.directMessages.set(messageId, message);
+    
+    return message;
+  }
+
+  async getUserConversations(userId: string): Promise<DirectMessage[]> {
+    // Get the latest message from each conversation
+    const conversationMap = new Map<string, DirectMessage>();
+    
+    Array.from(this.directMessages.values())
+      .filter(msg => msg.senderId === userId || msg.recipientId === userId)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .forEach(msg => {
+        if (!conversationMap.has(msg.conversationId)) {
+          conversationMap.set(msg.conversationId, msg);
+        }
+      });
+
+    return Array.from(conversationMap.values())
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }
 }
 

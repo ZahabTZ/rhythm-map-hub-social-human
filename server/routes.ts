@@ -7,7 +7,9 @@ import {
   LocationVerificationSchema,
   InsertCommunitySchema,
   InsertDiscussionSchema,
-  InsertEventSchema
+  InsertEventSchema,
+  InsertChatMessageSchema,
+  InsertDirectMessageSchema
 } from '../shared/schema';
 import { storage } from './storage';
 import { requireAuth, optionalAuth } from './auth';
@@ -540,6 +542,90 @@ router.post('/stripe-webhook', express.raw({ type: 'application/json' }), async 
   }
   
   res.json({ received: true });
+});
+
+// Chat message routes
+router.get('/chat/:communityId', defaultJsonParser, async (req, res) => {
+  try {
+    const { communityId } = req.params;
+    const { region } = req.query;
+    const messages = await storage.getChatMessagesByCommunity(communityId, region as string);
+    res.json(messages);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch chat messages' });
+  }
+});
+
+router.post('/chat', defaultJsonParser, validateBody(InsertChatMessageSchema), async (req, res) => {
+  try {
+    const message = await storage.createChatMessage(req.body);
+    res.status(201).json(message);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create chat message' });
+  }
+});
+
+router.delete('/chat/:messageId', defaultJsonParser, async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const deleted = await storage.deleteChatMessage(messageId);
+    if (!deleted) {
+      return res.status(404).json({ error: 'Message not found' });
+    }
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete chat message' });
+  }
+});
+
+// Direct message routes
+router.get('/dm/conversation/:conversationId', defaultJsonParser, async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const messages = await storage.getDirectMessagesByConversation(conversationId);
+    res.json(messages);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch direct messages' });
+  }
+});
+
+router.get('/dm/between/:senderId/:recipientId', defaultJsonParser, async (req, res) => {
+  try {
+    const { senderId, recipientId } = req.params;
+    const messages = await storage.getDirectMessagesBetweenUsers(senderId, recipientId);
+    res.json(messages);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch direct messages' });
+  }
+});
+
+router.get('/dm/conversations/:userId', defaultJsonParser, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const conversations = await storage.getUserConversations(userId);
+    res.json(conversations);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch conversations' });
+  }
+});
+
+router.post('/dm', defaultJsonParser, validateBody(InsertDirectMessageSchema), async (req, res) => {
+  try {
+    const message = await storage.createDirectMessage(req.body);
+    res.status(201).json(message);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create direct message' });
+  }
+});
+
+router.patch('/dm/:messageId/read', defaultJsonParser, async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const message = await storage.markDirectMessageAsRead(messageId);
+    res.json(message);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to mark message as read' });
+  }
 });
 
 export default router;

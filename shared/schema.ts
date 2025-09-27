@@ -208,5 +208,72 @@ export const CrisisSchema = z.object({
 export type Crisis = z.infer<typeof CrisisSchema>;
 
 // Select type for stories
+// Chat message schema for regional chat rooms
+export const ChatMessageSchema = z.object({
+  id: z.string(),
+  communityId: z.string(),
+  region: z.enum(['neighborhood', 'city', 'state', 'national', 'global']),
+  content: z.string().min(1, "Message content is required").max(1000, "Message too long"),
+  authorId: z.string(),
+  authorName: z.string(),
+  authorAvatar: z.string().optional(),
+  authorLocation: z.object({
+    lat: z.number(),
+    lng: z.number(),
+    name: z.string(),
+  }).optional(),
+  messageType: z.enum(['text', 'image', 'link', 'event_share']).default('text'),
+  replyToId: z.string().optional(), // For threaded replies
+  reactions: z.array(z.object({
+    userId: z.string(),
+    emoji: z.string(),
+  })).default([]),
+  isEdited: z.boolean().default(false),
+  editedAt: z.string().datetime().optional(),
+  createdAt: z.string().datetime().default(() => new Date().toISOString()),
+});
+
+export type ChatMessage = z.infer<typeof ChatMessageSchema>;
+
+// Insert schema for creating new chat messages
+export const InsertChatMessageSchema = ChatMessageSchema.omit({
+  id: true,
+  reactions: true,
+  isEdited: true,
+  editedAt: true,
+  createdAt: true,
+});
+
+export type InsertChatMessage = z.infer<typeof InsertChatMessageSchema>;
+
+// Direct message schema for private 1:1 communication
+export const DirectMessageSchema = z.object({
+  id: z.string(),
+  senderId: z.string(),
+  senderName: z.string(),
+  senderAvatar: z.string().optional(),
+  recipientId: z.string(),
+  recipientName: z.string(),
+  recipientAvatar: z.string().optional(),
+  content: z.string().min(1, "Message content is required").max(1000, "Message too long"),
+  messageType: z.enum(['text', 'image', 'link']).default('text'),
+  isRead: z.boolean().default(false),
+  readAt: z.string().datetime().optional(),
+  conversationId: z.string(), // Groups messages between two users
+  createdAt: z.string().datetime().default(() => new Date().toISOString()),
+});
+
+export type DirectMessage = z.infer<typeof DirectMessageSchema>;
+
+// Insert schema for creating new direct messages
+export const InsertDirectMessageSchema = DirectMessageSchema.omit({
+  id: true,
+  isRead: true,
+  readAt: true,
+  createdAt: true,
+});
+
+export type InsertDirectMessage = z.infer<typeof InsertDirectMessageSchema>;
+
 export type SelectStory = Story;
 export type SelectCrisis = Crisis;

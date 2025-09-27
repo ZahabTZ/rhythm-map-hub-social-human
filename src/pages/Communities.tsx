@@ -12,15 +12,18 @@ import { Toggle } from "@/components/ui/toggle";
 import { Users, MapPin, Plus, Search, Globe, User, ArrowLeft, MessageSquare } from "lucide-react";
 import type { Community } from "../../shared/schema";
 import CommunityFeed from "@/components/CommunityFeed";
-// import DirectMessaging from "@/components/DirectMessaging"; // Temporarily disabled due to syntax issues
+import CommunityChat from "@/components/CommunityChat";
+import DirectMessaging from "@/components/DirectMessaging";
 
 export default function Communities() {
   const { user, isVerifiedHost } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [isLocalMode, setIsLocalMode] = useState(false);
   const [activeTab, setActiveTab] = useState("feed");
+  const [selectedCommunityForChat, setSelectedCommunityForChat] = useState<string | null>(null);
   const [dmOpen, setDmOpen] = useState(false);
   const [selectedDmUser, setSelectedDmUser] = useState<string | null>(null);
+  const [selectedDmUserName, setSelectedDmUserName] = useState<string | null>(null);
 
   // Fetch communities
   const { data: communities = [], isLoading } = useQuery<Community[]>({
@@ -37,14 +40,25 @@ export default function Communities() {
     return matchesSearch;
   });
 
-  const handleOpenDM = (userId: string) => {
+  const handleOpenDM = (userId: string, userName?: string) => {
     setSelectedDmUser(userId);
+    setSelectedDmUserName(userName || null);
     setDmOpen(true);
   };
 
   const handleJoinEvent = (eventId: string) => {
     console.log('Joining event:', eventId);
     // TODO: Implement event joining logic
+  };
+
+  const handleOpenCommunityChat = (communityId: string) => {
+    setSelectedCommunityForChat(communityId);
+    setActiveTab("chat");
+  };
+
+  const handleCloseCommunityChat = () => {
+    setSelectedCommunityForChat(null);
+    setActiveTab("feed");
   };
 
   if (isLoading) {
@@ -147,8 +161,9 @@ export default function Communities() {
       {/* Content */}
       <div className="max-w-4xl mx-auto p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-gray-800">
+          <TabsList className="grid w-full grid-cols-4 bg-gray-800">
             <TabsTrigger value="feed" data-testid="tab-feed">Feed</TabsTrigger>
+            <TabsTrigger value="chat" data-testid="tab-chat">Chat</TabsTrigger>
             <TabsTrigger value="communities" data-testid="tab-all-communities">All Communities</TabsTrigger>
             <TabsTrigger value="joined" data-testid="tab-joined-communities">Joined</TabsTrigger>
           </TabsList>
@@ -159,6 +174,68 @@ export default function Communities() {
               onOpenDM={handleOpenDM}
               onJoinEvent={handleJoinEvent}
             />
+          </TabsContent>
+
+          <TabsContent value="chat" className="mt-6">
+            {selectedCommunityForChat ? (
+              <div className="h-[700px]">
+                <CommunityChat
+                  communityId={selectedCommunityForChat}
+                  communityName={communities.find(c => c.id === selectedCommunityForChat)?.name || "Community Chat"}
+                  currentUserId="current_user_123"
+                  currentUserName="You"
+                  onOpenDM={handleOpenDM}
+                  onClose={handleCloseCommunityChat}
+                />
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="text-center py-12" data-testid="text-select-community">
+                  <MessageSquare className="h-12 w-12 text-gray-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-400 mb-2">Select a Community to Chat</h3>
+                  <p className="text-gray-500 mb-6">Choose a community below to start chatting with members in different regions</p>
+                </div>
+                
+                <div className="grid gap-4">
+                  {filteredCommunities.slice(0, 6).map((community) => (
+                    <Card key={community.id} className="bg-gray-800 border-gray-700 hover:bg-gray-750 transition-colors cursor-pointer" onClick={() => handleOpenCommunityChat(community.id)} data-testid={`card-community-chat-${community.id}`}>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-start gap-3">
+                            <Avatar className="h-12 w-12">
+                              <AvatarFallback className="bg-blue-600 text-white">
+                                {community.name.substring(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-white mb-1" data-testid={`text-community-name-${community.id}`}>
+                                {community.name}
+                              </h3>
+                              <p className="text-sm text-gray-400 mb-2 line-clamp-2" data-testid={`text-community-description-${community.id}`}>
+                                {community.description}
+                              </p>
+                              <div className="flex items-center gap-4 text-xs text-gray-500">
+                                <span className="flex items-center gap-1">
+                                  <Users className="h-3 w-3" />
+                                  {community.memberCount.toLocaleString()} members
+                                </span>
+                                <Badge variant="outline" className="text-xs">
+                                  {community.category}
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
+                          <Button variant="outline" size="sm" data-testid={`button-join-chat-${community.id}`}>
+                            <MessageSquare className="h-4 w-4 mr-2" />
+                            Join Chat
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="communities" className="mt-6">
@@ -251,16 +328,19 @@ export default function Communities() {
         </Tabs>
       </div>
       
-      {/* Direct Messaging Overlay - Temporarily disabled */}
-      {dmOpen && (
-        <div className="fixed inset-0 bg-background z-50 flex items-center justify-center">
-          <div className="bg-card p-6 rounded-lg shadow-lg">
-            <h2 className="text-lg font-semibold mb-4">Direct Messaging</h2>
-            <p className="text-muted-foreground mb-4">DM functionality coming soon!</p>
-            <Button onClick={() => setDmOpen(false)}>Close</Button>
-          </div>
-        </div>
-      )}
+      {/* Direct Messaging */}
+      <DirectMessaging
+        isOpen={dmOpen}
+        onClose={() => {
+          setDmOpen(false);
+          setSelectedDmUser(null);
+          setSelectedDmUserName(null);
+        }}
+        currentUserId={user?.uid || 'guest'}
+        currentUserName={user?.displayName || 'Guest'}
+        selectedUserId={selectedDmUser || undefined}
+        selectedUserName={selectedDmUserName || undefined}
+      />
     </div>
   );
 }
