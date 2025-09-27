@@ -410,17 +410,21 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
     neighborhood: { zoom: 16, description: 'Neighborhood' },
     city: { zoom: 12, description: 'City' },
     state: { zoom: 5.5, description: 'State' },
-    national: { zoom: 3.2, description: 'National' }
+    national: { zoom: 3.2, description: 'National' },
+    global: { zoom: 1.2, description: 'Global' }
   };
 
   // Zoom to different geographic levels centered around user location
-  const zoomToLevel = (level: 'neighborhood' | 'city' | 'state' | 'national') => {
-    if (!map.current || !userLocation || !mapReady) return;
+  const zoomToLevel = (level: 'neighborhood' | 'city' | 'state' | 'national' | 'global') => {
+    if (!map.current || !mapReady) return;
 
     const { zoom } = ZOOM_LEVELS[level];
 
+    // For global view, center on world coordinates (0, 20), otherwise center on user location
+    const center: [number, number] = level === 'global' ? [0, 20] : [userLocation!.lng, userLocation!.lat];
+
     map.current.flyTo({
-      center: [userLocation.lng, userLocation.lat],
+      center: center,
       zoom: zoom,
       duration: 1500
     });
@@ -504,6 +508,16 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
             disabled={!userLocation || !mapReady}
           >
             National
+          </Button>
+          <Button
+            onClick={() => zoomToLevel('global')}
+            variant="outline"
+            size="sm"
+            className="text-xs"
+            data-testid="button-zoom-global"
+            disabled={!mapReady}
+          >
+            Global
           </Button>
         </div>
       </div>
