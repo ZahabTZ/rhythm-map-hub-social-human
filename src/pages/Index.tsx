@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import MapView from '@/components/MapView';
 import SearchBar from '@/components/SearchBar';
+import LocationSearchCard from '@/components/LocationSearchCard';
 import ResultsSidebar from '@/components/ResultsSidebar';
 import CommunityChat from '@/components/CommunityChat';
 import SupportCard from '@/components/SupportCard';
@@ -31,6 +32,7 @@ const Index = () => {
   const [titleCardVisible, setTitleCardVisible] = useState(true);
   const [supportCardVisible, setSupportCardVisible] = useState(true);
   const [crisesSidebarOpen, setCrisesSidebarOpen] = useState(false);
+  const [mapViewRef, setMapViewRef] = useState<any>(null);
 
   const handleSearch = (query: string) => {
     // TODO: Implement actual search logic
@@ -76,6 +78,13 @@ const Index = () => {
     setCrisesSidebarOpen(true);
   };
 
+  const handleLocationFound = (coordinates: [number, number], locationName: string) => {
+    // Center the map on the found location
+    if (mapViewRef && mapViewRef.centerOnLocation) {
+      mapViewRef.centerOnLocation(coordinates, locationName);
+    }
+  };
+
   // Admin access: Ctrl+Shift+M to access moderation dashboard
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -94,6 +103,7 @@ const Index = () => {
       <MapView 
         onLocationSelect={handleLocationSelect}
         onHumanitarianClick={handleHumanitarianClick}
+        onMapReady={setMapViewRef}
       />
       
       {/* Authentication & User Status Bar */}
@@ -198,6 +208,11 @@ const Index = () => {
         onSearch={handleSearch}
         onFilterChange={handleFilterChange}
       />
+      
+      {/* Location Search Card - positioned below SearchBar */}
+      <div className="absolute top-80 left-6 z-10 w-96 max-w-[calc(100vw-3rem)]">
+        <LocationSearchCard onLocationFound={handleLocationFound} />
+      </div>
       
       {/* Results Sidebar */}
       <ResultsSidebar

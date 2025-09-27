@@ -8,9 +8,10 @@ interface MapViewProps {
   onLocationSelect?: (location: { lat: number; lng: number; name: string; regionData?: any[] }) => void;
   onHumanitarianClick?: () => void;
   humanitarianMode?: boolean;
+  onMapReady?: (mapControls: { centerOnLocation: (coordinates: [number, number], locationName?: string) => void }) => void;
 }
 
-const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick, humanitarianMode: externalHumanitarianMode }) => {
+const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick, humanitarianMode: externalHumanitarianMode, onMapReady }) => {
   console.log('MapView component rendered');
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -77,6 +78,11 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
       map.current.on('load', () => {
         setMapReady(true);
         console.log('Map loaded and ready');
+        
+        // Notify parent component that map is ready and provide controls
+        if (onMapReady) {
+          onMapReady({ centerOnLocation });
+        }
       });
     } catch (error) {
       console.error('Error creating map:', error);
@@ -507,6 +513,21 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
     
     // Default: global center
     return [0, 20];
+  };
+
+  // Center map on specific coordinates
+  const centerOnLocation = (coordinates: [number, number], locationName?: string) => {
+    if (!map.current || !mapReady) return;
+
+    map.current.flyTo({
+      center: coordinates,
+      zoom: 10, // City-level zoom for searched locations
+      duration: 1500
+    });
+
+    if (locationName) {
+      console.log(`Centered map on: ${locationName}`);
+    }
   };
 
   // Zoom to different geographic levels with appropriate centering

@@ -119,7 +119,7 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
           </div>
           
           {/* Local/Global Filter Toggle */}
-          <div className="flex items-center justify-center mb-3">
+          {/* <div className="flex items-center justify-center mb-3">
             <div className="flex items-center bg-muted/50 rounded-full p-1">
               <button
                 onClick={() => setIsLocalMode(false)}
@@ -146,7 +146,7 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
                 Local
               </button>
             </div>
-          </div>
+          </div> */}
 
           {/* Tab Navigation */}
           <div className="flex gap-1">

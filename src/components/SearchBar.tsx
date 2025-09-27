@@ -81,7 +81,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onFilterChange }) => {
         </div>
 
         {/* Local/Global Filter Toggle */}
-        <div className="flex items-center justify-between">
+        {/* <div className="flex items-center justify-between">
           <div className="flex items-center bg-muted/50 rounded-full p-1">
             <button
               onClick={() => setIsLocalMode(false)}
@@ -109,9 +109,9 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onFilterChange }) => {
             </button>
           </div>
         </div>
-
+ */}
         {/* Quick Filters */}
-        <div className="flex flex-wrap gap-2">
+        {/* <div className="flex flex-wrap gap-2">
           {quickFilters.map((filter) => (
             <Badge
               key={filter.id}
@@ -128,7 +128,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onFilterChange }) => {
               {filter.label}
             </Badge>
           ))}
-        </div>
+        </div> */}
 
         {/* Help and Advanced Filters */}
         <div className="flex justify-between items-center">
@@ -199,7 +199,9 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onFilterChange }) => {
             <div className="w-2 h-2 rounded-full bg-events"></div>
             <span>Events</span>
           </div>
+        
         </div>
+      
       </div>
     </div>
   );
