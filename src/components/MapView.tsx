@@ -414,14 +414,110 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
     global: { zoom: 1.2, description: 'Global' }
   };
 
-  // Zoom to different geographic levels centered around user location
+  // Geographic center coordinates for regions
+  const getGeographicCenter = (level: 'neighborhood' | 'city' | 'state' | 'national' | 'global', userLat: number, userLng: number): [number, number] => {
+    switch (level) {
+      case 'neighborhood':
+        // Use user's exact location for neighborhood view
+        return [userLng, userLat];
+        
+      case 'city':
+        // Determine city center based on user location
+        return getCityCenter(userLat, userLng);
+        
+      case 'state':
+        // Determine state center based on user location
+        return getStateCenter(userLat, userLng);
+        
+      case 'national':
+        // Determine country center based on user location
+        return getCountryCenter(userLat, userLng);
+        
+      case 'global':
+        // Center on continent based on user location
+        return getContinentCenter(userLat, userLng);
+        
+      default:
+        return [userLng, userLat];
+    }
+  };
+
+  // Get city center coordinates based on user location
+  const getCityCenter = (lat: number, lng: number): [number, number] => {
+    // Major US cities
+    if (lat >= 37.7 && lat <= 37.8 && lng >= -122.5 && lng <= -122.3) return [-122.4194, 37.7749]; // San Francisco
+    if (lat >= 34.0 && lat <= 34.1 && lng >= -118.3 && lng <= -118.2) return [-118.2437, 34.0522]; // Los Angeles
+    if (lat >= 40.7 && lat <= 40.8 && lng >= -74.0 && lng <= -73.9) return [-73.9857, 40.7484]; // New York
+    if (lat >= 41.8 && lat <= 41.9 && lng >= -87.7 && lng <= -87.6) return [-87.6298, 41.8781]; // Chicago
+    if (lat >= 29.7 && lat <= 29.8 && lng >= -95.4 && lng <= -95.3) return [-95.3698, 29.7604]; // Houston
+    
+    // Default: use user location if city not recognized
+    return [lng, lat];
+  };
+
+  // Get state center coordinates based on user location
+  const getStateCenter = (lat: number, lng: number): [number, number] => {
+    // US States
+    if (lat >= 32.5 && lat <= 42.0 && lng >= -124.5 && lng <= -114.1) return [-119.4179, 36.7783]; // California
+    if (lat >= 25.8 && lat <= 31.0 && lng >= -106.6 && lng <= -93.5) return [-99.9018, 31.9686]; // Texas
+    if (lat >= 40.5 && lat <= 45.0 && lng >= -79.8 && lng <= -71.8) return [-74.9000, 42.2000]; // New York
+    if (lat >= 39.7 && lat <= 42.5 && lng >= -90.6 && lng <= -84.8) return [-89.3985, 40.6331]; // Illinois
+    if (lat >= 45.9 && lat <= 49.4 && lng >= -124.8 && lng <= -116.9) return [-120.5542, 47.0379]; // Washington
+    
+    // Default: use user location if state not recognized
+    return [lng, lat];
+  };
+
+  // Get country center coordinates based on user location
+  const getCountryCenter = (lat: number, lng: number): [number, number] => {
+    // North America
+    if (lat >= 25 && lat <= 72 && lng >= -168 && lng <= -52) return [-95.7129, 37.0902]; // USA
+    if (lat >= 42 && lat <= 83 && lng >= -141 && lng <= -52) return [-106.3468, 56.1304]; // Canada
+    if (lat >= 14 && lat <= 33 && lng >= -118 && lng <= -86) return [-102.5528, 23.6345]; // Mexico
+    
+    // Europe
+    if (lat >= 35 && lat <= 71 && lng >= -10 && lng <= 40) return [10.4515, 51.1657]; // Central Europe
+    
+    // Asia
+    if (lat >= -10 && lat <= 81 && lng >= 26 && lng <= 180) return [104.1954, 35.8617]; // Asia
+    
+    // Default: use user location
+    return [lng, lat];
+  };
+
+  // Get continent center coordinates based on user location
+  const getContinentCenter = (lat: number, lng: number): [number, number] => {
+    // North America
+    if (lat >= 7 && lat <= 83 && lng >= -168 && lng <= -34) return [-95.7129, 45.0902]; // North America
+    
+    // South America
+    if (lat >= -56 && lat <= 13 && lng >= -82 && lng <= -34) return [-58.3816, -14.2350]; // South America
+    
+    // Europe
+    if (lat >= 35 && lat <= 71 && lng >= -10 && lng <= 40) return [10.4515, 54.5260]; // Europe
+    
+    // Asia
+    if (lat >= -10 && lat <= 81 && lng >= 26 && lng <= 180) return [104.1954, 34.0479]; // Asia
+    
+    // Africa
+    if (lat >= -35 && lat <= 37 && lng >= -18 && lng <= 52) return [20.0000, 0.0000]; // Africa
+    
+    // Oceania
+    if (lat >= -47 && lat <= -10 && lng >= 113 && lng <= 180) return [133.7751, -25.2744]; // Australia/Oceania
+    
+    // Default: global center
+    return [0, 20];
+  };
+
+  // Zoom to different geographic levels with appropriate centering
   const zoomToLevel = (level: 'neighborhood' | 'city' | 'state' | 'national' | 'global') => {
     if (!map.current || !mapReady) return;
+    if (level !== 'global' && !userLocation) return;
 
     const { zoom } = ZOOM_LEVELS[level];
-
-    // For global view, center on world coordinates (0, 20), otherwise center on user location
-    const center: [number, number] = level === 'global' ? [0, 20] : [userLocation!.lng, userLocation!.lat];
+    const center = level === 'global' && !userLocation 
+      ? [0, 20] as [number, number]
+      : getGeographicCenter(level, userLocation!.lat, userLocation!.lng);
 
     map.current.flyTo({
       center: center,
