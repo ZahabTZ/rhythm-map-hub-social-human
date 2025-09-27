@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 import apiRoutes from './routes';
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.NODE_ENV === 'production' ? (process.env.PORT || 5000) : 3000;
 
 // Middleware
 app.use(cors());
