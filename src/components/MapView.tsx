@@ -20,6 +20,8 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
   // const [showTokenInput, setShowTokenInput] = useState(true);
   const [humanitarianMode, setHumanitarianMode] = useState(false);
   const humanitarianModeRef = useRef(false);
+  const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [mapReady, setMapReady] = useState(false);
   
   // Update ref whenever state changes
   useEffect(() => {
@@ -70,6 +72,12 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
       });
 
       console.log('Map created successfully');
+
+      // Set map as ready when it loads
+      map.current.on('load', () => {
+        setMapReady(true);
+        console.log('Map loaded and ready');
+      });
     } catch (error) {
       console.error('Error creating map:', error);
       return;
@@ -377,6 +385,47 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
     }
   };
 
+  // Get user's current location
+  const getUserLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setUserLocation({ lat: latitude, lng: longitude });
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+          // Fallback to San Francisco coordinates as example
+          setUserLocation({ lat: 37.7749, lng: -122.4194 });
+        }
+      );
+    } else {
+      // Fallback to San Francisco coordinates if geolocation not supported
+      setUserLocation({ lat: 37.7749, lng: -122.4194 });
+    }
+  };
+
+  // Geographic zoom level constants optimized for U.S. contexts
+  const ZOOM_LEVELS = {
+    neighborhood: { zoom: 16, description: 'Neighborhood' },
+    city: { zoom: 12, description: 'City' },
+    state: { zoom: 5.5, description: 'State' },
+    national: { zoom: 3.2, description: 'National' }
+  };
+
+  // Zoom to different geographic levels centered around user location
+  const zoomToLevel = (level: 'neighborhood' | 'city' | 'state' | 'national') => {
+    if (!map.current || !userLocation || !mapReady) return;
+
+    const { zoom } = ZOOM_LEVELS[level];
+
+    map.current.flyTo({
+      center: [userLocation.lng, userLocation.lat],
+      zoom: zoom,
+      duration: 1500
+    });
+  };
+
   const handleTokenSubmit = () => {
     console.log('handleTokenSubmit called with token:', mapboxToken.substring(0, 10) + '...');
     if (mapboxToken.trim()) {
@@ -396,6 +445,11 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
     // }
   }, [ ]);
 
+  // Get user location on component mount
+  useEffect(() => {
+    getUserLocation();
+  }, []);
+
   useEffect(() => {
     return () => {
       map.current?.remove();
@@ -407,6 +461,52 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
   return (
     <div className="relative w-full h-screen">
       <div ref={mapContainer} className="absolute inset-0" />
+      
+      {/* Geographic Zoom Level Buttons - Top Row */}
+      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
+        <div className="flex gap-2 bg-background/90 backdrop-blur-sm rounded-lg p-2 shadow-lg border">
+          <Button
+            onClick={() => zoomToLevel('neighborhood')}
+            variant="outline"
+            size="sm"
+            className="text-xs"
+            data-testid="button-zoom-neighborhood"
+            disabled={!userLocation || !mapReady}
+          >
+            Neighborhood
+          </Button>
+          <Button
+            onClick={() => zoomToLevel('city')}
+            variant="outline"
+            size="sm"
+            className="text-xs"
+            data-testid="button-zoom-city"
+            disabled={!userLocation || !mapReady}
+          >
+            City
+          </Button>
+          <Button
+            onClick={() => zoomToLevel('state')}
+            variant="outline"
+            size="sm"
+            className="text-xs"
+            data-testid="button-zoom-state"
+            disabled={!userLocation || !mapReady}
+          >
+            State
+          </Button>
+          <Button
+            onClick={() => zoomToLevel('national')}
+            variant="outline"
+            size="sm"
+            className="text-xs"
+            data-testid="button-zoom-national"
+            disabled={!userLocation || !mapReady}
+          >
+            National
+          </Button>
+        </div>
+      </div>
       
       {/* Humanitarian Mode Toggle */}
       <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-10">
