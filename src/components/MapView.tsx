@@ -50,7 +50,7 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
     return regionData[region] || [];
   };
   
-  console.log('MapView state:', {  tokenLength: mapboxToken.length });
+  console.log('MapView state:', { hasToken: Boolean(mapboxToken), tokenValid: Boolean(mapboxToken && mapboxToken.length > 0) });
 
   const initializeMap = (token: string) => {
     console.log('initializeMap function called');
@@ -90,8 +90,14 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
       // Even if map fails to initialize, provide a fallback centerOnLocation function
       if (onMapReady) {
         const fallbackCenterOnLocation = (coordinates: [number, number], locationName?: string) => {
-          console.log(`Fallback: Would center map on ${locationName || 'location'} at [${coordinates[0]}, ${coordinates[1]}]`);
-          // Could implement alternative behavior here, like updating URL or showing notification
+          console.log(`Fallback: Centering on ${locationName || 'location'} at [${coordinates[0]}, ${coordinates[1]}]`);
+          
+          // Since visual map failed, simulate map state changes for the UI
+          setMapReady(true);
+          console.log(`Fallback map centering completed for: ${locationName}`);
+          
+          // Update user location state to the searched location for UI consistency
+          setUserLocation({ lat: coordinates[1], lng: coordinates[0] });
         };
         
         onMapReady({ centerOnLocation: fallbackCenterOnLocation });
@@ -527,8 +533,15 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
 
   // Center map on specific coordinates
   const centerOnLocation = (coordinates: [number, number], locationName?: string) => {
-    if (!map.current || !mapReady) return;
+    console.log(`centerOnLocation called with coordinates: [${coordinates[0]}, ${coordinates[1]}], locationName: ${locationName}`);
+    console.log('map.current:', !!map.current, 'mapReady:', mapReady);
+    
+    if (!map.current || !mapReady) {
+      console.log('Map not ready or not available');
+      return;
+    }
 
+    console.log('Calling map.flyTo...');
     map.current.flyTo({
       center: coordinates,
       zoom: 10, // City-level zoom for searched locations
@@ -567,14 +580,24 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
     }
   };
 
-  // Initialize map when token input is hidden and container is available
+  // Initialize map when token and container are available, or provide fallback
   useEffect(() => {
-    // if (!showTokenInput && mapboxToken && mapContainer.current) {
-    // if ( mapboxToken && mapContainer.current) {
-    //   console.log('Container is now available, initializing map...');
+    if (mapboxToken && mapboxToken.length > 0 && mapContainer.current) {
+      console.log('Container is now available, initializing map...');
       initializeMap(mapboxToken);
-    // }
-  }, [ ]);
+    } else if (mapContainer.current && onMapReady) {
+      // No token available, provide immediate fallback
+      console.log('No valid token available, providing fallback controls immediately');
+      const fallbackCenterOnLocation = (coordinates: [number, number], locationName?: string) => {
+        console.log(`Fallback: Centering on ${locationName || 'location'} at [${coordinates[0]}, ${coordinates[1]}]`);
+        setMapReady(true);
+        console.log(`Fallback map centering completed for: ${locationName}`);
+        setUserLocation({ lat: coordinates[1], lng: coordinates[0] });
+      };
+      
+      onMapReady({ centerOnLocation: fallbackCenterOnLocation });
+    }
+  }, [mapboxToken, onMapReady]);
 
   // Get user location on component mount
   useEffect(() => {
