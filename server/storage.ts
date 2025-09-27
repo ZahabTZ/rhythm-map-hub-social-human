@@ -87,6 +87,7 @@ export class MemStorage implements IStorage {
   constructor() {
     // Initialize with some sample crisis data
     this.initializeSampleCrises();
+    this.initializeSampleCommunities();
   }
 
   private initializeSampleCrises() {
@@ -128,6 +129,82 @@ export class MemStorage implements IStorage {
     sampleCrises.forEach(crisis => {
       this.crises.set(crisis.id, crisis);
     });
+  }
+
+  private initializeSampleCommunities() {
+    const sampleCommunities: Community[] = [
+      {
+        id: 'community_1',
+        name: 'Climate Action SF',
+        description: 'A community dedicated to environmental action and climate change awareness in San Francisco',
+        category: 'Environmental',
+        isActive: true,
+        memberCount: 1247,
+        globalDiscussions: [],
+        localDiscussions: [],
+        createdBy: 'user_1',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: 'community_2',
+        name: 'Tech Workers Unite',
+        description: 'Supporting tech workers and promoting ethical technology practices worldwide',
+        category: 'Technology',
+        isActive: true,
+        memberCount: 3521,
+        globalDiscussions: [],
+        localDiscussions: [],
+        createdBy: 'user_2',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: 'community_3',
+        name: 'Neighborhood Watch - Mission District',
+        description: 'Local safety and community building in Mission District',
+        category: 'Safety',
+        isActive: true,
+        memberCount: 892,
+        globalDiscussions: [],
+        localDiscussions: [],
+        createdBy: 'user_3',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: 'community_4',
+        name: 'Crisis Relief Network',
+        description: 'Global network for coordinating humanitarian aid and crisis response',
+        category: 'Humanitarian',
+        isActive: true,
+        memberCount: 15674,
+        globalDiscussions: [],
+        localDiscussions: [],
+        createdBy: 'user_4',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: 'community_5',
+        name: 'Local Food Co-op',
+        description: 'Community-supported agriculture and local food networks',
+        category: 'Food',
+        isActive: true,
+        memberCount: 432,
+        globalDiscussions: [],
+        localDiscussions: [],
+        createdBy: 'user_5',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+    ];
+
+    sampleCommunities.forEach(community => {
+      this.communities.set(community.id, community);
+    });
+    
+    this.nextCommunityId = 6; // Start at 6 since we have 5 sample communities
   }
 
   private generateStoryId(): string {
