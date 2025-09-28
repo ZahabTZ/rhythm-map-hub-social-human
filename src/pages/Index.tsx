@@ -216,7 +216,7 @@ const Index = () => {
       />
       
       {/* Location Search Card - positioned below SearchBar */}
-      <div className="absolute top-80 left-6 z-10 w-96 max-w-[calc(100vw-3rem)]">
+      <div className="absolute top-52 left-6 z-20 w-96 max-w-[calc(100vw-3rem)]">
         <LocationSearchCard onLocationFound={handleLocationFound} />
       </div>
       
