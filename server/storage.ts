@@ -121,6 +121,14 @@ export class MemStorage implements IStorage {
         allowStorySubmissions: true,
       },
       {
+        id: 'gaza-2024',
+        name: 'Gaza Humanitarian Crisis',
+        location: { lat: 31.5017, lng: 34.4668, name: 'Gaza, Palestine' },
+        severity: 'Critical',
+        isActive: true,
+        allowStorySubmissions: true,
+      },
+      {
         id: 'ukraine-conflict',
         name: 'Ukraine Conflict',
         location: { lat: 50.4501, lng: 30.5234, name: 'Kyiv, Ukraine' },

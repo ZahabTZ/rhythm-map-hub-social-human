@@ -7,11 +7,40 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ArrowLeft, Users, TrendingUp, Calendar, MessageSquare, Heart, Plus } from 'lucide-react';
 import { StorySubmissionForm } from '@/components/StorySubmissionForm';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { queryClient } from '@/lib/queryClient';
+import type { Story } from '../../shared/schema';
 
 const Crisis = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [isStoryFormOpen, setIsStoryFormOpen] = useState(false);
+
+  // Fetch approved stories from API
+  const { data: apiStories = [], isLoading: storiesLoading } = useQuery<Story[]>({
+    queryKey: ['/api/stories/crisis', id],
+    queryFn: async () => {
+      const response = await fetch(`/api/stories/crisis/${id}`);
+      if (!response.ok) throw new Error('Failed to fetch stories');
+      return response.json();
+    },
+    enabled: !!id,
+  });
+
+  // Like story mutation
+  const likeStoryMutation = useMutation({
+    mutationFn: async (storyId: string) => {
+      const response = await fetch(`/api/stories/${storyId}/like`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!response.ok) throw new Error('Failed to like story');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/stories/crisis', id] });
+    },
+  });
   
   // Crisis data based on ID - using accurate data from UN sources
   const getCrisisData = (crisisId: string) => {
@@ -170,62 +199,8 @@ const Crisis = () => {
 
   const events = getEvents(id || '');
 
-  const stories = [
-    {
-      id: 1,
-      title: 'Finding Hope in Uncertainty',
-      author: 'Anna K.',
-      image: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-      excerpt: 'After fleeing with just the clothes on our backs, the kindness of strangers has restored our faith in humanity...',
-      likes: 42,
-      date: '2024-01-14'
-    },
-    {
-      id: 2,
-      title: 'Rebuilding Community',
-      author: 'Marcus T.',
-      image: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-      excerpt: 'In our temporary shelter, we have created a small school for the children. Education continues even in crisis...',
-      likes: 38,
-      date: '2024-01-13'
-    },
-    {
-      id: 3,
-      title: 'Medical Heroes on the Frontline',
-      author: 'Dr. Elena P.',
-      image: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-      excerpt: 'Working 16-hour days to provide medical care to those who need it most. Every life saved gives us strength...',
-      likes: 67,
-      date: '2024-01-12'
-    },
-    {
-      id: 4,
-      title: 'Small Acts of Kindness',
-      author: 'Fatima A.',
-      image: 'https://images.unsplash.com/photo-1544027993-37dbfe43562a?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-      excerpt: 'A warm meal shared with strangers becomes a moment of connection and hope for tomorrow...',
-      likes: 29,
-      date: '2024-01-11'
-    },
-    {
-      id: 5,
-      title: 'Letters from Home',
-      author: 'Dimitri V.',
-      image: 'https://images.unsplash.com/photo-1516534775068-ba3e7458af70?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-      excerpt: 'Messages from family members still in conflict zones remind us why we must keep fighting for peace...',
-      likes: 51,
-      date: '2024-01-10'
-    },
-    {
-      id: 6,
-      title: 'Children\'s Resilience',
-      author: 'Teacher Maria',
-      image: 'https://images.unsplash.com/photo-1497486751825-1233686d5d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-      excerpt: 'Despite everything they have been through, the children still laugh and play. Their spirit inspires us all...',
-      likes: 73,
-      date: '2024-01-09'
-    }
-  ];
+  // Use API stories
+  const stories = apiStories;
 
   return (
     <div className="min-h-screen bg-background">
@@ -375,7 +350,7 @@ const Crisis = () => {
             </div>
             
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">Community Stories</h3>
+              <h3 className="text-lg font-semibold">Community Stories ({stories.length})</h3>
               <Button
                 onClick={() => setIsStoryFormOpen(true)}
                 className="flex items-center gap-2"
@@ -386,33 +361,71 @@ const Crisis = () => {
               </Button>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {stories.map((story) => (
-                <Card key={story.id} className="overflow-hidden">
-                  <div className="aspect-video overflow-hidden">
-                    <img 
-                      src={story.image} 
-                      alt={story.title}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold mb-2">{story.title}</h3>
-                    <p className="text-sm text-muted-foreground mb-3 line-clamp-3">
-                      {story.excerpt}
-                    </p>
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-muted-foreground">by {story.author}</span>
-                      <div className="flex items-center gap-1">
-                        <Heart className="h-4 w-4 text-red-500" />
-                        <span>{story.likes}</span>
+            {storiesLoading ? (
+              <div className="text-center py-12" data-testid="text-loading-stories">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
+                <p className="text-muted-foreground">Loading stories...</p>
+              </div>
+            ) : stories.length === 0 ? (
+              <Card>
+                <CardContent className="p-12 text-center" data-testid="text-no-stories">
+                  <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-muted-foreground mb-2">
+                    No Stories Yet
+                  </h3>
+                  <p className="text-muted-foreground mb-4">
+                    Be the first to share your story from this crisis
+                  </p>
+                  <Button onClick={() => setIsStoryFormOpen(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Submit Your Story
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {stories.map((story) => (
+                  <Card key={story.id} className="overflow-hidden" data-testid={`story-card-${story.id}`}>
+                    {story.images && story.images.length > 0 && (
+                      <div className="aspect-video overflow-hidden">
+                        <img 
+                          src={story.images[0]}
+                          alt={story.title}
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                        />
                       </div>
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-1">{story.date}</div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    )}
+                    <CardContent className="p-4">
+                      <h3 className="font-semibold mb-2" data-testid={`story-title-${story.id}`}>
+                        {story.title}
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-3 line-clamp-3" data-testid={`story-excerpt-${story.id}`}>
+                        {story.excerpt}
+                      </p>
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground" data-testid={`story-author-${story.id}`}>
+                          by {story.author}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => likeStoryMutation.mutate(story.id)}
+                          disabled={likeStoryMutation.isPending}
+                          className="flex items-center gap-1"
+                          data-testid={`button-like-${story.id}`}
+                        >
+                          <Heart className="h-4 w-4 text-red-500" />
+                          <span>{story.likes}</span>
+                        </Button>
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1" data-testid={`story-date-${story.id}`}>
+                        {new Date(story.submittedAt).toLocaleDateString()}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="get-involved" className="space-y-8">
@@ -522,8 +535,8 @@ const Crisis = () => {
             allowStorySubmissions: true,
           }}
           onSubmissionSuccess={() => {
-            // In a real app, this would refresh the stories list
-            console.log('Story submitted successfully');
+            queryClient.invalidateQueries({ queryKey: ['/api/stories/crisis', id] });
+            setIsStoryFormOpen(false);
           }}
         />
       </div>
