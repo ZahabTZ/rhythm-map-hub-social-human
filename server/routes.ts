@@ -545,17 +545,7 @@ router.post('/stripe-webhook', express.raw({ type: 'application/json' }), async 
 });
 
 // Chat message routes
-router.get('/chat/:communityId', defaultJsonParser, async (req, res) => {
-  try {
-    const { communityId } = req.params;
-    const { region, thread } = req.query;
-    const messages = await storage.getChatMessagesByCommunity(communityId, region as string, thread as string);
-    res.json(messages);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch chat messages' });
-  }
-});
-
+// Note: More specific routes must come first
 router.get('/chat/:communityId/active-members', defaultJsonParser, async (req, res) => {
   try {
     const { communityId } = req.params;
@@ -564,6 +554,17 @@ router.get('/chat/:communityId/active-members', defaultJsonParser, async (req, r
     res.json(activeMembers);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch active members' });
+  }
+});
+
+router.get('/chat/:communityId', defaultJsonParser, async (req, res) => {
+  try {
+    const { communityId } = req.params;
+    const { region, thread } = req.query;
+    const messages = await storage.getChatMessagesByCommunity(communityId, region as string, thread as string);
+    res.json(messages);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch chat messages' });
   }
 });
 

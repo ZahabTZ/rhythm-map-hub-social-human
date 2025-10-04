@@ -213,6 +213,7 @@ export const ChatMessageSchema = z.object({
   id: z.string(),
   communityId: z.string(),
   region: z.enum(['neighborhood', 'city', 'state', 'national', 'global']),
+  thread: z.enum(['intro', 'content', 'faq']).default('content'),
   content: z.string().min(1, "Message content is required").max(1000, "Message too long"),
   authorId: z.string(),
   authorName: z.string(),
