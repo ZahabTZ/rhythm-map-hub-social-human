@@ -9,9 +9,10 @@ interface MapViewProps {
   onHumanitarianClick?: () => void;
   humanitarianMode?: boolean;
   onMapReady?: (mapControls: { centerOnLocation: (coordinates: [number, number], locationName?: string) => void }) => void;
+  onRegionSelect?: (region: 'neighborhood' | 'city' | 'state' | 'national' | 'global') => void;
 }
 
-const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick, humanitarianMode: externalHumanitarianMode, onMapReady }) => {
+const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick, humanitarianMode: externalHumanitarianMode, onMapReady, onRegionSelect }) => {
   console.log('MapView component rendered');
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -568,6 +569,11 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
       zoom: zoom,
       duration: 1500
     });
+
+    // Notify parent component of region selection
+    if (onRegionSelect) {
+      onRegionSelect(level);
+    }
   };
 
   const handleTokenSubmit = () => {

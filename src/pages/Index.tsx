@@ -33,6 +33,7 @@ const Index = () => {
   const [supportCardVisible, setSupportCardVisible] = useState(true);
   const [crisesSidebarOpen, setCrisesSidebarOpen] = useState(false);
   const [mapViewRef, setMapViewRef] = useState<any>(null);
+  const [selectedRegion, setSelectedRegion] = useState<'neighborhood' | 'city' | 'state' | 'national' | 'global'>('global');
 
   const handleSearch = (query: string) => {
     // TODO: Implement actual search logic
@@ -91,6 +92,11 @@ const Index = () => {
     }
   };
 
+  const handleRegionSelect = (region: 'neighborhood' | 'city' | 'state' | 'national' | 'global') => {
+    setSelectedRegion(region);
+    setSidebarOpen(true);
+  };
+
   // Admin access: Ctrl+Shift+M to access moderation dashboard
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -110,6 +116,7 @@ const Index = () => {
         onLocationSelect={handleLocationSelect}
         onHumanitarianClick={handleHumanitarianClick}
         onMapReady={setMapViewRef}
+        onRegionSelect={handleRegionSelect}
       />
       
       {/* Authentication & User Status Bar */}
@@ -226,6 +233,7 @@ const Index = () => {
         onClose={() => setSidebarOpen(false)}
         searchResults={searchResults}
         onCommunityClick={handleCommunityClick}
+        selectedRegion={selectedRegion}
       />
       
       {/* Crises Sidebar */}

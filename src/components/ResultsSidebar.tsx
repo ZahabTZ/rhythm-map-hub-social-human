@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import type { Community } from '../../shared/schema';
 import { 
   Users, 
   Music, 
@@ -26,33 +28,56 @@ interface ResultsSidebarProps {
   onClose: () => void;
   searchResults?: any[];
   onCommunityClick?: (community: any) => void;
+  selectedRegion?: 'neighborhood' | 'city' | 'state' | 'national' | 'global';
 }
 
 const ResultsSidebar: React.FC<ResultsSidebarProps> = ({ 
   isOpen, 
   onClose, 
   searchResults = [],
-  onCommunityClick
+  onCommunityClick,
+  selectedRegion = 'global'
 }) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'all' | 'communities' | 'events'>('all');
   const [isLocalMode, setIsLocalMode] = useState(true);
 
-  // Mock data for demonstration
-  const mockResults = [
-    {
-      id: '2',
-      type: 'community',
-      name: 'Castro Neighborhood Association',
-      type_detail: 'Community Group',
-      location: 'Castro District, San Francisco',
-      category: 'Neighborhood',
-      members: 2847,
-      image: '/api/placeholder/80/80',
-      meetingTime: 'First Tuesday of each month',
-      verified: true,
-      description: 'Dedicated to preserving the character and community spirit of the Castro District'
-    },
+  // Fetch communities from API
+  const { data: communities = [], isLoading } = useQuery<Community[]>({
+    queryKey: ["/api/communities"],
+  });
+
+  // Geographic scope hierarchy
+  const scopeHierarchy = ['neighborhood', 'city', 'state', 'national', 'global'];
+  const selectedScopeIndex = scopeHierarchy.indexOf(selectedRegion);
+
+  // Filter communities based on selected region and maxGeographicScope
+  // Communities shown should have maxGeographicScope >= selectedRegion
+  const filteredCommunities = communities
+    .filter(community => {
+      const communityIndex = scopeHierarchy.indexOf(community.maxGeographicScope || 'global');
+      return communityIndex >= selectedScopeIndex;
+    })
+    .sort((a, b) => (b.memberCount || 0) - (a.memberCount || 0)); // Sort by member count (most popular first)
+
+  // Convert to results format
+  const communityResults = filteredCommunities.map(community => ({
+    id: community.id,
+    type: 'community',
+    name: community.name,
+    type_detail: 'Community Group',
+    location: `${community.category}`,
+    category: community.category,
+    members: community.memberCount,
+    image: '/api/placeholder/80/80',
+    meetingTime: '',
+    verified: true,
+    description: community.description,
+    maxGeographicScope: community.maxGeographicScope
+  }));
+
+  // Mock event data (keep for now)
+  const mockEvents = [
     {
       id: '3',
       type: 'event',
@@ -65,19 +90,6 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
       image: '/api/placeholder/80/80',
       organizer: 'Chinatown Community Development Center',
       categories: ['Food', 'Culture', 'Shopping']
-    },
-    {
-      id: '5',
-      type: 'community',
-      name: 'Mission District Food Co-op',
-      type_detail: 'Cooperative',
-      location: 'Mission District, San Francisco',
-      category: 'Food & Agriculture',
-      members: 156,
-      image: '/api/placeholder/80/80',
-      meetingTime: 'Saturdays 10am-2pm',
-      verified: true,
-      description: 'Community-owned grocery cooperative focusing on locally sourced and organic foods'
     },
     {
       id: '6',
@@ -94,8 +106,8 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
     }
   ];
 
-  // Use searchResults if available, otherwise fall back to mockResults
-  const dataToUse = searchResults.length > 0 ? searchResults : mockResults;
+  // Combine communities and events
+  const dataToUse = [...communityResults, ...mockEvents];
   
   const filteredResults = activeTab === 'all' 
     ? dataToUse 
@@ -112,7 +124,12 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
         {/* Header */}
         <div className="p-4 border-b">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold">Search Results</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-semibold">Communities</h2>
+              <Badge variant="secondary" className="capitalize">
+                {selectedRegion}
+              </Badge>
+            </div>
             <Button variant="ghost" size="sm" onClick={onClose}>
               <X className="h-4 w-4" />
             </Button>
