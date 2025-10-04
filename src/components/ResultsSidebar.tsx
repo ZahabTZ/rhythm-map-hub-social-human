@@ -52,11 +52,12 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
   const selectedScopeIndex = scopeHierarchy.indexOf(selectedRegion);
 
   // Filter communities based on selected region and maxGeographicScope
-  // Communities shown should have maxGeographicScope >= selectedRegion
+  // Communities shown should have maxGeographicScope <= selectedRegion
+  // (e.g., if user selects "city", show neighborhood and city communities)
   const filteredCommunities = communities
     .filter(community => {
       const communityIndex = scopeHierarchy.indexOf(community.maxGeographicScope || 'global');
-      return communityIndex >= selectedScopeIndex;
+      return communityIndex <= selectedScopeIndex;
     })
     .sort((a, b) => (b.memberCount || 0) - (a.memberCount || 0)); // Sort by member count (most popular first)
 
