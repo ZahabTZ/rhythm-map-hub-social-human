@@ -74,7 +74,7 @@ export interface IStorage {
   
   // Chat message operations
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
-  getChatMessagesByCommunity(communityId: string, region?: string): Promise<ChatMessage[]>;
+  getChatMessagesByCommunity(communityId: string, region?: string, thread?: string): Promise<ChatMessage[]>;
   getMostActiveMembers(communityId: string, limit?: number): Promise<Array<{userId: string, userName: string, messageCount: number}>>;
   deleteChatMessage(messageId: string): Promise<boolean>;
   
@@ -727,10 +727,11 @@ export class MemStorage implements IStorage {
     return message;
   }
 
-  async getChatMessagesByCommunity(communityId: string, region?: string): Promise<ChatMessage[]> {
+  async getChatMessagesByCommunity(communityId: string, region?: string, thread?: string): Promise<ChatMessage[]> {
     const messages = Array.from(this.chatMessages.values())
       .filter(msg => msg.communityId === communityId)
       .filter(msg => !region || msg.region === region)
+      .filter(msg => !thread || msg.thread === thread)
       .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
     
     return messages;

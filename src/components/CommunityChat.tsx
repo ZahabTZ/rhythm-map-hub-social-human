@@ -117,8 +117,9 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
       return response.json();
     },
     onSuccess: () => {
-      // Invalidate and refetch chat messages
+      // Invalidate and refetch chat messages and active members
       queryClient.invalidateQueries({ queryKey: ['/api/chat', communityId, selectedRegion, activeThread] });
+      queryClient.invalidateQueries({ queryKey: ['/api/chat', communityId, 'active-members'] });
       setNewMessage('');
     },
   });

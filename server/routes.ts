@@ -548,8 +548,8 @@ router.post('/stripe-webhook', express.raw({ type: 'application/json' }), async 
 router.get('/chat/:communityId', defaultJsonParser, async (req, res) => {
   try {
     const { communityId } = req.params;
-    const { region } = req.query;
-    const messages = await storage.getChatMessagesByCommunity(communityId, region as string);
+    const { region, thread } = req.query;
+    const messages = await storage.getChatMessagesByCommunity(communityId, region as string, thread as string);
     res.json(messages);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch chat messages' });
