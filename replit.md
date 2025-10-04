@@ -26,6 +26,15 @@ This is a React-based crisis response and community mapping application that pro
   - Added `/api/chat/:communityId/active-members` endpoint for engagement tracking
   - Added `/api/crisis/:crisisId/community` endpoint to fetch crisis communities
   - Thread field added to ChatMessageSchema to support separate discussion channels
+- **Implemented user-based community creation system**:
+  - Each logged-in user can now create ONE community (no verified host requirement)
+  - Added `maxGeographicScope` field to Community schema (neighborhood/city/state/national/global)
+  - Backend enforces one-community-per-user rule via storage validation
+  - CreateCommunity page includes geographic scope selector with clear UI
+  - CommunityChat dynamically filters available regions based on community's maxGeographicScope
+  - Geographic hierarchy: users can filter by maxScope or smaller regions, global always available
+  - Added `/api/user/has-community` endpoint to check user's community status
+  - Cache invalidation properly handles community creation state updates
 
 ## Project Architecture
 ### Frontend Stack
