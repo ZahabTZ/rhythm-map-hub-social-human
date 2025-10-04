@@ -75,6 +75,7 @@ export const CommunitySchema = z.object({
   description: z.string().max(500, "Description too long"),
   category: z.string(), // e.g., "Health", "Education", "Environment", etc.
   createdBy: z.string(), // User ID of verified host who created it
+  maxGeographicScope: z.enum(['neighborhood', 'city', 'state', 'national', 'global']).default('global'), // Maximum geographic scope for filtering
   isActive: z.boolean().default(true),
   memberCount: z.number().default(0),
   globalDiscussions: z.array(z.string()).default([]), // Array of discussion IDs

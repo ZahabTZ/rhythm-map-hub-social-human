@@ -247,20 +247,34 @@ router.get('/communities', defaultJsonParser, async (req, res) => {
 
 router.post('/communities', requireAuth, defaultJsonParser, validateBody(InsertCommunitySchema), async (req: any, res) => {
   try {
-    // Check if user is verified host
+    // Check if user is verified host - REMOVED: Allow any logged-in user to create community
     const user = req.user;
-    if (!user.isVerifiedHost || (user.verifiedHostExpiresAt && new Date(user.verifiedHostExpiresAt) <= new Date())) {
-      return res.status(403).json({ error: 'Verified host status required' });
-    }
+    // if (!user.isVerifiedHost || (user.verifiedHostExpiresAt && new Date(user.verifiedHostExpiresAt) <= new Date())) {
+    //   return res.status(403).json({ error: 'Verified host status required' });
+    // }
 
     const community = await storage.createCommunity({
       ...req.body,
       createdBy: user.id, // Set server-side from authenticated user
     });
     res.status(201).json(community);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating community:', error);
+    if (error.message && error.message.includes('already has a community')) {
+      return res.status(400).json({ error: error.message });
+    }
     res.status(500).json({ error: 'Failed to create community' });
+  }
+});
+
+router.get('/user/has-community', requireAuth, defaultJsonParser, async (req: any, res) => {
+  try {
+    const user = req.user;
+    const hasCommunity = await storage.hasUserCreatedCommunity(user.id);
+    res.json({ hasCommunity });
+  } catch (error) {
+    console.error('Error checking user community:', error);
+    res.status(500).json({ error: 'Failed to check user community' });
   }
 });
 

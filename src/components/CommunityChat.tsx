@@ -83,6 +83,16 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
     }
   ];
 
+  // Fetch community data to get maxGeographicScope
+  const { data: community } = useQuery({
+    queryKey: ['/api/communities', communityId],
+    queryFn: async () => {
+      const response = await fetch(`/api/communities/${communityId}`);
+      if (!response.ok) throw new Error('Failed to fetch community');
+      return response.json();
+    },
+  });
+
   // Fetch chat messages with React Query
   const { data: messages = [], isLoading, refetch } = useQuery<ChatMessage[]>({
     queryKey: ['/api/chat', communityId, selectedRegion, activeThread],
@@ -104,6 +114,24 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
     },
     refetchInterval: 10000, // Refresh every 10 seconds
   });
+  
+  // Determine available regions based on community's maxGeographicScope
+  const getAvailableRegions = () => {
+    const maxScope = community?.maxGeographicScope || 'global';
+    const scopeHierarchy = ['neighborhood', 'city', 'state', 'national', 'global'];
+    const maxIndex = scopeHierarchy.indexOf(maxScope);
+    
+    // Always include global, then add regions up to maxScope
+    const available = ['global'];
+    for (let i = 0; i <= maxIndex; i++) {
+      if (scopeHierarchy[i] !== 'global') {
+        available.push(scopeHierarchy[i]);
+      }
+    }
+    return available;
+  };
+  
+  const availableRegions = getAvailableRegions();
 
   // Send message mutation
   const sendMessageMutation = useMutation({
@@ -274,11 +302,11 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="global">🌍 Global Chat</SelectItem>
-                    <SelectItem value="national">🏛️ National Chat</SelectItem>
-                    <SelectItem value="state">🗺️ State Chat</SelectItem>
-                    <SelectItem value="city">🏢 City Chat</SelectItem>
-                    <SelectItem value="neighborhood">🏠 Neighborhood Chat</SelectItem>
+                    {availableRegions.includes('global') && <SelectItem value="global">🌍 Global Chat</SelectItem>}
+                    {availableRegions.includes('national') && <SelectItem value="national">🏛️ National Chat</SelectItem>}
+                    {availableRegions.includes('state') && <SelectItem value="state">🗺️ State Chat</SelectItem>}
+                    {availableRegions.includes('city') && <SelectItem value="city">🏢 City Chat</SelectItem>}
+                    {availableRegions.includes('neighborhood') && <SelectItem value="neighborhood">🏠 Neighborhood Chat</SelectItem>}
                   </SelectContent>
                 </Select>
               </div>

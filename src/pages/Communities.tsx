@@ -16,7 +16,7 @@ import CommunityChat from "@/components/CommunityChat";
 import DirectMessaging from "@/components/DirectMessaging";
 
 export default function Communities() {
-  const { user, isVerifiedHost } = useAuth();
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [isLocalMode, setIsLocalMode] = useState(false);
   const [activeTab, setActiveTab] = useState("feed");
@@ -246,7 +246,7 @@ export default function Communities() {
                 <p className="text-gray-500 mb-4">
                   {searchTerm ? "Try adjusting your search terms" : "Be the first to create a community!"}
                 </p>
-                {isVerifiedHost && !searchTerm && (
+                {user && !searchTerm && (
                   <Link to="/create-community" data-testid="link-create-first-community">
                     <Button className="bg-blue-600 hover:bg-blue-700">
                       <Plus className="h-4 w-4 mr-2" />

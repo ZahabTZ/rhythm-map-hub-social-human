@@ -45,6 +45,7 @@ export interface IStorage {
   
   // Community operations
   createCommunity(community: InsertCommunity & { createdBy: string }): Promise<Community>;
+  hasUserCreatedCommunity(userId: string): Promise<boolean>;
   getAllCommunities(): Promise<Community[]>;
   getCommunityById(communityId: string): Promise<Community | null>;
   getCommunityByCrisisId(crisisId: string): Promise<Community | null>;
@@ -209,6 +210,7 @@ export class MemStorage implements IStorage {
         name: data.name,
         description: data.description,
         category: data.category as any,
+        maxGeographicScope: 'global' as const,
         isActive: true,
         memberCount: 0,
         globalDiscussions: [],
@@ -228,6 +230,7 @@ export class MemStorage implements IStorage {
         name: 'Climate Action SF',
         description: 'A community dedicated to environmental action and climate change awareness in San Francisco',
         category: 'Environmental',
+        maxGeographicScope: 'city',
         isActive: true,
         memberCount: 1247,
         globalDiscussions: [],
@@ -241,6 +244,7 @@ export class MemStorage implements IStorage {
         name: 'Tech Workers Unite',
         description: 'Supporting tech workers and promoting ethical technology practices worldwide',
         category: 'Technology',
+        maxGeographicScope: 'global',
         isActive: true,
         memberCount: 3521,
         globalDiscussions: [],
@@ -254,6 +258,7 @@ export class MemStorage implements IStorage {
         name: 'Neighborhood Watch - Mission District',
         description: 'Local safety and community building in Mission District',
         category: 'Safety',
+        maxGeographicScope: 'neighborhood',
         isActive: true,
         memberCount: 892,
         globalDiscussions: [],
@@ -267,6 +272,7 @@ export class MemStorage implements IStorage {
         name: 'Crisis Relief Network',
         description: 'Global network for coordinating humanitarian aid and crisis response',
         category: 'Humanitarian',
+        maxGeographicScope: 'global',
         isActive: true,
         memberCount: 15674,
         globalDiscussions: [],
@@ -280,6 +286,7 @@ export class MemStorage implements IStorage {
         name: 'Local Food Co-op',
         description: 'Community-supported agriculture and local food networks',
         category: 'Food',
+        maxGeographicScope: 'city',
         isActive: true,
         memberCount: 432,
         globalDiscussions: [],
@@ -478,6 +485,15 @@ export class MemStorage implements IStorage {
 
   // Community operations
   async createCommunity(communityData: InsertCommunity & { createdBy: string }): Promise<Community> {
+    // Check if user already has a community (excluding system-created crisis communities)
+    const existingCommunity = Array.from(this.communities.values()).find(
+      c => c.createdBy === communityData.createdBy && c.createdBy !== 'system'
+    );
+    
+    if (existingCommunity) {
+      throw new Error('User already has a community. Each user can only create one community.');
+    }
+    
     const id = `community_${this.nextCommunityId++}`;
     const community: Community = {
       ...communityData,
@@ -491,6 +507,13 @@ export class MemStorage implements IStorage {
 
     this.communities.set(id, community);
     return community;
+  }
+  
+  async hasUserCreatedCommunity(userId: string): Promise<boolean> {
+    const userCommunity = Array.from(this.communities.values()).find(
+      c => c.createdBy === userId && c.createdBy !== 'system'
+    );
+    return !!userCommunity;
   }
 
   async getAllCommunities(): Promise<Community[]> {

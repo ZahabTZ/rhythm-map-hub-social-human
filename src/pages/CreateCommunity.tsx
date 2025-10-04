@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuth } from "@/contexts/AuthContext";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ const CreateCommunitySchema = z.object({
   name: z.string().min(1, "Community name is required").max(100, "Community name too long"),
   description: z.string().max(500, "Description too long"),
   category: z.string().min(1, "Category is required"),
+  maxGeographicScope: z.enum(['neighborhood', 'city', 'state', 'national', 'global']).default('global'),
   tags: z.string().optional(),
   isPublic: z.boolean().default(true),
   requiresApproval: z.boolean().default(false),
@@ -29,10 +30,16 @@ const CreateCommunitySchema = z.object({
 type CreateCommunityForm = z.infer<typeof CreateCommunitySchema>;
 
 export default function CreateCommunity() {
-  const { user, isVerifiedHost } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Check if user already has a community
+  const { data: hasCommunityData } = useQuery({
+    queryKey: ["/api/user/has-community"],
+    enabled: !!user,
+  });
 
   const form = useForm<CreateCommunityForm>({
     resolver: zodResolver(CreateCommunitySchema),
@@ -40,6 +47,7 @@ export default function CreateCommunity() {
       name: "",
       description: "",
       category: "",
+      maxGeographicScope: "global",
       tags: "",
       isPublic: true,
       requiresApproval: false,
@@ -79,7 +87,7 @@ export default function CreateCommunity() {
     createCommunityMutation.mutate(data);
   };
 
-  // Check if user is authenticated and verified
+  // Check if user is authenticated
   if (!user) {
     return (
       <div className="container mx-auto py-8 px-4">
@@ -95,23 +103,24 @@ export default function CreateCommunity() {
     );
   }
 
-  if (!isVerifiedHost) {
+  // Check if user already has a community
+  if (hasCommunityData?.hasCommunity) {
     return (
       <div className="container mx-auto py-8 px-4">
         <Card className="max-w-md mx-auto">
           <CardHeader>
-            <CardTitle>Verified Host Required</CardTitle>
+            <CardTitle>Community Limit Reached</CardTitle>
             <CardDescription>
-              You need to become a verified host to create communities.
+              You already have a community. Each user can only create one community.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button 
-              onClick={() => navigate("/become-host")} 
+              onClick={() => navigate("/communities")} 
               className="w-full"
-              data-testid="button-become-host"
+              data-testid="button-view-communities"
             >
-              Become a Verified Host ($50/year)
+              View My Communities
             </Button>
           </CardContent>
         </Card>
@@ -222,6 +231,34 @@ export default function CreateCommunity() {
 
               <FormField
                 control={form.control}
+                name="maxGeographicScope"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Maximum Geographic Scope</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger data-testid="select-max-scope">
+                          <SelectValue placeholder="Select geographic scope" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="neighborhood">Neighborhood - Most Local</SelectItem>
+                        <SelectItem value="city">City</SelectItem>
+                        <SelectItem value="state">State/Province</SelectItem>
+                        <SelectItem value="national">National</SelectItem>
+                        <SelectItem value="global">Global - Worldwide</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      Chat members can filter by this scope or smaller. Global is always available.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="tags"
                 render={({ field }) => (
                   <FormItem>
@@ -296,12 +333,12 @@ export default function CreateCommunity() {
               </div>
 
               <div className="bg-muted p-4 rounded-lg">
-                <h4 className="font-semibold mb-2">Global & Local Features</h4>
+                <h4 className="font-semibold mb-2">Geographic Scope</h4>
                 <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• All communities start with global discussions</li>
-                  <li>• Members can toggle to "local mode" to see discussions from nearby users</li>
-                  <li>• Local filtering is based on user location within 50km radius</li>
-                  <li>• You can moderate both global and local discussions</li>
+                  <li>• Set the maximum geographic scope for chat filtering</li>
+                  <li>• Members can filter by your chosen scope or smaller regions</li>
+                  <li>• Global chat is always available regardless of scope</li>
+                  <li>• Example: State scope allows state, city, and neighborhood filters</li>
                 </ul>
               </div>
 
