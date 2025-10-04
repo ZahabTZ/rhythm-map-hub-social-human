@@ -47,6 +47,7 @@ export interface IStorage {
   createCommunity(community: InsertCommunity & { createdBy: string }): Promise<Community>;
   getAllCommunities(): Promise<Community[]>;
   getCommunityById(communityId: string): Promise<Community | null>;
+  getCommunityByCrisisId(crisisId: string): Promise<Community | null>;
   getCommunitiesByCreator(userId: string): Promise<Community[]>;
   updateCommunity(communityId: string, updates: Partial<Community>): Promise<Community>;
   
@@ -74,6 +75,7 @@ export interface IStorage {
   // Chat message operations
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
   getChatMessagesByCommunity(communityId: string, region?: string): Promise<ChatMessage[]>;
+  getMostActiveMembers(communityId: string, limit?: number): Promise<Array<{userId: string, userName: string, messageCount: number}>>;
   deleteChatMessage(messageId: string): Promise<boolean>;
   
   // Direct message operations
@@ -156,6 +158,66 @@ export class MemStorage implements IStorage {
 
     sampleCrises.forEach(crisis => {
       this.crises.set(crisis.id, crisis);
+    });
+    
+    // Create crisis-specific communities
+    this.createCrisisCommunities();
+  }
+  
+  private createCrisisCommunities() {
+    const crisisCommunitiesData = [
+      {
+        id: 'crisis_community_gaza-2024',
+        crisisId: 'gaza-2024',
+        name: 'Gaza Crisis Support Community',
+        description: 'Community supporting those affected by the Gaza humanitarian crisis',
+        category: 'Crisis Response',
+      },
+      {
+        id: 'crisis_community_ukraine-conflict',
+        crisisId: 'ukraine-conflict',
+        name: 'Ukraine Crisis Support Community',
+        description: 'Supporting those affected by the Ukraine conflict',
+        category: 'Crisis Response',
+      },
+      {
+        id: 'crisis_community_syria-crisis',
+        crisisId: 'syria-crisis',
+        name: 'Syria Crisis Support Community',
+        description: 'Aid and support for Syrian crisis victims',
+        category: 'Humanitarian',
+      },
+      {
+        id: 'crisis_community_sudan-crisis',
+        crisisId: 'sudan-crisis',
+        name: 'Sudan Crisis Support Community',
+        description: 'Supporting those affected by the Sudan crisis',
+        category: 'Crisis Response',
+      },
+      {
+        id: 'crisis_community_1',
+        crisisId: '1',
+        name: 'Eastern Europe Refugee Support',
+        description: 'Support community for Eastern Europe refugee crisis',
+        category: 'Humanitarian',
+      },
+    ];
+    
+    crisisCommunitiesData.forEach(data => {
+      const community: Community = {
+        id: data.id,
+        name: data.name,
+        description: data.description,
+        category: data.category as any,
+        isActive: true,
+        memberCount: 0,
+        globalDiscussions: [],
+        localDiscussions: [],
+        createdBy: 'system',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      this.communities.set(data.id, community);
     });
   }
 
@@ -438,6 +500,11 @@ export class MemStorage implements IStorage {
   async getCommunityById(communityId: string): Promise<Community | null> {
     return this.communities.get(communityId) || null;
   }
+  
+  async getCommunityByCrisisId(crisisId: string): Promise<Community | null> {
+    const communityId = `crisis_community_${crisisId}`;
+    return this.communities.get(communityId) || null;
+  }
 
   async getCommunitiesByCreator(userId: string): Promise<Community[]> {
     return Array.from(this.communities.values()).filter(c => c.createdBy === userId && c.isActive);
@@ -667,6 +734,37 @@ export class MemStorage implements IStorage {
       .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
     
     return messages;
+  }
+  
+  async getMostActiveMembers(communityId: string, limit: number = 10): Promise<Array<{userId: string, userName: string, messageCount: number}>> {
+    const messages = Array.from(this.chatMessages.values())
+      .filter(msg => msg.communityId === communityId);
+    
+    // Count messages per user
+    const userMessageCount = new Map<string, {userId: string, userName: string, count: number}>();
+    
+    messages.forEach(msg => {
+      const existing = userMessageCount.get(msg.authorId);
+      if (existing) {
+        existing.count++;
+      } else {
+        userMessageCount.set(msg.authorId, {
+          userId: msg.authorId,
+          userName: msg.authorName,
+          count: 1
+        });
+      }
+    });
+    
+    // Sort by message count and return top members
+    return Array.from(userMessageCount.values())
+      .sort((a, b) => b.count - a.count)
+      .slice(0, limit)
+      .map(user => ({
+        userId: user.userId,
+        userName: user.userName,
+        messageCount: user.count
+      }));
   }
 
   async deleteChatMessage(messageId: string): Promise<boolean> {

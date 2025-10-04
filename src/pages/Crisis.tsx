@@ -469,14 +469,11 @@ const Crisis = () => {
                 <Button 
                   className="w-full mt-4"
                   onClick={() => {
+                    const communityId = `crisis_community_${id}`;
                     const params = new URLSearchParams({
-                      id: 'gaza-crisis',
-                      name: 'Gaza Crisis Support Community',
-                      type: 'Humanitarian Support',
-                      location: 'Gaza, Palestine',
+                      id: communityId,
+                      name: `${crisisData.name} Support Community`,
                       category: 'Crisis Response',
-                      members: '50000',
-                      description: 'Community supporting those affected by the Gaza humanitarian crisis'
                     });
                     navigate(`/community-chat?${params.toString()}`);
                   }}

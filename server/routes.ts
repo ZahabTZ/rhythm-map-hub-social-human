@@ -556,6 +556,17 @@ router.get('/chat/:communityId', defaultJsonParser, async (req, res) => {
   }
 });
 
+router.get('/chat/:communityId/active-members', defaultJsonParser, async (req, res) => {
+  try {
+    const { communityId } = req.params;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const activeMembers = await storage.getMostActiveMembers(communityId, limit);
+    res.json(activeMembers);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch active members' });
+  }
+});
+
 router.post('/chat', defaultJsonParser, validateBody(InsertChatMessageSchema), async (req, res) => {
   try {
     const message = await storage.createChatMessage(req.body);
@@ -575,6 +586,20 @@ router.delete('/chat/:messageId', defaultJsonParser, async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete chat message' });
+  }
+});
+
+// Crisis-specific community routes
+router.get('/crisis/:crisisId/community', defaultJsonParser, async (req, res) => {
+  try {
+    const { crisisId } = req.params;
+    const community = await storage.getCommunityByCrisisId(crisisId);
+    if (!community) {
+      return res.status(404).json({ error: 'Community not found for this crisis' });
+    }
+    res.json(community);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch crisis community' });
   }
 });
 

@@ -58,7 +58,6 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
 }) => {
   const [selectedRegion, setSelectedRegion] = useState<'neighborhood' | 'city' | 'state' | 'national' | 'global'>('global');
   const [newMessage, setNewMessage] = useState('');
-  const [onlineUsers, setOnlineUsers] = useState<CommunityUser[]>([]);
   const [activeThread, setActiveThread] = useState<'intro' | 'content' | 'faq'>('content');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -94,6 +93,17 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
     },
     refetchInterval: 3000, // Poll every 3 seconds for near-real-time updates
   });
+  
+  // Fetch most active members
+  const { data: activeMembersData = [] } = useQuery<Array<{userId: string, userName: string, messageCount: number}>>({
+    queryKey: ['/api/chat', communityId, 'active-members'],
+    queryFn: async () => {
+      const response = await fetch(`/api/chat/${communityId}/active-members?limit=10`);
+      if (!response.ok) throw new Error('Failed to fetch active members');
+      return response.json();
+    },
+    refetchInterval: 10000, // Refresh every 10 seconds
+  });
 
   // Send message mutation
   const sendMessageMutation = useMutation({
@@ -112,38 +122,6 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
       setNewMessage('');
     },
   });
-
-  // Sample users for demonstration  
-  const sampleUsers: CommunityUser[] = [
-    {
-      id: 'user_1',
-      name: 'Alex Rivera',
-      isOnline: true,
-      location: { region: 'global', name: 'Global Community' }
-    },
-    {
-      id: 'user_2',
-      name: 'Sarah Chen',
-      isOnline: true,
-      location: { region: 'city', name: 'San Francisco, CA' }
-    },
-    {
-      id: 'user_3',
-      name: 'Maria Santos',
-      isOnline: false,
-      location: { region: 'city', name: 'San Francisco, CA' }
-    },
-    {
-      id: 'user_4',
-      name: 'David Kim',
-      isOnline: true,
-      location: { region: 'neighborhood', name: 'Mission District, SF' }
-    }
-  ];
-
-  useEffect(() => {
-    setOnlineUsers(sampleUsers);
-  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -170,10 +148,6 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
     }
   };
-
-  const regionUsers = onlineUsers.filter(user => 
-    user.location?.region === selectedRegion || selectedRegion === 'global'
-  );
 
   const handleSendMessage = () => {
     if (!newMessage.trim() || sendMessageMutation.isPending) return;
@@ -410,74 +384,69 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
           </Card>
         </div>
 
-        {/* Users Sidebar */}
+        {/* Active Members Sidebar */}
         <div className="lg:col-span-1">
           <Card className="h-full">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2">
                 <Users className="h-4 w-4" />
-                Online Users ({regionUsers.filter(u => u.isOnline).length})
+                Most Active Members ({activeMembersData.length})
               </CardTitle>
             </CardHeader>
 
             <CardContent className="p-0">
               <ScrollArea className="h-[500px]">
                 <div className="space-y-1 p-4">
-                  {regionUsers.map((user) => (
-                    <div
-                      key={user.id}
-                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted cursor-pointer transition-colors"
-                      onClick={() => handleUserClick(user.id, user.name)}
-                      data-testid={`user-${user.id}`}
-                    >
-                      <div className="relative">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={user.avatar} />
-                          <AvatarFallback className="text-xs">
-                            {user.name.substring(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div 
-                          className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-background ${
-                            user.isOnline ? 'bg-green-500' : 'bg-gray-400'
-                          }`}
-                          data-testid={`status-${user.id}`}
-                        />
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{user.name}</p>
-                        {user.location && (
-                          <p className="text-xs text-muted-foreground truncate">
-                            {user.location.name}
+                  {activeMembersData.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground text-sm" data-testid="text-no-members">
+                      <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p>No active members yet</p>
+                      <p className="text-xs mt-1">Be the first to chat!</p>
+                    </div>
+                  ) : (
+                    activeMembersData.map((member, index) => (
+                      <div
+                        key={member.userId}
+                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted cursor-pointer transition-colors"
+                        onClick={() => handleUserClick(member.userId, member.userName)}
+                        data-testid={`user-${member.userId}`}
+                      >
+                        <div className="relative">
+                          <Avatar className="h-8 w-8">
+                            <AvatarFallback className="text-xs">
+                              {member.userName.substring(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          {index < 3 && (
+                            <div className="absolute -top-1 -right-1 bg-yellow-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                              {index + 1}
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{member.userName}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {member.messageCount} message{member.messageCount !== 1 ? 's' : ''}
                           </p>
+                        </div>
+                        
+                        {member.userId !== currentUserId && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-6 w-6 p-0"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleUserClick(member.userId, member.userName);
+                            }}
+                            data-testid={`button-dm-${member.userId}`}
+                          >
+                            <MessageSquare className="h-3 w-3" />
+                          </Button>
                         )}
                       </div>
-                      
-                      {user.id !== currentUserId && (
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-6 w-6 p-0"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleUserClick(user.id, user.name);
-                          }}
-                          data-testid={`button-dm-${user.id}`}
-                        >
-                          <MessageSquare className="h-3 w-3" />
-                        </Button>
-                      )}
-                    </div>
-                  ))}
-                  
-                  {regionUsers.length === 0 && (
-                    <div className="text-center py-8" data-testid="text-no-users">
-                      <Users className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                      <p className="text-sm text-muted-foreground">
-                        No users in this region yet
-                      </p>
-                    </div>
+                    ))
                   )}
                 </div>
               </ScrollArea>
