@@ -35,6 +35,13 @@ This is a React-based crisis response and community mapping application that pro
   - Geographic hierarchy: users can filter by maxScope or smaller regions, global always available
   - Added `/api/user/has-community` endpoint to check user's community status
   - Cache invalidation properly handles community creation state updates
+- **Implemented region-based community discovery on home screen**:
+  - Region selector buttons (Neighborhood/City/State/National/Global) on map now trigger community discovery
+  - ResultsSidebar displays most popular communities filtered by selected region and maxGeographicScope
+  - Filtering logic: selecting narrower regions shows fewer communities (more focused), broader regions show more
+  - Communities sorted by popularity (memberCount) in descending order
+  - Geographic hierarchy properly enforced: neighborhood < city < state < national < global
+  - Sidebar header displays selected region as a badge for clarity
 
 ## Project Architecture
 ### Frontend Stack
