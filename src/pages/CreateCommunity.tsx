@@ -36,7 +36,7 @@ export default function CreateCommunity() {
   const queryClient = useQueryClient();
   
   // Check if user already has a community
-  const { data: hasCommunityData } = useQuery({
+  const { data: hasCommunityData } = useQuery<{ hasCommunity: boolean }>({
     queryKey: ["/api/user/has-community"],
     enabled: !!user,
   });
@@ -72,6 +72,7 @@ export default function CreateCommunity() {
         description: "Your community has been created successfully!",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/communities"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/user/has-community"] });
       navigate(`/communities/${community.id}`);
     },
     onError: (error: any) => {

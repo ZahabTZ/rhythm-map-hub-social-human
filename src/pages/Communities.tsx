@@ -108,7 +108,7 @@ export default function Communities() {
                 Messages
               </Button>
               
-              {isVerifiedHost && (
+              {user && (
                 <Link to="/create-community" data-testid="link-create-community">
                   <Button className="bg-blue-600 hover:bg-blue-700">
                     <Plus className="h-4 w-4 mr-2" />
