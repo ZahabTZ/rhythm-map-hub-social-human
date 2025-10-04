@@ -12,6 +12,7 @@ import VerifiedHostPayment from "./pages/VerifiedHostPayment";
 import CreateCommunity from "./pages/CreateCommunity";
 import CommunityPage from "./pages/CommunityChat";
 import Supadmin from "./pages/Supadmin";
+import Join from "./pages/Join";
 import { queryClient } from "@/lib/queryClient";
 import { AuthProvider } from "./contexts/AuthContext";
 
@@ -25,6 +26,7 @@ const App = () => (
           <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/join" element={<Join />} />
             <Route path="/crisis/:id" element={<Crisis />} />
             <Route path="/communities" element={<Communities />} />
             <Route path="/moderation" element={<Moderation />} />
