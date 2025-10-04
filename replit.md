@@ -11,11 +11,13 @@ This is a React-based crisis response and community mapping application that pro
 - ✅ MapBox integration working with provided API token
 - ✅ Deployment configuration set up for autoscale
 
-## Recent Changes (September 23, 2025)
-- Configured Vite server to use port 5000 and host 0.0.0.0 for Replit compatibility
-- Set up frontend workflow "Start application" running `npm run dev`
-- Configured deployment settings for autoscale deployment target
-- Verified MapBox token is properly configured in .env file
+## Recent Changes (October 4, 2025)
+- Added Gaza Humanitarian Crisis to backend storage with full story submission support
+- Created password-protected /supadmin admin panel for story moderation
+- Implemented complete story approval workflow: submit → pending review → admin approval → public display
+- Updated Crisis pages to fetch and display approved stories from API
+- Added error handling and loading states for story fetching and moderation
+- Integrated React Query for story management and cache invalidation
 
 ## Project Architecture
 ### Frontend Stack

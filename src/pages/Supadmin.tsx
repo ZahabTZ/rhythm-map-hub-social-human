@@ -14,7 +14,8 @@ import {
   MapPin, 
   User,
   Eye,
-  Lock 
+  Lock,
+  AlertCircle
 } from 'lucide-react';
 import { queryClient, apiRequest } from '@/lib/queryClient';
 import type { Story, ModerationAction } from '../../shared/schema';
@@ -23,31 +24,59 @@ import { useToast } from '@/hooks/use-toast';
 export default function Supadmin() {
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [moderatorKey, setModeratorKey] = useState('');
   const [selectedStory, setSelectedStory] = useState<Story | null>(null);
   const [moderationNotes, setModerationNotes] = useState('');
   const { toast } = useToast();
 
-  const handleLogin = () => {
-    localStorage.setItem('moderatorKey', password);
-    setIsAuthenticated(true);
-    toast({
-      title: 'Authenticated',
-      description: 'Access granted to moderation panel',
-    });
-  };
-
-  const { data: pendingStories = [], isLoading } = useQuery<Story[]>({
-    queryKey: ['/api/stories/pending'],
-    queryFn: async () => {
-      const moderatorKey = localStorage.getItem('moderatorKey');
+  const handleLogin = async () => {
+    try {
       const response = await fetch('/api/stories/pending', {
         headers: {
-          'X-Moderator-Key': moderatorKey || '',
+          'X-Moderator-Key': password,
+        },
+      });
+      
+      if (response.ok) {
+        setModeratorKey(password);
+        setIsAuthenticated(true);
+        toast({
+          title: 'Authenticated',
+          description: 'Access granted to moderation panel',
+        });
+      } else {
+        toast({
+          title: 'Authentication Failed',
+          description: 'Invalid password. Please try again.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to authenticate. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const { data: pendingStories = [], isLoading, error } = useQuery<Story[]>({
+    queryKey: ['/api/stories/pending'],
+    queryFn: async () => {
+      const response = await fetch('/api/stories/pending', {
+        headers: {
+          'X-Moderator-Key': moderatorKey,
         },
       });
       if (!response.ok) {
         if (response.status === 403) {
           setIsAuthenticated(false);
+          setModeratorKey('');
+          toast({
+            title: 'Session Expired',
+            description: 'Please login again',
+            variant: 'destructive',
+          });
           throw new Error('Unauthorized');
         }
         throw new Error('Failed to fetch pending stories');
@@ -60,12 +89,11 @@ export default function Supadmin() {
 
   const moderateMutation = useMutation({
     mutationFn: async (actionData: ModerationAction) => {
-      const moderatorKey = localStorage.getItem('moderatorKey');
       const response = await fetch(`/api/stories/${actionData.storyId}/moderate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Moderator-Key': moderatorKey || '',
+          'X-Moderator-Key': moderatorKey,
         },
         body: JSON.stringify({
           action: actionData.action,
@@ -83,6 +111,13 @@ export default function Supadmin() {
       toast({
         title: 'Success',
         description: 'Story moderation completed',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Moderation Failed',
+        description: error.message || 'Failed to moderate story. Please try again.',
+        variant: 'destructive',
       });
     },
   });
@@ -157,7 +192,8 @@ export default function Supadmin() {
               variant="outline" 
               onClick={() => {
                 setIsAuthenticated(false);
-                localStorage.removeItem('moderatorKey');
+                setModeratorKey('');
+                setPassword('');
               }}
               data-testid="button-logout"
             >
@@ -180,6 +216,18 @@ export default function Supadmin() {
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
                 <p className="text-gray-400">Loading pending stories...</p>
               </div>
+            ) : error ? (
+              <Card className="bg-gray-900 border-gray-700">
+                <CardContent className="p-12 text-center" data-testid="text-error">
+                  <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-400 mb-2">
+                    Failed to Load Stories
+                  </h3>
+                  <p className="text-gray-500">
+                    {error.message || 'An error occurred while loading pending stories'}
+                  </p>
+                </CardContent>
+              </Card>
             ) : pendingStories.length === 0 ? (
               <Card className="bg-gray-900 border-gray-700">
                 <CardContent className="p-12 text-center" data-testid="text-no-stories">

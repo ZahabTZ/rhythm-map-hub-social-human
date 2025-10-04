@@ -17,7 +17,7 @@ const Crisis = () => {
   const [isStoryFormOpen, setIsStoryFormOpen] = useState(false);
 
   // Fetch approved stories from API
-  const { data: apiStories = [], isLoading: storiesLoading } = useQuery<Story[]>({
+  const { data: apiStories = [], isLoading: storiesLoading, error: storiesError } = useQuery<Story[]>({
     queryKey: ['/api/stories/crisis', id],
     queryFn: async () => {
       const response = await fetch(`/api/stories/crisis/${id}`);
@@ -366,6 +366,18 @@ const Crisis = () => {
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
                 <p className="text-muted-foreground">Loading stories...</p>
               </div>
+            ) : storiesError ? (
+              <Card>
+                <CardContent className="p-12 text-center" data-testid="text-error-stories">
+                  <MessageSquare className="h-12 w-12 text-red-500 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-muted-foreground mb-2">
+                    Failed to Load Stories
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Unable to fetch stories at this time. Please try again later.
+                  </p>
+                </CardContent>
+              </Card>
             ) : stories.length === 0 ? (
               <Card>
                 <CardContent className="p-12 text-center" data-testid="text-no-stories">
