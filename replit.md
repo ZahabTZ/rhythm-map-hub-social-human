@@ -18,6 +18,14 @@ This is a React-based crisis response and community mapping application that pro
 - Updated Crisis pages to fetch and display approved stories from API
 - Added error handling and loading states for story fetching and moderation
 - Integrated React Query for story management and cache invalidation
+- **Implemented crisis-specific community chat system**:
+  - Each crisis now has a dedicated community (e.g., "crisis_community_gaza-2024")
+  - Join Community Chat button navigates users to crisis-specific communities
+  - Replaced "Online Users" with "Most Active Members" ranked by message count
+  - All 3 chat threads (Introductions, General Discussion, FAQ & Help) work correctly with thread filtering
+  - Added `/api/chat/:communityId/active-members` endpoint for engagement tracking
+  - Added `/api/crisis/:crisisId/community` endpoint to fetch crisis communities
+  - Thread field added to ChatMessageSchema to support separate discussion channels
 
 ## Project Architecture
 ### Frontend Stack
