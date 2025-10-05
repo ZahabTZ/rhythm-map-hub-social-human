@@ -9,6 +9,7 @@ import CommunityChat from '@/components/CommunityChat';
 import SupportCard from '@/components/SupportCard';
 import CrisesSidebar from '@/components/CrisesSidebar';
 import { ModerationStatus } from '@/components/ModerationStatus';
+import { SocialProfiles } from '@/components/SocialProfiles';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -160,22 +161,19 @@ const Index = () => {
                   </div>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent align="end" className="w-80">
+                <div className="p-3">
+                  {user && <SocialProfiles user={user} />}
+                </div>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate('/communities')} data-testid="menu-communities">
                   <Users className="h-4 w-4 mr-2" />
                   View Communities
                 </DropdownMenuItem>
-                {isVerifiedHost ? (
-                  <DropdownMenuItem onClick={() => navigate('/create-community')} data-testid="menu-create-community">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Community
-                  </DropdownMenuItem>
-                ) : (
-                  <DropdownMenuItem onClick={() => navigate('/become-host')} data-testid="menu-become-host">
-                    <Crown className="h-4 w-4 mr-2" />
-                    Become Verified Host ($50/year)
-                  </DropdownMenuItem>
-                )}
+                <DropdownMenuItem onClick={() => navigate('/create-community')} data-testid="menu-create-community">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Community
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={signOut} data-testid="menu-sign-out">
                   <LogOut className="h-4 w-4 mr-2" />

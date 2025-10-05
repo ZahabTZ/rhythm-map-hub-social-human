@@ -52,7 +52,21 @@ export const ModerationActionSchema = z.object({
 
 export type ModerationAction = z.infer<typeof ModerationActionSchema>;
 
-// User schema with verified host status
+// Social profile schema
+export const SocialProfileSchema = z.object({
+  platform: z.string(), // 'twitter', 'instagram', 'linkedin', 'facebook', 'tiktok', etc.
+  username: z.string().optional(),
+  profileUrl: z.string().optional(),
+  displayName: z.string().optional(),
+  profilePicture: z.string().optional(),
+  followerCount: z.number().optional(),
+  isVerified: z.boolean().optional(),
+  connectedAt: z.string().datetime().default(() => new Date().toISOString()),
+});
+
+export type SocialProfile = z.infer<typeof SocialProfileSchema>;
+
+// User schema with verified host status and social profiles
 export const UserSchema = z.object({
   id: z.string(),
   email: z.string().email(),
@@ -62,6 +76,7 @@ export const UserSchema = z.object({
   isVerifiedHost: z.boolean().default(false),
   verifiedHostExpiresAt: z.string().datetime().optional(),
   verifiedAt: z.string().datetime().optional(),
+  socialProfiles: z.array(SocialProfileSchema).default([]), // Connected social accounts
   createdAt: z.string().datetime().default(() => new Date().toISOString()),
   lastActiveAt: z.string().datetime().default(() => new Date().toISOString()),
 });

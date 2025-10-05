@@ -5,6 +5,7 @@ import {
   ModerationAction, 
   SelectStory,
   User,
+  SocialProfile,
   Community,
   Discussion,
   Event,
@@ -42,6 +43,8 @@ export interface IStorage {
   getUserById(userId: string): Promise<User | null>;
   getUserByGoogleId(googleId: string): Promise<User | null>;
   updateUserVerifiedHostStatus(userId: string, isVerified: boolean, expiresAt?: string): Promise<User>;
+  addUserSocialProfile(userId: string, profile: SocialProfile): Promise<User>;
+  removeUserSocialProfile(userId: string, platform: string): Promise<User>;
   
   // Community operations
   createCommunity(community: InsertCommunity & { createdBy: string }): Promise<Community>;
@@ -451,6 +454,7 @@ export class MemStorage implements IStorage {
       profilePicture: googleUser.picture,
       googleId: googleUser.id,
       isVerifiedHost: false,
+      socialProfiles: [],
       createdAt: new Date().toISOString(),
       lastActiveAt: new Date().toISOString(),
     };
@@ -477,6 +481,40 @@ export class MemStorage implements IStorage {
     user.verifiedHostExpiresAt = expiresAt;
     if (isVerified) {
       user.verifiedAt = new Date().toISOString();
+    }
+
+    this.users.set(userId, user);
+    return user;
+  }
+
+  async addUserSocialProfile(userId: string, profile: SocialProfile): Promise<User> {
+    const user = this.users.get(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    if (!user.socialProfiles) {
+      user.socialProfiles = [];
+    }
+
+    // Remove existing profile for this platform
+    user.socialProfiles = user.socialProfiles.filter(p => p.platform !== profile.platform);
+    
+    // Add new profile
+    user.socialProfiles.push(profile);
+
+    this.users.set(userId, user);
+    return user;
+  }
+
+  async removeUserSocialProfile(userId: string, platform: string): Promise<User> {
+    const user = this.users.get(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    if (user.socialProfiles) {
+      user.socialProfiles = user.socialProfiles.filter(p => p.platform !== platform);
     }
 
     this.users.set(userId, user);

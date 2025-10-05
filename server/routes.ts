@@ -234,6 +234,47 @@ router.get('/auth/user', requireAuth, async (req: any, res) => {
   }
 });
 
+// Social profile routes
+router.post('/user/social-profiles', requireAuth, defaultJsonParser, async (req: any, res) => {
+  try {
+    const user = req.user;
+    const { platform, username, profileUrl } = req.body;
+    
+    if (!platform || !username) {
+      return res.status(400).json({ error: 'Platform and username are required' });
+    }
+    
+    const updatedUser = await storage.addUserSocialProfile(user.id, {
+      platform,
+      username,
+      profileUrl,
+      displayName: req.body.displayName,
+      profilePicture: req.body.profilePicture,
+      followerCount: req.body.followerCount,
+      isVerified: req.body.isVerified,
+      connectedAt: new Date().toISOString(),
+    });
+    
+    res.json(updatedUser);
+  } catch (error) {
+    console.error('Error adding social profile:', error);
+    res.status(500).json({ error: 'Failed to add social profile' });
+  }
+});
+
+router.delete('/user/social-profiles/:platform', requireAuth, defaultJsonParser, async (req: any, res) => {
+  try {
+    const user = req.user;
+    const { platform } = req.params;
+    
+    const updatedUser = await storage.removeUserSocialProfile(user.id, platform);
+    res.json(updatedUser);
+  } catch (error) {
+    console.error('Error removing social profile:', error);
+    res.status(500).json({ error: 'Failed to remove social profile' });
+  }
+});
+
 // Community routes
 router.get('/communities', defaultJsonParser, async (req, res) => {
   try {
