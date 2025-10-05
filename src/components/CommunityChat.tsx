@@ -118,7 +118,7 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
   });
   
   // Fetch most active members
-  const { data: activeMembersData = [] } = useQuery<Array<{userId: string, userName: string, messageCount: number}>>({
+  const { data: activeMembersData = [] } = useQuery<Array<{userId: string, userName: string, messageCount: number, user?: User}>>({
     queryKey: ['/api/chat', communityId, 'active-members'],
     queryFn: async () => {
       const response = await fetch(`/api/chat/${communityId}/active-members?limit=10`);
@@ -474,43 +474,53 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
                     activeMembersData.map((member, index) => (
                       <div
                         key={member.userId}
-                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted cursor-pointer transition-colors"
-                        onClick={() => handleUserClick(member.userId, member.userName)}
+                        className="p-2 rounded-lg hover:bg-muted transition-colors"
                         data-testid={`user-${member.userId}`}
                       >
-                        <div className="relative">
-                          <Avatar className="h-8 w-8">
-                            <AvatarFallback className="text-xs">
-                              {member.userName.substring(0, 2).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          {index < 3 && (
-                            <div className="absolute -top-1 -right-1 bg-yellow-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
-                              {index + 1}
-                            </div>
+                        <div className="flex items-center gap-3 cursor-pointer" onClick={() => handleUserClick(member.userId, member.userName)}>
+                          <div className="relative">
+                            <Avatar className="h-8 w-8">
+                              {member.user?.profilePicture && (
+                                <AvatarImage src={member.user.profilePicture} alt={member.userName} />
+                              )}
+                              <AvatarFallback className="text-xs">
+                                {member.userName.substring(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            {index < 3 && (
+                              <div className="absolute -top-1 -right-1 bg-yellow-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                                {index + 1}
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{member.userName}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {member.messageCount} message{member.messageCount !== 1 ? 's' : ''}
+                            </p>
+                          </div>
+                          
+                          {member.userId !== currentUserId && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-6 w-6 p-0"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleUserClick(member.userId, member.userName);
+                              }}
+                              data-testid={`button-dm-${member.userId}`}
+                            >
+                              <MessageSquare className="h-3 w-3" />
+                            </Button>
                           )}
                         </div>
                         
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{member.userName}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {member.messageCount} message{member.messageCount !== 1 ? 's' : ''}
-                          </p>
-                        </div>
-                        
-                        {member.userId !== currentUserId && (
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-6 w-6 p-0"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleUserClick(member.userId, member.userName);
-                            }}
-                            data-testid={`button-dm-${member.userId}`}
-                          >
-                            <MessageSquare className="h-3 w-3" />
-                          </Button>
+                        {member.user?.socialProfiles && member.user.socialProfiles.length > 0 && (
+                          <div className="mt-2 pl-11">
+                            <SocialProfileDisplay profiles={member.user.socialProfiles} size="sm" />
+                          </div>
                         )}
                       </div>
                     ))

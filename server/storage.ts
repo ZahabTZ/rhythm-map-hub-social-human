@@ -79,7 +79,7 @@ export interface IStorage {
   // Chat message operations
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
   getChatMessagesByCommunity(communityId: string, region?: string, thread?: string): Promise<ChatMessage[]>;
-  getMostActiveMembers(communityId: string, limit?: number): Promise<Array<{userId: string, userName: string, messageCount: number}>>;
+  getMostActiveMembers(communityId: string, limit?: number): Promise<Array<{userId: string, userName: string, messageCount: number, user?: User}>>;
   deleteChatMessage(messageId: string): Promise<boolean>;
   
   // Direct message operations
@@ -798,7 +798,7 @@ export class MemStorage implements IStorage {
     return messages;
   }
   
-  async getMostActiveMembers(communityId: string, limit: number = 10): Promise<Array<{userId: string, userName: string, messageCount: number}>> {
+  async getMostActiveMembers(communityId: string, limit: number = 10): Promise<Array<{userId: string, userName: string, messageCount: number, user?: User}>> {
     const messages = Array.from(this.chatMessages.values())
       .filter(msg => msg.communityId === communityId);
     
@@ -818,15 +818,19 @@ export class MemStorage implements IStorage {
       }
     });
     
-    // Sort by message count and return top members
+    // Sort by message count and return top members with user data
     return Array.from(userMessageCount.values())
       .sort((a, b) => b.count - a.count)
       .slice(0, limit)
-      .map(user => ({
-        userId: user.userId,
-        userName: user.userName,
-        messageCount: user.count
-      }));
+      .map(userStat => {
+        const user = this.users.get(userStat.userId);
+        return {
+          userId: userStat.userId,
+          userName: userStat.userName,
+          messageCount: userStat.count,
+          user: user || undefined
+        };
+      });
   }
 
   async deleteChatMessage(messageId: string): Promise<boolean> {
