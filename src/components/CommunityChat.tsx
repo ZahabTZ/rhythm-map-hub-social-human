@@ -26,7 +26,8 @@ import {
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 import ThreadNav from '@/components/ThreadNav';
-import type { ChatMessage } from '../../shared/schema';
+import { SocialProfileDisplay } from '@/components/SocialProfileDisplay';
+import type { ChatMessage, User } from '../../shared/schema';
 
 interface CommunityUser {
   id: string;
@@ -91,6 +92,18 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
       if (!response.ok) throw new Error('Failed to fetch community');
       return response.json();
     },
+  });
+
+  // Fetch creator's user data to show their social profiles
+  const { data: creator } = useQuery<User>({
+    queryKey: ['/api/users', community?.createdBy],
+    queryFn: async () => {
+      if (!community?.createdBy) throw new Error('No creator ID');
+      const response = await fetch(`/api/users/${community.createdBy}`);
+      if (!response.ok) throw new Error('Failed to fetch creator');
+      return response.json();
+    },
+    enabled: !!community?.createdBy,
   });
 
   // Fetch chat messages with React Query
@@ -254,18 +267,43 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
             </CardHeader>
             <CardContent className="px-4 pb-4">
               <p className="text-sm text-muted-foreground mb-4">
-                Dedicated to preserving the character and community spirit of the Castro District.
+                {community?.description || 'Community description'}
               </p>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div className="flex items-center gap-2 text-sm">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Neighborhood</span>
+                  <span className="text-muted-foreground capitalize">
+                    {community?.maxGeographicScope || 'Global'}
+                  </span>
                 </div>
                 <div className="text-sm">
-                  <span className="font-medium">Community Type</span>
+                  <span className="font-medium">Category</span>
                   <br />
-                  <span className="text-muted-foreground">Community Group</span>
+                  <span className="text-muted-foreground">{community?.category || 'Community'}</span>
                 </div>
+                
+                {creator && (
+                  <>
+                    <Separator />
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-muted-foreground">Created By</p>
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={creator.profilePicture} alt={creator.name} />
+                          <AvatarFallback>{creator.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{creator.name}</p>
+                          {creator.socialProfiles && creator.socialProfiles.length > 0 && (
+                            <div className="mt-1">
+                              <SocialProfileDisplay profiles={creator.socialProfiles} size="sm" />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </CardContent>
             
