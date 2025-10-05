@@ -11,7 +11,19 @@ This is a React-based crisis response and community mapping application that pro
 - ✅ MapBox integration working with provided API token
 - ✅ Deployment configuration set up for autoscale
 
-## Recent Changes (October 4, 2025)
+## Recent Changes (October 5, 2025)
+- **Implemented social profile integration system**:
+  - Added social profiles to User schema supporting Twitter/X, Instagram, LinkedIn, TikTok, YouTube, Facebook
+  - Each profile includes: platform, username, profileUrl, displayName, followerCount, isVerified, profilePicture
+  - Backend API routes for managing social profiles (GET/POST/DELETE /api/user/social-profiles)
+  - SocialProfiles component in profile dropdown for adding/removing connected accounts
+  - SocialProfileDisplay component for showing social links in compact format with platform icons
+  - Community chat "About" section now displays creator's social profiles
+  - Active members list shows member social profiles for easy connection
+  - All social profile links open in new tabs when clicked
+  - Manual entry system (username/URL) instead of OAuth for simplicity
+
+## Previous Changes (October 4, 2025)
 - Added Gaza Humanitarian Crisis to backend storage with full story submission support
 - Created password-protected /supadmin admin panel for story moderation
 - Implemented complete story approval workflow: submit → pending review → admin approval → public display
