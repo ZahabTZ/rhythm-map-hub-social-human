@@ -616,8 +616,8 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
       // Smooth fly animation from global view to user's location
       map.current.flyTo({
         center: [userLocation.lng, userLocation.lat],
-        zoom: 12, // City-level zoom
-        duration: 5000, // 2 second animation
+        zoom: 2, // City-level zoom
+        duration: 2000, // 2 second animation
         essential: true
       });
     }

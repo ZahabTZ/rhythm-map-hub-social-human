@@ -202,13 +202,13 @@ const Index = () => {
               <X className="h-4 w-4" />
             </button>
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Get involved in the conversation.
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground mb-2">
-              Locally and globally. Let's get organized.
-            </p>
-            <p className="text-base md:text-lg text-primary font-medium">
-              It's what the world needs, it's what the devious powers that be are specifically against.
+           Get Involved in Real Conversations</h1>
+              <p className="text-lg md:text-xl text-muted-foreground mb-2">
+                A social platform for meaningful local and global connection.
+              </p>
+              <p className="text-base md:text-lg text-primary font-medium">
+                Organize around causes, share stories, and build real-world impact — not just engagement.
+           
             </p>
           </div>
         </div>
