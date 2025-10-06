@@ -118,16 +118,18 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
         'star-intensity': 0.6,
       });
 
-      // Add sample local content markers in San Francisco
+      // Global community markers with contextually relevant content
       const localLocations = [
-        { id: 'mission', coords: [-122.4194, 37.7593], name: 'Mission District', type: 'news', category: 'New Bike Lanes' },
-        { id: 'castro', coords: [-122.4348, 37.7609], name: 'Castro District', type: 'events', category: 'Street Fair' },
-        { id: 'chinatown', coords: [-122.4058, 37.7941], name: 'Chinatown', type: 'communities', category: 'Community Garden' },
-        { id: 'haight', coords: [-122.4477, 37.7694], name: 'Haight-Ashbury', type: 'news', category: 'Local Business' },
-        { id: 'north_beach', coords: [-122.4102, 37.8006], name: 'North Beach', type: 'events', category: 'Italian Festival' },
-        { id: 'sunset', coords: [-122.4759, 37.7431], name: 'Sunset District', type: 'communities', category: 'Neighborhood Watch' },
-        { id: 'richmond', coords: [-122.4786, 37.7816], name: 'Richmond District', type: 'news', category: 'Park Renovation' },
-        { id: 'soma', coords: [-122.4089, 37.7749], name: 'SOMA', type: 'events', category: 'Tech Meetup' },
+        { id: 'nairobi', coords: [36.8219, -1.2921], name: 'Nairobi, Kenya', type: 'communities', category: 'Wildlife Conservation Network' },
+        { id: 'miami', coords: [-80.1918, 25.7617], name: 'Miami, Florida', type: 'news', category: 'Hurricane Preparedness Initiative' },
+        { id: 'tokyo', coords: [139.6917, 35.6895], name: 'Tokyo, Japan', type: 'communities', category: 'Earthquake Response Team' },
+        { id: 'amsterdam', coords: [4.9041, 52.3676], name: 'Amsterdam, Netherlands', type: 'events', category: 'Climate Adaptation Forum' },
+        { id: 'sydney', coords: [151.2093, -33.8688], name: 'Sydney, Australia', type: 'news', category: 'Bushfire Preparedness Coalition' },
+        { id: 'mumbai', coords: [72.8777, 19.0760], name: 'Mumbai, India', type: 'communities', category: 'Monsoon Resilience Network' },
+        { id: 'sao_paulo', coords: [-46.6333, -23.5505], name: 'São Paulo, Brazil', type: 'events', category: 'Urban Sustainability Project' },
+        { id: 'dubai', coords: [55.2708, 25.2048], name: 'Dubai, UAE', type: 'news', category: 'Water Conservation Alliance' },
+        { id: 'vancouver', coords: [-123.1207, 49.2827], name: 'Vancouver, Canada', type: 'communities', category: 'Indigenous Community Hub' },
+        { id: 'reykjavik', coords: [-21.8174, 64.1466], name: 'Reykjavik, Iceland', type: 'events', category: 'Renewable Energy Collective' },
       ];
 
       localLocations.forEach((location) => {

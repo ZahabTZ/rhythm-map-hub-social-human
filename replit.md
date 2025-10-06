@@ -12,6 +12,11 @@ This is a React-based crisis response and community mapping application that pro
 - ✅ Deployment configuration set up for autoscale
 
 ## Recent Changes (October 6, 2025)
+- **Replaced local San Francisco markers with global distribution**:
+  - 10 markers now spread across major world cities: Nairobi (Kenya), Miami (Florida), Tokyo (Japan), Amsterdam (Netherlands), Sydney (Australia), Mumbai (India), São Paulo (Brazil), Dubai (UAE), Vancouver (Canada), Reykjavik (Iceland)
+  - Each marker has contextually relevant descriptions (e.g., Wildlife Conservation in Nairobi, Hurricane Preparedness in Miami, Earthquake Response in Tokyo)
+  - Created matching communities with appropriate categories and member counts
+  - Added sample chat messages for each community with contextually relevant content (conservation discussions in Nairobi, hurricane prep tips in Miami, etc.)
 - **Restored map load animation**:
   - Globe now animates from global view to user's location on initial load
   - Smooth 2-second fly-to animation centers map at city-level zoom (zoom 12)
