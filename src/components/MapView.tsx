@@ -617,7 +617,7 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
       map.current.flyTo({
         center: [userLocation.lng, userLocation.lat],
         zoom: 12, // City-level zoom
-        duration: 2000, // 2 second animation
+        duration: 5000, // 2 second animation
         essential: true
       });
     }
