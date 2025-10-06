@@ -3,6 +3,7 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 interface MapViewProps {
   onLocationSelect?: (location: { lat: number; lng: number; name: string; regionData?: any[] }) => void;
@@ -21,6 +22,8 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
   )
   // const [showTokenInput, setShowTokenInput] = useState(true);
   const [humanitarianMode, setHumanitarianMode] = useState(false);
+  const navigate = useNavigate();
+
   const humanitarianModeRef = useRef(false);
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
   const [mapReady, setMapReady] = useState(false);
@@ -121,7 +124,7 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
       // Global community markers with contextually relevant content
       const localLocations = [
         { id: 'san_francisco', communityId: 'community_sf', coords: [-122.4194, 37.7749], name: 'San Francisco, CA', type: 'communities', category: 'Housing & Homelessness Solutions' },
-        { id: 'nairobi', communityId: 'community_nairobi', coords: [36.8219, -1.2921], name: 'Nairobi, Kenya', type: 'communities', category: 'Wildlife Conservation Network' },
+        { id: 'arusha', communityId: 'community_arusha', coords: [36.6833, -3.3667], name: 'Arusha, Tanzania', type: 'communities', category: 'Wildlife Conservation Network' },
         { id: 'miami', communityId: 'community_miami', coords: [-80.1918, 25.7617], name: 'Miami, Florida', type: 'communities', category: 'Hurricane Preparedness Initiative' },
         { id: 'tokyo', communityId: 'community_tokyo', coords: [139.6917, 35.6895], name: 'Tokyo, Japan', type: 'communities', category: 'Earthquake Response Team' },
         { id: 'amsterdam', communityId: 'community_amsterdam', coords: [4.9041, 52.3676], name: 'Amsterdam, Netherlands', type: 'communities', category: 'Climate Adaptation Forum' },
@@ -139,7 +142,7 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
         
         const popup = new mapboxgl.Popup({ offset: 25 })
           .setHTML(`
-            <div class="p-3 bg-card text-card-foreground rounded cursor-pointer hover:bg-accent transition-colors" 
+            <div class="p-3 bg-card text-card-foreground rounded cursor-pointer transition-colors" 
                  data-community-id="${location.communityId}"
                  data-community-name="${location.category}"
                  style="cursor: pointer;">
@@ -158,7 +161,17 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
           const popupContent = document.querySelector(`[data-community-id="${location.communityId}"]`);
           if (popupContent) {
             popupContent.addEventListener('click', () => {
-              window.location.href = `/community-chat?id=${location.communityId}`;
+              const params = new URLSearchParams({
+                id: location.communityId,
+                name: location.category,
+                type: location.type,
+                location: location.name,
+                category: location.category,
+                members: '0',
+                description: ''
+                
+              });
+              navigate(`/community-chat?${params.toString()}`);
             });
           }
         });
