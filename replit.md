@@ -11,7 +11,14 @@ This is a React-based crisis response and community mapping application that pro
 - ✅ MapBox integration working with provided API token
 - ✅ Deployment configuration set up for autoscale
 
-## Recent Changes (October 5, 2025)
+## Recent Changes (October 6, 2025)
+- **Restored map load animation**:
+  - Globe now animates from global view to user's location on initial load
+  - Smooth 2-second fly-to animation centers map at city-level zoom (zoom 12)
+  - Uses browser geolocation API with San Francisco fallback
+  - Animation triggers when both map and user location are ready
+
+## Previous Changes (October 5, 2025)
 - **Implemented social profile integration system**:
   - Added social profiles to User schema supporting Twitter/X, Instagram, LinkedIn, TikTok, YouTube, Facebook
   - Each profile includes: platform, username, profileUrl, displayName, followerCount, isVerified, profilePicture

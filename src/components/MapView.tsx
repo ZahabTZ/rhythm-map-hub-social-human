@@ -610,6 +610,19 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
     getUserLocation();
   }, []);
 
+  // Animate to user location when it becomes available
+  useEffect(() => {
+    if (userLocation && map.current && mapReady) {
+      // Smooth fly animation from global view to user's location
+      map.current.flyTo({
+        center: [userLocation.lng, userLocation.lat],
+        zoom: 12, // City-level zoom
+        duration: 2000, // 2 second animation
+        essential: true
+      });
+    }
+  }, [userLocation, mapReady]);
+
   useEffect(() => {
     return () => {
       map.current?.remove();
