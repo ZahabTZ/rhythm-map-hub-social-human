@@ -1,8 +1,8 @@
-import { 
-  Story, 
-  InsertStory, 
-  Crisis, 
-  ModerationAction, 
+import {
+  Story,
+  InsertStory,
+  Crisis,
+  ModerationAction,
   SelectStory,
   User,
   SocialProfile,
@@ -16,76 +16,128 @@ import {
   InsertDiscussion,
   InsertEvent,
   InsertChatMessage,
-  InsertDirectMessage
-} from '../shared/schema';
+  InsertDirectMessage,
+} from "../shared/schema";
 
 export interface IStorage {
   // Story management
-  createStory(story: InsertStory & { submitterIP?: string; submitterUserAgent?: string }): Promise<Story>;
+  createStory(
+    story: InsertStory & { submitterIP?: string; submitterUserAgent?: string },
+  ): Promise<Story>;
   getStoryById(id: string): Promise<Story | null>;
-  getStoriesByCrisis(crisisId: string, includeModerated?: boolean): Promise<Story[]>;
+  getStoriesByCrisis(
+    crisisId: string,
+    includeModerated?: boolean,
+  ): Promise<Story[]>;
   getApprovedStoriesByCrisis(crisisId: string): Promise<Story[]>;
   getPendingStories(): Promise<Story[]>;
   updateStoryModerationStatus(action: ModerationAction): Promise<Story>;
   deleteStory(id: string): Promise<boolean>;
   likeStory(storyId: string): Promise<Story>;
-  
+
   // Crisis management
   getCrisisById(id: string): Promise<Crisis | null>;
   getAllActiveCrises(): Promise<Crisis[]>;
   updateCrisis(id: string, crisis: Partial<Crisis>): Promise<Crisis>;
-  
+
   // Location verification
-  isLocationWithinCrisis(userLat: number, userLng: number, crisisId: string): Promise<boolean>;
+  isLocationWithinCrisis(
+    userLat: number,
+    userLng: number,
+    crisisId: string,
+  ): Promise<boolean>;
 
   // User operations
   createOrUpdateUser(googleUser: any): Promise<User>;
   getUserById(userId: string): Promise<User | null>;
   getUserByGoogleId(googleId: string): Promise<User | null>;
-  updateUserVerifiedHostStatus(userId: string, isVerified: boolean, expiresAt?: string): Promise<User>;
+  updateUserVerifiedHostStatus(
+    userId: string,
+    isVerified: boolean,
+    expiresAt?: string,
+  ): Promise<User>;
   addUserSocialProfile(userId: string, profile: SocialProfile): Promise<User>;
   removeUserSocialProfile(userId: string, platform: string): Promise<User>;
-  
+
   // Community operations
-  createCommunity(community: InsertCommunity & { createdBy: string }): Promise<Community>;
+  createCommunity(
+    community: InsertCommunity & { createdBy: string },
+  ): Promise<Community>;
   hasUserCreatedCommunity(userId: string): Promise<boolean>;
   getAllCommunities(): Promise<Community[]>;
   getCommunityById(communityId: string): Promise<Community | null>;
   getCommunityByCrisisId(crisisId: string): Promise<Community | null>;
   getCommunitiesByCreator(userId: string): Promise<Community[]>;
-  updateCommunity(communityId: string, updates: Partial<Community>): Promise<Community>;
-  
+  updateCommunity(
+    communityId: string,
+    updates: Partial<Community>,
+  ): Promise<Community>;
+
   // Discussion operations
   createDiscussion(discussion: InsertDiscussion): Promise<Discussion>;
-  getDiscussionsByCommunity(communityId: string, isLocal?: boolean): Promise<Discussion[]>;
-  getLocalDiscussionsByUserLocation(communityId: string, userLat: number, userLng: number, radiusKm?: number): Promise<Discussion[]>;
+  getDiscussionsByCommunity(
+    communityId: string,
+    isLocal?: boolean,
+  ): Promise<Discussion[]>;
+  getLocalDiscussionsByUserLocation(
+    communityId: string,
+    userLat: number,
+    userLng: number,
+    radiusKm?: number,
+  ): Promise<Discussion[]>;
   likeDiscussion(discussionId: string): Promise<Discussion>;
-  
+
   // Event operations
   createEvent(event: InsertEvent & { createdBy: string }): Promise<Event>;
   getAllEvents(): Promise<Event[]>;
   getEventsByCreator(userId: string): Promise<Event[]>;
-  getEventsByLocation(lat: number, lng: number, radiusKm?: number): Promise<Event[]>;
+  getEventsByLocation(
+    lat: number,
+    lng: number,
+    radiusKm?: number,
+  ): Promise<Event[]>;
   updateEvent(eventId: string, updates: Partial<Event>): Promise<Event>;
   joinEvent(eventId: string, userId: string): Promise<Event>;
   leaveEvent(eventId: string, userId: string): Promise<Event>;
-  
+
   // Payment operations
-  createPayment(payment: Omit<Payment, 'id'>): Promise<Payment>;
+  createPayment(payment: Omit<Payment, "id">): Promise<Payment>;
   getPaymentsByUser(userId: string): Promise<Payment[]>;
-  updatePaymentStatus(stripePaymentIntentId: string, status: 'succeeded' | 'failed'): Promise<boolean>;
+  updatePaymentStatus(
+    stripePaymentIntentId: string,
+    status: "succeeded" | "failed",
+  ): Promise<boolean>;
   getPaymentByStripeId(stripePaymentIntentId: string): Promise<Payment | null>;
-  
+
   // Chat message operations
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
-  getChatMessagesByCommunity(communityId: string, region?: string, thread?: string): Promise<ChatMessage[]>;
-  getMostActiveMembers(communityId: string, limit?: number): Promise<Array<{userId: string, userName: string, messageCount: number, user?: User}>>;
+  getChatMessagesByCommunity(
+    communityId: string,
+    region?: string,
+    thread?: string,
+  ): Promise<ChatMessage[]>;
+  getMostActiveMembers(
+    communityId: string,
+    limit?: number,
+  ): Promise<
+    Array<{
+      userId: string;
+      userName: string;
+      messageCount: number;
+      user?: User;
+    }>
+  >;
   deleteChatMessage(messageId: string): Promise<boolean>;
-  
+
   // Direct message operations
   createDirectMessage(message: InsertDirectMessage): Promise<DirectMessage>;
-  getDirectMessagesByConversation(conversationId: string): Promise<DirectMessage[]>;
-  getDirectMessagesBetweenUsers(senderId: string, recipientId: string): Promise<DirectMessage[]>;
+  getDirectMessagesByConversation(
+    conversationId: string,
+  ): Promise<DirectMessage[]>;
+  getDirectMessagesBetweenUsers(
+    senderId: string,
+    recipientId: string,
+  ): Promise<DirectMessage[]>;
   markDirectMessageAsRead(messageId: string): Promise<DirectMessage>;
   getUserConversations(userId: string): Promise<DirectMessage[]>;
 }
@@ -119,106 +171,107 @@ export class MemStorage implements IStorage {
   private initializeSampleCrises() {
     const sampleCrises: Crisis[] = [
       {
-        id: '1',
-        name: 'Eastern Europe Refugee Crisis',
-        location: { lat: 49.8397, lng: 24.0297, name: 'Eastern Europe' },
-        severity: 'Critical',
+        id: "1",
+        name: "Eastern Europe Refugee Crisis",
+        location: { lat: 49.8397, lng: 24.0297, name: "Eastern Europe" },
+        severity: "Critical",
         isActive: true,
         allowStorySubmissions: true,
       },
       {
-        id: 'gaza-2024',
-        name: 'Gaza Humanitarian Crisis',
-        location: { lat: 31.5017, lng: 34.4668, name: 'Gaza, Palestine' },
-        severity: 'Critical',
+        id: "gaza-2024",
+        name: "Gaza Humanitarian Crisis",
+        location: { lat: 31.5017, lng: 34.4668, name: "Gaza, Palestine" },
+        severity: "Critical",
         isActive: true,
         allowStorySubmissions: true,
       },
       {
-        id: 'ukraine-conflict',
-        name: 'Ukraine Conflict',
-        location: { lat: 50.4501, lng: 30.5234, name: 'Kyiv, Ukraine' },
-        severity: 'Critical',
+        id: "ukraine-conflict",
+        name: "Ukraine Conflict",
+        location: { lat: 50.4501, lng: 30.5234, name: "Kyiv, Ukraine" },
+        severity: "Critical",
         isActive: true,
         allowStorySubmissions: true,
       },
       {
-        id: 'syria-crisis',
-        name: 'Syria Humanitarian Crisis',
-        location: { lat: 36.2021, lng: 38.9968, name: 'Aleppo, Syria' },
-        severity: 'High',
+        id: "syria-crisis",
+        name: "Syria Humanitarian Crisis",
+        location: { lat: 36.2021, lng: 38.9968, name: "Aleppo, Syria" },
+        severity: "High",
         isActive: true,
         allowStorySubmissions: true,
       },
       {
-        id: 'sudan-crisis',
-        name: 'Sudan Crisis',
-        location: { lat: 15.5007, lng: 32.5599, name: 'Khartoum, Sudan' },
-        severity: 'Critical',
+        id: "sudan-crisis",
+        name: "Sudan Crisis",
+        location: { lat: 15.5007, lng: 32.5599, name: "Khartoum, Sudan" },
+        severity: "Critical",
         isActive: true,
         allowStorySubmissions: true,
       },
     ];
 
-    sampleCrises.forEach(crisis => {
+    sampleCrises.forEach((crisis) => {
       this.crises.set(crisis.id, crisis);
     });
-    
+
     // Create crisis-specific communities
     this.createCrisisCommunities();
   }
-  
+
   private createCrisisCommunities() {
     const crisisCommunitiesData = [
       {
-        id: 'crisis_community_gaza-2024',
-        crisisId: 'gaza-2024',
-        name: 'Gaza Crisis Support Community',
-        description: 'Community supporting those affected by the Gaza humanitarian crisis',
-        category: 'Crisis Response',
+        id: "crisis_community_gaza-2024",
+        crisisId: "gaza-2024",
+        name: "Gaza Crisis Support Community",
+        description:
+          "Community supporting those affected by the Gaza humanitarian crisis",
+        category: "Crisis Response",
       },
       {
-        id: 'crisis_community_ukraine-conflict',
-        crisisId: 'ukraine-conflict',
-        name: 'Ukraine Crisis Support Community',
-        description: 'Supporting those affected by the Ukraine conflict',
-        category: 'Crisis Response',
+        id: "crisis_community_ukraine-conflict",
+        crisisId: "ukraine-conflict",
+        name: "Ukraine Crisis Support Community",
+        description: "Supporting those affected by the Ukraine conflict",
+        category: "Crisis Response",
       },
       {
-        id: 'crisis_community_syria-crisis',
-        crisisId: 'syria-crisis',
-        name: 'Syria Crisis Support Community',
-        description: 'Aid and support for Syrian crisis victims',
-        category: 'Humanitarian',
+        id: "crisis_community_syria-crisis",
+        crisisId: "syria-crisis",
+        name: "Syria Crisis Support Community",
+        description: "Aid and support for Syrian crisis victims",
+        category: "Humanitarian",
       },
       {
-        id: 'crisis_community_sudan-crisis',
-        crisisId: 'sudan-crisis',
-        name: 'Sudan Crisis Support Community',
-        description: 'Supporting those affected by the Sudan crisis',
-        category: 'Crisis Response',
+        id: "crisis_community_sudan-crisis",
+        crisisId: "sudan-crisis",
+        name: "Sudan Crisis Support Community",
+        description: "Supporting those affected by the Sudan crisis",
+        category: "Crisis Response",
       },
       {
-        id: 'crisis_community_1',
-        crisisId: '1',
-        name: 'Eastern Europe Refugee Support',
-        description: 'Support community for Eastern Europe refugee crisis',
-        category: 'Humanitarian',
+        id: "crisis_community_1",
+        crisisId: "1",
+        name: "Eastern Europe Refugee Support",
+        description: "Support community for Eastern Europe refugee crisis",
+        category: "Humanitarian",
       },
     ];
-    
-    crisisCommunitiesData.forEach(data => {
+
+    crisisCommunitiesData.forEach((data) => {
       const community: Community = {
         id: data.id,
         name: data.name,
         description: data.description,
         category: data.category as any,
-        maxGeographicScope: 'global' as const,
+        maxGeographicScope: "global" as const,
         isActive: true,
         memberCount: 0,
         globalDiscussions: [],
         localDiscussions: [],
-        createdBy: 'system',
+        createdBy: "system",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -229,167 +282,178 @@ export class MemStorage implements IStorage {
   private initializeSampleCommunities() {
     const sampleCommunities: Community[] = [
       {
-        id: 'community_sf',
-        name: 'Housing & Homelessness Solutions - San Francisco',
-        description: 'Community-driven initiatives to address housing affordability and homelessness through advocacy, resources, and direct support',
-        category: 'Humanitarian',
-        maxGeographicScope: 'city',
+        id: "community_sf",
+        name: "Housing & Homelessness Solutions - San Francisco",
+        description:
+          "Community-driven initiatives to address housing affordability and homelessness through advocacy, resources, and direct support",
+        category: "Humanitarian",
+        maxGeographicScope: "city",
         isActive: true,
         memberCount: 4521,
         globalDiscussions: [],
         localDiscussions: [],
-        createdBy: 'user_sf_1',
+        createdBy: "user_sf_1",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
       {
-        id: 'community_arusha',
-        name: 'Wildlife Conservation Network - Nairobi',
-        description: 'Protecting Tanzania\'s wildlife through community-led conservation efforts and anti-poaching initiatives',
-        category: 'Environmental',
-        maxGeographicScope: 'city',
+        id: "community_arusha",
+        name: "Wildlife Conservation Network - Arusha",
+        description:
+          "Protecting Tanzania's wildlife through community-led conservation efforts and anti-poaching initiatives",
+        category: "Environmental",
+        maxGeographicScope: "city",
         isActive: true,
         memberCount: 2847,
         globalDiscussions: [],
         localDiscussions: [],
-        createdBy: 'user_tanzania_1',
+        createdBy: "user_tanzania_1",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
       {
-        id: 'community_miami',
-        name: 'Hurricane Preparedness Initiative - Miami',
-        description: 'Community response network for hurricane season preparation, evacuation coordination, and disaster recovery',
-        category: 'Safety',
-        maxGeographicScope: 'city',
+        id: "community_miami",
+        name: "Hurricane Preparedness Initiative - Miami",
+        description:
+          "Community response network for hurricane season preparation, evacuation coordination, and disaster recovery",
+        category: "Safety",
+        maxGeographicScope: "city",
         isActive: true,
         memberCount: 5621,
         globalDiscussions: [],
         localDiscussions: [],
-        createdBy: 'user_miami_1',
+        createdBy: "user_miami_1",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
       {
-        id: 'community_tokyo',
-        name: 'Earthquake Response Team - Tokyo',
-        description: 'Coordinating earthquake preparedness drills, emergency supplies, and rapid response protocols',
-        category: 'Safety',
-        maxGeographicScope: 'city',
+        id: "community_tokyo",
+        name: "Earthquake Response Team - Tokyo",
+        description:
+          "Coordinating earthquake preparedness drills, emergency supplies, and rapid response protocols",
+        category: "Safety",
+        maxGeographicScope: "city",
         isActive: true,
         memberCount: 8934,
         globalDiscussions: [],
         localDiscussions: [],
-        createdBy: 'user_tokyo_1',
+        createdBy: "user_tokyo_1",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
       {
-        id: 'community_amsterdam',
-        name: 'Climate Adaptation Forum - Amsterdam',
-        description: 'Building resilient infrastructure and sustainable solutions for rising sea levels and flooding',
-        category: 'Environmental',
-        maxGeographicScope: 'city',
+        id: "community_amsterdam",
+        name: "Climate Adaptation Forum - Amsterdam",
+        description:
+          "Building resilient infrastructure and sustainable solutions for rising sea levels and flooding",
+        category: "Environmental",
+        maxGeographicScope: "city",
         isActive: true,
         memberCount: 3456,
         globalDiscussions: [],
         localDiscussions: [],
-        createdBy: 'user_amsterdam_1',
+        createdBy: "user_amsterdam_1",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
       {
-        id: 'community_sydney',
-        name: 'Bushfire Preparedness Coalition - Sydney',
-        description: 'Community-driven bushfire prevention, early warning systems, and emergency evacuation planning',
-        category: 'Safety',
-        maxGeographicScope: 'city',
+        id: "community_sydney",
+        name: "Bushfire Preparedness Coalition - Sydney",
+        description:
+          "Community-driven bushfire prevention, early warning systems, and emergency evacuation planning",
+        category: "Safety",
+        maxGeographicScope: "city",
         isActive: true,
         memberCount: 4732,
         globalDiscussions: [],
         localDiscussions: [],
-        createdBy: 'user_sydney_1',
+        createdBy: "user_sydney_1",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
       {
-        id: 'community_mumbai',
-        name: 'Monsoon Resilience Network - Mumbai',
-        description: 'Preparing communities for monsoon season with drainage solutions, flood alerts, and emergency response',
-        category: 'Safety',
-        maxGeographicScope: 'city',
+        id: "community_mumbai",
+        name: "Monsoon Resilience Network - Mumbai",
+        description:
+          "Preparing communities for monsoon season with drainage solutions, flood alerts, and emergency response",
+        category: "Safety",
+        maxGeographicScope: "city",
         isActive: true,
         memberCount: 6891,
         globalDiscussions: [],
         localDiscussions: [],
-        createdBy: 'user_mumbai_1',
+        createdBy: "user_mumbai_1",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
       {
-        id: 'community_sao_paulo',
-        name: 'Urban Sustainability Project - São Paulo',
-        description: 'Green infrastructure, waste reduction, and sustainable urban development initiatives',
-        category: 'Environmental',
-        maxGeographicScope: 'city',
+        id: "community_sao_paulo",
+        name: "Urban Sustainability Project - São Paulo",
+        description:
+          "Green infrastructure, waste reduction, and sustainable urban development initiatives",
+        category: "Environmental",
+        maxGeographicScope: "city",
         isActive: true,
         memberCount: 5234,
         globalDiscussions: [],
         localDiscussions: [],
-        createdBy: 'user_saopaulo_1',
+        createdBy: "user_saopaulo_1",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
       {
-        id: 'community_dubai',
-        name: 'Water Conservation Alliance - Dubai',
-        description: 'Innovative water-saving technologies and desert resilience strategies for arid climates',
-        category: 'Environmental',
-        maxGeographicScope: 'city',
+        id: "community_dubai",
+        name: "Water Conservation Alliance - Dubai",
+        description:
+          "Innovative water-saving technologies and desert resilience strategies for arid climates",
+        category: "Environmental",
+        maxGeographicScope: "city",
         isActive: true,
         memberCount: 4123,
         globalDiscussions: [],
         localDiscussions: [],
-        createdBy: 'user_dubai_1',
+        createdBy: "user_dubai_1",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
       {
-        id: 'community_vancouver',
-        name: 'Indigenous Community Hub - Vancouver',
-        description: 'Supporting Indigenous-led initiatives, cultural preservation, and reconciliation efforts',
-        category: 'Cultural',
-        maxGeographicScope: 'city',
+        id: "community_vancouver",
+        name: "Indigenous Community Hub - Vancouver",
+        description:
+          "Supporting Indigenous-led initiatives, cultural preservation, and reconciliation efforts",
+        category: "Cultural",
+        maxGeographicScope: "city",
         isActive: true,
         memberCount: 3567,
         globalDiscussions: [],
         localDiscussions: [],
-        createdBy: 'user_vancouver_1',
+        createdBy: "user_vancouver_1",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
       {
-        id: 'community_reykjavik',
-        name: 'Renewable Energy Collective - Reykjavik',
-        description: 'Advancing geothermal and renewable energy solutions for sustainable communities',
-        category: 'Environmental',
-        maxGeographicScope: 'city',
+        id: "community_reykjavik",
+        name: "Renewable Energy Collective - Reykjavik",
+        description:
+          "Advancing geothermal and renewable energy solutions for sustainable communities",
+        category: "Environmental",
+        maxGeographicScope: "city",
         isActive: true,
         memberCount: 2891,
         globalDiscussions: [],
         localDiscussions: [],
-        createdBy: 'user_reykjavik_1',
+        createdBy: "user_reykjavik_1",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-      }
+      },
     ];
 
-    sampleCommunities.forEach(community => {
+    sampleCommunities.forEach((community) => {
       this.communities.set(community.id, community);
     });
-    
+
     this.nextCommunityId = 12; // Start at 12 since we have 11 sample communities
-    
+
     // Initialize sample chat messages for these communities
     this.initializeSampleChatMessages();
   }
@@ -398,248 +462,270 @@ export class MemStorage implements IStorage {
     const sampleMessages = [
       // San Francisco - Housing & Homelessness Solutions
       {
-        id: 'msg_sf_1',
-        communityId: 'community_sf',
-        region: 'global' as const,
-        thread: 'intro' as const,
-        content: 'Hi everyone! I\'m Alex, a housing advocate working with local nonprofits. Let\'s collaborate to make SF more affordable and supportive for everyone.',
-        authorId: 'user_sf_1',
-        authorName: 'Alex Chen',
-        messageType: 'text' as const,
+        id: "msg_sf_1",
+        communityId: "community_sf",
+        region: "global" as const,
+        thread: "intro" as const,
+        content:
+          "Hi everyone! I'm Alex, a housing advocate working with local nonprofits. Let's collaborate to make SF more affordable and supportive for everyone.",
+        authorId: "user_sf_1",
+        authorName: "Alex Chen",
+        messageType: "text" as const,
       },
       {
-        id: 'msg_sf_2',
-        communityId: 'community_sf',
-        region: 'global' as const,
-        thread: 'content' as const,
-        content: 'Our community housing initiative just secured 50 transitional housing units in the Tenderloin! We\'re also expanding our job placement program. Volunteers welcome!',
-        authorId: 'user_sf_1',
-        authorName: 'Alex Chen',
-        messageType: 'text' as const,
+        id: "msg_sf_2",
+        communityId: "community_sf",
+        region: "global" as const,
+        thread: "content" as const,
+        content:
+          "Our community housing initiative just secured 50 transitional housing units in the Tenderloin! We're also expanding our job placement program. Volunteers welcome!",
+        authorId: "user_sf_1",
+        authorName: "Alex Chen",
+        messageType: "text" as const,
       },
-      
+
       // Nairobi - Wildlife Conservation
       {
-        id: 'msg_arusha_1',
-        communityId: 'community_arusha',
-        region: 'global' as const,
-        thread: 'intro' as const,
-        content: 'Welcome! I\'m Sarah, a wildlife ranger at Arusha National Park. Excited to connect with fellow conservationists!',
-        authorId: 'user_tanzania_1',
-        authorName: 'Sarah Mwangi',
-        messageType: 'text' as const,
+        id: "msg_arusha_1",
+        communityId: "community_arusha",
+        region: "global" as const,
+        thread: "intro" as const,
+        content:
+          "Welcome! I'm Sarah, a wildlife ranger at Arusha National Park. Excited to connect with fellow conservationists!",
+        authorId: "user_tanzania_1",
+        authorName: "Sarah Mwangi",
+        messageType: "text" as const,
       },
       {
-        id: 'msg_arusha_2',
-        communityId: 'community_arusha',
-        region: 'global' as const,
-        thread: 'content' as const,
-        content: 'Our anti-poaching patrols spotted a herd of 15 elephants near the Athi River today. Great to see population recovery!',
-        authorId: 'user_tanzania_2',
-        authorName: 'James Omondi',
-        messageType: 'text' as const,
+        id: "msg_arusha_2",
+        communityId: "community_arusha",
+        region: "global" as const,
+        thread: "content" as const,
+        content:
+          "Our anti-poaching patrols spotted a herd of 15 elephants near the Athi River today. Great to see population recovery!",
+        authorId: "user_tanzania_2",
+        authorName: "James Omondi",
+        messageType: "text" as const,
       },
-      
+
       // Miami - Hurricane Preparedness
       {
-        id: 'msg_miami_1',
-        communityId: 'community_miami',
-        region: 'global' as const,
-        thread: 'intro' as const,
-        content: 'Hi everyone, I\'m Maria, emergency coordinator for Miami-Dade. Here to help keep our community safe during hurricane season!',
-        authorId: 'user_miami_1',
-        authorName: 'Maria Rodriguez',
-        messageType: 'text' as const,
+        id: "msg_miami_1",
+        communityId: "community_miami",
+        region: "global" as const,
+        thread: "intro" as const,
+        content:
+          "Hi everyone, I'm Maria, emergency coordinator for Miami-Dade. Here to help keep our community safe during hurricane season!",
+        authorId: "user_miami_1",
+        authorName: "Maria Rodriguez",
+        messageType: "text" as const,
       },
       {
-        id: 'msg_miami_2',
-        communityId: 'community_miami',
-        region: 'global' as const,
-        thread: 'content' as const,
-        content: 'Hurricane season starts June 1st. Please stock up on water (1 gallon per person per day for 3 days), batteries, and non-perishable food.',
-        authorId: 'user_miami_1',
-        authorName: 'Maria Rodriguez',
-        messageType: 'text' as const,
+        id: "msg_miami_2",
+        communityId: "community_miami",
+        region: "global" as const,
+        thread: "content" as const,
+        content:
+          "Hurricane season starts June 1st. Please stock up on water (1 gallon per person per day for 3 days), batteries, and non-perishable food.",
+        authorId: "user_miami_1",
+        authorName: "Maria Rodriguez",
+        messageType: "text" as const,
       },
-      
+
       // Tokyo - Earthquake Response
       {
-        id: 'msg_tokyo_1',
-        communityId: 'community_tokyo',
-        region: 'global' as const,
-        thread: 'intro' as const,
-        content: 'こんにちは! I\'m Kenji, disaster preparedness coordinator. Let\'s work together to keep Tokyo safe.',
-        authorId: 'user_tokyo_1',
-        authorName: 'Kenji Tanaka',
-        messageType: 'text' as const,
+        id: "msg_tokyo_1",
+        communityId: "community_tokyo",
+        region: "global" as const,
+        thread: "intro" as const,
+        content:
+          "こんにちは! I'm Kenji, disaster preparedness coordinator. Let's work together to keep Tokyo safe.",
+        authorId: "user_tokyo_1",
+        authorName: "Kenji Tanaka",
+        messageType: "text" as const,
       },
       {
-        id: 'msg_tokyo_2',
-        communityId: 'community_tokyo',
-        region: 'global' as const,
-        thread: 'content' as const,
-        content: 'Reminder: Our monthly earthquake drill is this Saturday at 10am. Please participate from your neighborhoods!',
-        authorId: 'user_tokyo_1',
-        authorName: 'Kenji Tanaka',
-        messageType: 'text' as const,
+        id: "msg_tokyo_2",
+        communityId: "community_tokyo",
+        region: "global" as const,
+        thread: "content" as const,
+        content:
+          "Reminder: Our monthly earthquake drill is this Saturday at 10am. Please participate from your neighborhoods!",
+        authorId: "user_tokyo_1",
+        authorName: "Kenji Tanaka",
+        messageType: "text" as const,
       },
-      
+
       // Amsterdam - Climate Adaptation
       {
-        id: 'msg_amsterdam_1',
-        communityId: 'community_amsterdam',
-        region: 'global' as const,
-        thread: 'intro' as const,
-        content: 'Hallo! I\'m Lars, hydraulic engineer working on flood defenses. Excited to share innovative solutions with you all.',
-        authorId: 'user_amsterdam_1',
-        authorName: 'Lars van der Berg',
-        messageType: 'text' as const,
+        id: "msg_amsterdam_1",
+        communityId: "community_amsterdam",
+        region: "global" as const,
+        thread: "intro" as const,
+        content:
+          "Hallo! I'm Lars, hydraulic engineer working on flood defenses. Excited to share innovative solutions with you all.",
+        authorId: "user_amsterdam_1",
+        authorName: "Lars van der Berg",
+        messageType: "text" as const,
       },
       {
-        id: 'msg_amsterdam_2',
-        communityId: 'community_amsterdam',
-        region: 'global' as const,
-        thread: 'content' as const,
-        content: 'The new floating park project is making great progress! It will help absorb excess water during high tides.',
-        authorId: 'user_amsterdam_1',
-        authorName: 'Lars van der Berg',
-        messageType: 'text' as const,
+        id: "msg_amsterdam_2",
+        communityId: "community_amsterdam",
+        region: "global" as const,
+        thread: "content" as const,
+        content:
+          "The new floating park project is making great progress! It will help absorb excess water during high tides.",
+        authorId: "user_amsterdam_1",
+        authorName: "Lars van der Berg",
+        messageType: "text" as const,
       },
-      
+
       // Sydney - Bushfire Preparedness
       {
-        id: 'msg_sydney_1',
-        communityId: 'community_sydney',
-        region: 'global' as const,
-        thread: 'intro' as const,
-        content: 'G\'day everyone! I\'m Emma, Rural Fire Service volunteer. Here to help our community prepare for bushfire season.',
-        authorId: 'user_sydney_1',
-        authorName: 'Emma Thompson',
-        messageType: 'text' as const,
+        id: "msg_sydney_1",
+        communityId: "community_sydney",
+        region: "global" as const,
+        thread: "intro" as const,
+        content:
+          "G'day everyone! I'm Emma, Rural Fire Service volunteer. Here to help our community prepare for bushfire season.",
+        authorId: "user_sydney_1",
+        authorName: "Emma Thompson",
+        messageType: "text" as const,
       },
       {
-        id: 'msg_sydney_2',
-        communityId: 'community_sydney',
-        region: 'global' as const,
-        thread: 'content' as const,
-        content: 'Fire danger rating is HIGH this weekend. Please clear gutters, create defensible space around homes, and have your bushfire plan ready.',
-        authorId: 'user_sydney_1',
-        authorName: 'Emma Thompson',
-        messageType: 'text' as const,
+        id: "msg_sydney_2",
+        communityId: "community_sydney",
+        region: "global" as const,
+        thread: "content" as const,
+        content:
+          "Fire danger rating is HIGH this weekend. Please clear gutters, create defensible space around homes, and have your bushfire plan ready.",
+        authorId: "user_sydney_1",
+        authorName: "Emma Thompson",
+        messageType: "text" as const,
       },
-      
+
       // Mumbai - Monsoon Resilience
       {
-        id: 'msg_mumbai_1',
-        communityId: 'community_mumbai',
-        region: 'global' as const,
-        thread: 'intro' as const,
-        content: 'Namaste! I\'m Priya, working with BMC on monsoon drainage systems. Let\'s work together to keep Mumbai safe during the rains.',
-        authorId: 'user_mumbai_1',
-        authorName: 'Priya Sharma',
-        messageType: 'text' as const,
+        id: "msg_mumbai_1",
+        communityId: "community_mumbai",
+        region: "global" as const,
+        thread: "intro" as const,
+        content:
+          "Namaste! I'm Priya, working with BMC on monsoon drainage systems. Let's work together to keep Mumbai safe during the rains.",
+        authorId: "user_mumbai_1",
+        authorName: "Priya Sharma",
+        messageType: "text" as const,
       },
       {
-        id: 'msg_mumbai_2',
-        communityId: 'community_mumbai',
-        region: 'global' as const,
-        thread: 'content' as const,
-        content: 'Monsoon update: Heavy rains expected this week. Please avoid waterlogged areas and check our flood alert map for updates.',
-        authorId: 'user_mumbai_1',
-        authorName: 'Priya Sharma',
-        messageType: 'text' as const,
+        id: "msg_mumbai_2",
+        communityId: "community_mumbai",
+        region: "global" as const,
+        thread: "content" as const,
+        content:
+          "Monsoon update: Heavy rains expected this week. Please avoid waterlogged areas and check our flood alert map for updates.",
+        authorId: "user_mumbai_1",
+        authorName: "Priya Sharma",
+        messageType: "text" as const,
       },
-      
+
       // São Paulo - Urban Sustainability
       {
-        id: 'msg_saopaulo_1',
-        communityId: 'community_sao_paulo',
-        region: 'global' as const,
-        thread: 'intro' as const,
-        content: 'Olá! I\'m Paulo, environmental engineer. Passionate about making São Paulo greener and more sustainable for future generations.',
-        authorId: 'user_saopaulo_1',
-        authorName: 'Paulo Silva',
-        messageType: 'text' as const,
+        id: "msg_saopaulo_1",
+        communityId: "community_sao_paulo",
+        region: "global" as const,
+        thread: "intro" as const,
+        content:
+          "Olá! I'm Paulo, environmental engineer. Passionate about making São Paulo greener and more sustainable for future generations.",
+        authorId: "user_saopaulo_1",
+        authorName: "Paulo Silva",
+        messageType: "text" as const,
       },
       {
-        id: 'msg_saopaulo_2',
-        communityId: 'community_sao_paulo',
-        region: 'global' as const,
-        thread: 'content' as const,
-        content: 'Great news! Our community garden project has reduced local waste by 30%. Join us this weekend to help expand the green roof initiative!',
-        authorId: 'user_saopaulo_1',
-        authorName: 'Paulo Silva',
-        messageType: 'text' as const,
+        id: "msg_saopaulo_2",
+        communityId: "community_sao_paulo",
+        region: "global" as const,
+        thread: "content" as const,
+        content:
+          "Great news! Our community garden project has reduced local waste by 30%. Join us this weekend to help expand the green roof initiative!",
+        authorId: "user_saopaulo_1",
+        authorName: "Paulo Silva",
+        messageType: "text" as const,
       },
-      
+
       // Dubai - Water Conservation
       {
-        id: 'msg_dubai_1',
-        communityId: 'community_dubai',
-        region: 'global' as const,
-        thread: 'intro' as const,
-        content: 'Marhaba! I\'m Fatima, water resources specialist. Let\'s innovate together to conserve our most precious resource.',
-        authorId: 'user_dubai_1',
-        authorName: 'Fatima Al-Maktoum',
-        messageType: 'text' as const,
+        id: "msg_dubai_1",
+        communityId: "community_dubai",
+        region: "global" as const,
+        thread: "intro" as const,
+        content:
+          "Marhaba! I'm Fatima, water resources specialist. Let's innovate together to conserve our most precious resource.",
+        authorId: "user_dubai_1",
+        authorName: "Fatima Al-Maktoum",
+        messageType: "text" as const,
       },
       {
-        id: 'msg_dubai_2',
-        communityId: 'community_dubai',
-        region: 'global' as const,
-        thread: 'content' as const,
-        content: 'Our new greywater recycling system reduced household water use by 40%! Check out the pilot program results in the resources section.',
-        authorId: 'user_dubai_1',
-        authorName: 'Fatima Al-Maktoum',
-        messageType: 'text' as const,
+        id: "msg_dubai_2",
+        communityId: "community_dubai",
+        region: "global" as const,
+        thread: "content" as const,
+        content:
+          "Our new greywater recycling system reduced household water use by 40%! Check out the pilot program results in the resources section.",
+        authorId: "user_dubai_1",
+        authorName: "Fatima Al-Maktoum",
+        messageType: "text" as const,
       },
-      
+
       // Vancouver - Indigenous Community Hub
       {
-        id: 'msg_vancouver_1',
-        communityId: 'community_vancouver',
-        region: 'global' as const,
-        thread: 'intro' as const,
-        content: 'Hello, I\'m Cedar, from the Squamish Nation. Honored to facilitate dialogue and support Indigenous-led initiatives in our community.',
-        authorId: 'user_vancouver_1',
-        authorName: 'Cedar Williams',
-        messageType: 'text' as const,
+        id: "msg_vancouver_1",
+        communityId: "community_vancouver",
+        region: "global" as const,
+        thread: "intro" as const,
+        content:
+          "Hello, I'm Cedar, from the Squamish Nation. Honored to facilitate dialogue and support Indigenous-led initiatives in our community.",
+        authorId: "user_vancouver_1",
+        authorName: "Cedar Williams",
+        messageType: "text" as const,
       },
       {
-        id: 'msg_vancouver_2',
-        communityId: 'community_vancouver',
-        region: 'global' as const,
-        thread: 'content' as const,
-        content: 'Join us for the Traditional Knowledge Sharing Circle this Thursday. Elders will discuss sustainable land stewardship practices.',
-        authorId: 'user_vancouver_1',
-        authorName: 'Cedar Williams',
-        messageType: 'text' as const,
+        id: "msg_vancouver_2",
+        communityId: "community_vancouver",
+        region: "global" as const,
+        thread: "content" as const,
+        content:
+          "Join us for the Traditional Knowledge Sharing Circle this Thursday. Elders will discuss sustainable land stewardship practices.",
+        authorId: "user_vancouver_1",
+        authorName: "Cedar Williams",
+        messageType: "text" as const,
       },
-      
+
       // Reykjavik - Renewable Energy
       {
-        id: 'msg_reykjavik_1',
-        communityId: 'community_reykjavik',
-        region: 'global' as const,
-        thread: 'intro' as const,
-        content: 'Halló! I\'m Björk, geothermal energy researcher. Excited to share Iceland\'s renewable energy innovations with the world!',
-        authorId: 'user_reykjavik_1',
-        authorName: 'Björk Jónsdóttir',
-        messageType: 'text' as const,
+        id: "msg_reykjavik_1",
+        communityId: "community_reykjavik",
+        region: "global" as const,
+        thread: "intro" as const,
+        content:
+          "Halló! I'm Björk, geothermal energy researcher. Excited to share Iceland's renewable energy innovations with the world!",
+        authorId: "user_reykjavik_1",
+        authorName: "Björk Jónsdóttir",
+        messageType: "text" as const,
       },
       {
-        id: 'msg_reykjavik_2',
-        communityId: 'community_reykjavik',
-        region: 'global' as const,
-        thread: 'content' as const,
-        content: 'Iceland now runs on 100% renewable energy! Our latest geothermal plant is producing clean energy for 50,000 homes. The future is here!',
-        authorId: 'user_reykjavik_1',
-        authorName: 'Björk Jónsdóttir',
-        messageType: 'text' as const,
+        id: "msg_reykjavik_2",
+        communityId: "community_reykjavik",
+        region: "global" as const,
+        thread: "content" as const,
+        content:
+          "Iceland now runs on 100% renewable energy! Our latest geothermal plant is producing clean energy for 50,000 homes. The future is here!",
+        authorId: "user_reykjavik_1",
+        authorName: "Björk Jónsdóttir",
+        messageType: "text" as const,
       },
     ];
 
-    sampleMessages.forEach(msg => {
+    sampleMessages.forEach((msg) => {
       const chatMessage: ChatMessage = {
         ...msg,
         reactions: [],
@@ -654,13 +740,18 @@ export class MemStorage implements IStorage {
     return (this.nextStoryId++).toString();
   }
 
-  async createStory(storyData: InsertStory & { submitterIP?: string; submitterUserAgent?: string }): Promise<Story> {
+  async createStory(
+    storyData: InsertStory & {
+      submitterIP?: string;
+      submitterUserAgent?: string;
+    },
+  ): Promise<Story> {
     const id = this.generateStoryId();
     const story: Story = {
       ...storyData,
       id,
       likes: 0,
-      moderationStatus: 'pending',
+      moderationStatus: "pending",
       submittedAt: new Date().toISOString(),
     };
 
@@ -672,13 +763,16 @@ export class MemStorage implements IStorage {
     return this.stories.get(id) || null;
   }
 
-  async getStoriesByCrisis(crisisId: string, includeModerated = true): Promise<Story[]> {
+  async getStoriesByCrisis(
+    crisisId: string,
+    includeModerated = true,
+  ): Promise<Story[]> {
     const stories = Array.from(this.stories.values()).filter(
-      story => story.location.crisisId === crisisId
+      (story) => story.location.crisisId === crisisId,
     );
 
     if (!includeModerated) {
-      return stories.filter(story => story.moderationStatus === 'approved');
+      return stories.filter((story) => story.moderationStatus === "approved");
     }
 
     return stories;
@@ -686,24 +780,30 @@ export class MemStorage implements IStorage {
 
   async getApprovedStoriesByCrisis(crisisId: string): Promise<Story[]> {
     return Array.from(this.stories.values()).filter(
-      story => story.location.crisisId === crisisId && story.moderationStatus === 'approved'
+      (story) =>
+        story.location.crisisId === crisisId &&
+        story.moderationStatus === "approved",
     );
   }
 
   async getPendingStories(): Promise<Story[]> {
     return Array.from(this.stories.values()).filter(
-      story => story.moderationStatus === 'pending'
+      (story) => story.moderationStatus === "pending",
     );
   }
 
   async updateStoryModerationStatus(action: ModerationAction): Promise<Story> {
     const story = this.stories.get(action.storyId);
     if (!story) {
-      throw new Error('Story not found');
+      throw new Error("Story not found");
     }
 
-    story.moderationStatus = action.action === 'approve' ? 'approved' : 
-                            action.action === 'reject' ? 'rejected' : 'flagged';
+    story.moderationStatus =
+      action.action === "approve"
+        ? "approved"
+        : action.action === "reject"
+          ? "rejected"
+          : "flagged";
     story.moderationNotes = action.notes;
     story.moderatedBy = action.moderatorId;
     story.moderatedAt = new Date().toISOString();
@@ -719,7 +819,7 @@ export class MemStorage implements IStorage {
   async likeStory(storyId: string): Promise<Story> {
     const story = this.stories.get(storyId);
     if (!story) {
-      throw new Error('Story not found');
+      throw new Error("Story not found");
     }
 
     story.likes += 1;
@@ -732,13 +832,16 @@ export class MemStorage implements IStorage {
   }
 
   async getAllActiveCrises(): Promise<Crisis[]> {
-    return Array.from(this.crises.values()).filter(crisis => crisis.isActive);
+    return Array.from(this.crises.values()).filter((crisis) => crisis.isActive);
   }
 
-  async updateCrisis(id: string, crisisUpdate: Partial<Crisis>): Promise<Crisis> {
+  async updateCrisis(
+    id: string,
+    crisisUpdate: Partial<Crisis>,
+  ): Promise<Crisis> {
     const crisis = this.crises.get(id);
     if (!crisis) {
-      throw new Error('Crisis not found');
+      throw new Error("Crisis not found");
     }
 
     const updatedCrisis = { ...crisis, ...crisisUpdate };
@@ -746,38 +849,56 @@ export class MemStorage implements IStorage {
     return updatedCrisis;
   }
 
-  async isLocationWithinCrisis(userLat: number, userLng: number, crisisId: string): Promise<boolean> {
+  async isLocationWithinCrisis(
+    userLat: number,
+    userLng: number,
+    crisisId: string,
+  ): Promise<boolean> {
     const crisis = await this.getCrisisById(crisisId);
     if (!crisis) return false;
 
     // Calculate distance using Haversine formula
-    const distance = this.calculateDistance(userLat, userLng, crisis.location.lat, crisis.location.lng);
-    
+    const distance = this.calculateDistance(
+      userLat,
+      userLng,
+      crisis.location.lat,
+      crisis.location.lng,
+    );
+
     // Allow submissions within 50km of crisis center
     return distance <= 50;
   }
 
-  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  private calculateDistance(
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number,
+  ): number {
     const R = 6371; // Earth's radius in kilometers
     const dLat = this.deg2rad(lat2 - lat1);
     const dLon = this.deg2rad(lon2 - lon1);
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) * 
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(this.deg2rad(lat1)) *
+        Math.cos(this.deg2rad(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   }
 
   private deg2rad(deg: number): number {
-    return deg * (Math.PI/180);
+    return deg * (Math.PI / 180);
   }
 
   // User operations
   async createOrUpdateUser(googleUser: any): Promise<User> {
     // Check if user already exists
-    let existingUser = Array.from(this.users.values()).find(u => u.googleId === googleUser.id);
-    
+    let existingUser = Array.from(this.users.values()).find(
+      (u) => u.googleId === googleUser.id,
+    );
+
     if (existingUser) {
       // Update existing user
       existingUser.name = googleUser.name;
@@ -811,13 +932,20 @@ export class MemStorage implements IStorage {
   }
 
   async getUserByGoogleId(googleId: string): Promise<User | null> {
-    return Array.from(this.users.values()).find(u => u.googleId === googleId) || null;
+    return (
+      Array.from(this.users.values()).find((u) => u.googleId === googleId) ||
+      null
+    );
   }
 
-  async updateUserVerifiedHostStatus(userId: string, isVerified: boolean, expiresAt?: string): Promise<User> {
+  async updateUserVerifiedHostStatus(
+    userId: string,
+    isVerified: boolean,
+    expiresAt?: string,
+  ): Promise<User> {
     const user = this.users.get(userId);
     if (!user) {
-      throw new Error('User not found');
+      throw new Error("User not found");
     }
 
     user.isVerifiedHost = isVerified;
@@ -830,10 +958,13 @@ export class MemStorage implements IStorage {
     return user;
   }
 
-  async addUserSocialProfile(userId: string, profile: SocialProfile): Promise<User> {
+  async addUserSocialProfile(
+    userId: string,
+    profile: SocialProfile,
+  ): Promise<User> {
     const user = this.users.get(userId);
     if (!user) {
-      throw new Error('User not found');
+      throw new Error("User not found");
     }
 
     if (!user.socialProfiles) {
@@ -841,8 +972,10 @@ export class MemStorage implements IStorage {
     }
 
     // Remove existing profile for this platform
-    user.socialProfiles = user.socialProfiles.filter(p => p.platform !== profile.platform);
-    
+    user.socialProfiles = user.socialProfiles.filter(
+      (p) => p.platform !== profile.platform,
+    );
+
     // Add new profile
     user.socialProfiles.push(profile);
 
@@ -850,14 +983,19 @@ export class MemStorage implements IStorage {
     return user;
   }
 
-  async removeUserSocialProfile(userId: string, platform: string): Promise<User> {
+  async removeUserSocialProfile(
+    userId: string,
+    platform: string,
+  ): Promise<User> {
     const user = this.users.get(userId);
     if (!user) {
-      throw new Error('User not found');
+      throw new Error("User not found");
     }
 
     if (user.socialProfiles) {
-      user.socialProfiles = user.socialProfiles.filter(p => p.platform !== platform);
+      user.socialProfiles = user.socialProfiles.filter(
+        (p) => p.platform !== platform,
+      );
     }
 
     this.users.set(userId, user);
@@ -865,16 +1003,21 @@ export class MemStorage implements IStorage {
   }
 
   // Community operations
-  async createCommunity(communityData: InsertCommunity & { createdBy: string }): Promise<Community> {
+  async createCommunity(
+    communityData: InsertCommunity & { createdBy: string },
+  ): Promise<Community> {
     // Check if user already has a community (excluding system-created crisis communities)
     const existingCommunity = Array.from(this.communities.values()).find(
-      c => c.createdBy === communityData.createdBy && c.createdBy !== 'system'
+      (c) =>
+        c.createdBy === communityData.createdBy && c.createdBy !== "system",
     );
-    
+
     if (existingCommunity) {
-      throw new Error('User already has a community. Each user can only create one community.');
+      throw new Error(
+        "User already has a community. Each user can only create one community.",
+      );
     }
-    
+
     const id = `community_${this.nextCommunityId++}`;
     const community: Community = {
       ...communityData,
@@ -889,48 +1032,55 @@ export class MemStorage implements IStorage {
     this.communities.set(id, community);
     return community;
   }
-  
+
   async hasUserCreatedCommunity(userId: string): Promise<boolean> {
     const userCommunity = Array.from(this.communities.values()).find(
-      c => c.createdBy === userId && c.createdBy !== 'system'
+      (c) => c.createdBy === userId && c.createdBy !== "system",
     );
     return !!userCommunity;
   }
 
   async getAllCommunities(): Promise<Community[]> {
-    return Array.from(this.communities.values()).filter(c => c.isActive);
+    return Array.from(this.communities.values()).filter((c) => c.isActive);
   }
 
   async getCommunityById(communityId: string): Promise<Community | null> {
     return this.communities.get(communityId) || null;
   }
-  
+
   async getCommunityByCrisisId(crisisId: string): Promise<Community | null> {
     const communityId = `crisis_community_${crisisId}`;
     return this.communities.get(communityId) || null;
   }
 
   async getCommunitiesByCreator(userId: string): Promise<Community[]> {
-    return Array.from(this.communities.values()).filter(c => c.createdBy === userId && c.isActive);
+    return Array.from(this.communities.values()).filter(
+      (c) => c.createdBy === userId && c.isActive,
+    );
   }
 
-  async updateCommunity(communityId: string, updates: Partial<Community>): Promise<Community> {
+  async updateCommunity(
+    communityId: string,
+    updates: Partial<Community>,
+  ): Promise<Community> {
     const community = this.communities.get(communityId);
     if (!community) {
-      throw new Error('Community not found');
+      throw new Error("Community not found");
     }
 
-    const updatedCommunity = { 
-      ...community, 
-      ...updates, 
-      updatedAt: new Date().toISOString() 
+    const updatedCommunity = {
+      ...community,
+      ...updates,
+      updatedAt: new Date().toISOString(),
     };
     this.communities.set(communityId, updatedCommunity);
     return updatedCommunity;
   }
 
   // Discussion operations
-  async createDiscussion(discussionData: InsertDiscussion): Promise<Discussion> {
+  async createDiscussion(
+    discussionData: InsertDiscussion,
+  ): Promise<Discussion> {
     const id = `discussion_${this.nextDiscussionId++}`;
     const discussion: Discussion = {
       ...discussionData,
@@ -957,29 +1107,42 @@ export class MemStorage implements IStorage {
     return discussion;
   }
 
-  async getDiscussionsByCommunity(communityId: string, isLocal?: boolean): Promise<Discussion[]> {
-    const discussions = Array.from(this.discussions.values()).filter(d => d.communityId === communityId);
-    
+  async getDiscussionsByCommunity(
+    communityId: string,
+    isLocal?: boolean,
+  ): Promise<Discussion[]> {
+    const discussions = Array.from(this.discussions.values()).filter(
+      (d) => d.communityId === communityId,
+    );
+
     if (isLocal !== undefined) {
-      return discussions.filter(d => d.isLocal === isLocal);
+      return discussions.filter((d) => d.isLocal === isLocal);
     }
-    
+
     return discussions;
   }
 
-  async getLocalDiscussionsByUserLocation(communityId: string, userLat: number, userLng: number, radiusKm: number = 50): Promise<Discussion[]> {
-    const localDiscussions = await this.getDiscussionsByCommunity(communityId, true);
-    
-    return localDiscussions.filter(discussion => {
+  async getLocalDiscussionsByUserLocation(
+    communityId: string,
+    userLat: number,
+    userLng: number,
+    radiusKm: number = 50,
+  ): Promise<Discussion[]> {
+    const localDiscussions = await this.getDiscussionsByCommunity(
+      communityId,
+      true,
+    );
+
+    return localDiscussions.filter((discussion) => {
       if (!discussion.authorLocation) return false;
-      
+
       const distance = this.calculateDistance(
-        userLat, 
-        userLng, 
-        discussion.authorLocation.lat, 
-        discussion.authorLocation.lng
+        userLat,
+        userLng,
+        discussion.authorLocation.lat,
+        discussion.authorLocation.lng,
       );
-      
+
       return distance <= radiusKm;
     });
   }
@@ -987,7 +1150,7 @@ export class MemStorage implements IStorage {
   async likeDiscussion(discussionId: string): Promise<Discussion> {
     const discussion = this.discussions.get(discussionId);
     if (!discussion) {
-      throw new Error('Discussion not found');
+      throw new Error("Discussion not found");
     }
 
     discussion.likes += 1;
@@ -997,7 +1160,9 @@ export class MemStorage implements IStorage {
   }
 
   // Event operations
-  async createEvent(eventData: InsertEvent & { createdBy: string }): Promise<Event> {
+  async createEvent(
+    eventData: InsertEvent & { createdBy: string },
+  ): Promise<Event> {
     const id = `event_${this.nextEventId++}`;
     const event: Event = {
       ...eventData,
@@ -1013,18 +1178,29 @@ export class MemStorage implements IStorage {
   }
 
   async getAllEvents(): Promise<Event[]> {
-    return Array.from(this.events.values()).filter(e => e.isActive);
+    return Array.from(this.events.values()).filter((e) => e.isActive);
   }
 
   async getEventsByCreator(userId: string): Promise<Event[]> {
-    return Array.from(this.events.values()).filter(e => e.createdBy === userId && e.isActive);
+    return Array.from(this.events.values()).filter(
+      (e) => e.createdBy === userId && e.isActive,
+    );
   }
 
-  async getEventsByLocation(lat: number, lng: number, radiusKm: number = 50): Promise<Event[]> {
-    return Array.from(this.events.values()).filter(event => {
+  async getEventsByLocation(
+    lat: number,
+    lng: number,
+    radiusKm: number = 50,
+  ): Promise<Event[]> {
+    return Array.from(this.events.values()).filter((event) => {
       if (!event.isActive) return false;
-      
-      const distance = this.calculateDistance(lat, lng, event.location.lat, event.location.lng);
+
+      const distance = this.calculateDistance(
+        lat,
+        lng,
+        event.location.lat,
+        event.location.lng,
+      );
       return distance <= radiusKm;
     });
   }
@@ -1032,13 +1208,13 @@ export class MemStorage implements IStorage {
   async updateEvent(eventId: string, updates: Partial<Event>): Promise<Event> {
     const event = this.events.get(eventId);
     if (!event) {
-      throw new Error('Event not found');
+      throw new Error("Event not found");
     }
 
-    const updatedEvent = { 
-      ...event, 
-      ...updates, 
-      updatedAt: new Date().toISOString() 
+    const updatedEvent = {
+      ...event,
+      ...updates,
+      updatedAt: new Date().toISOString(),
     };
     this.events.set(eventId, updatedEvent);
     return updatedEvent;
@@ -1047,7 +1223,7 @@ export class MemStorage implements IStorage {
   async joinEvent(eventId: string, userId: string): Promise<Event> {
     const event = this.events.get(eventId);
     if (!event) {
-      throw new Error('Event not found');
+      throw new Error("Event not found");
     }
 
     if (!event.attendeeIds.includes(userId)) {
@@ -1063,7 +1239,7 @@ export class MemStorage implements IStorage {
   async leaveEvent(eventId: string, userId: string): Promise<Event> {
     const event = this.events.get(eventId);
     if (!event) {
-      throw new Error('Event not found');
+      throw new Error("Event not found");
     }
 
     const index = event.attendeeIds.indexOf(userId);
@@ -1078,7 +1254,9 @@ export class MemStorage implements IStorage {
   }
 
   // Payment operations
-  async createPayment(paymentData: Omit<Payment, 'id' | 'createdAt'>): Promise<Payment> {
+  async createPayment(
+    paymentData: Omit<Payment, "id" | "createdAt">,
+  ): Promise<Payment> {
     const id = `payment_${this.nextPaymentId++}`;
     const payment: Payment = {
       ...paymentData,
@@ -1091,14 +1269,21 @@ export class MemStorage implements IStorage {
   }
 
   async getPaymentsByUser(userId: string): Promise<Payment[]> {
-    return Array.from(this.payments.values()).filter(p => p.userId === userId);
+    return Array.from(this.payments.values()).filter(
+      (p) => p.userId === userId,
+    );
   }
 
-  async updatePaymentStatus(stripePaymentIntentId: string, status: 'succeeded' | 'failed'): Promise<boolean> {
+  async updatePaymentStatus(
+    stripePaymentIntentId: string,
+    status: "succeeded" | "failed",
+  ): Promise<boolean> {
     // Find payment by stripe payment intent ID
-    const payment = Array.from(this.payments.values()).find(p => p.stripePaymentIntentId === stripePaymentIntentId);
+    const payment = Array.from(this.payments.values()).find(
+      (p) => p.stripePaymentIntentId === stripePaymentIntentId,
+    );
     if (!payment) {
-      throw new Error('Payment not found');
+      throw new Error("Payment not found");
     }
 
     // Check if status is already the target status (idempotency)
@@ -1111,13 +1296,19 @@ export class MemStorage implements IStorage {
     return true; // Status was updated
   }
 
-  async getPaymentByStripeId(stripePaymentIntentId: string): Promise<Payment | null> {
-    const payment = Array.from(this.payments.values()).find(p => p.stripePaymentIntentId === stripePaymentIntentId);
+  async getPaymentByStripeId(
+    stripePaymentIntentId: string,
+  ): Promise<Payment | null> {
+    const payment = Array.from(this.payments.values()).find(
+      (p) => p.stripePaymentIntentId === stripePaymentIntentId,
+    );
     return payment || null;
   }
 
   // Chat message operations
-  async createChatMessage(messageData: InsertChatMessage): Promise<ChatMessage> {
+  async createChatMessage(
+    messageData: InsertChatMessage,
+  ): Promise<ChatMessage> {
     const id = `chat_${this.nextChatMessageId++}`;
     const message: ChatMessage = {
       ...messageData,
@@ -1131,24 +1322,45 @@ export class MemStorage implements IStorage {
     return message;
   }
 
-  async getChatMessagesByCommunity(communityId: string, region?: string, thread?: string): Promise<ChatMessage[]> {
+  async getChatMessagesByCommunity(
+    communityId: string,
+    region?: string,
+    thread?: string,
+  ): Promise<ChatMessage[]> {
     const messages = Array.from(this.chatMessages.values())
-      .filter(msg => msg.communityId === communityId)
-      .filter(msg => !region || msg.region === region)
-      .filter(msg => !thread || msg.thread === thread)
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-    
+      .filter((msg) => msg.communityId === communityId)
+      .filter((msg) => !region || msg.region === region)
+      .filter((msg) => !thread || msg.thread === thread)
+      .sort(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      );
+
     return messages;
   }
-  
-  async getMostActiveMembers(communityId: string, limit: number = 10): Promise<Array<{userId: string, userName: string, messageCount: number, user?: User}>> {
-    const messages = Array.from(this.chatMessages.values())
-      .filter(msg => msg.communityId === communityId);
-    
+
+  async getMostActiveMembers(
+    communityId: string,
+    limit: number = 10,
+  ): Promise<
+    Array<{
+      userId: string;
+      userName: string;
+      messageCount: number;
+      user?: User;
+    }>
+  > {
+    const messages = Array.from(this.chatMessages.values()).filter(
+      (msg) => msg.communityId === communityId,
+    );
+
     // Count messages per user
-    const userMessageCount = new Map<string, {userId: string, userName: string, count: number}>();
-    
-    messages.forEach(msg => {
+    const userMessageCount = new Map<
+      string,
+      { userId: string; userName: string; count: number }
+    >();
+
+    messages.forEach((msg) => {
       const existing = userMessageCount.get(msg.authorId);
       if (existing) {
         existing.count++;
@@ -1156,22 +1368,22 @@ export class MemStorage implements IStorage {
         userMessageCount.set(msg.authorId, {
           userId: msg.authorId,
           userName: msg.authorName,
-          count: 1
+          count: 1,
         });
       }
     });
-    
+
     // Sort by message count and return top members with user data
     return Array.from(userMessageCount.values())
       .sort((a, b) => b.count - a.count)
       .slice(0, limit)
-      .map(userStat => {
+      .map((userStat) => {
         const user = this.users.get(userStat.userId);
         return {
           userId: userStat.userId,
           userName: userStat.userName,
           messageCount: userStat.count,
-          user: user || undefined
+          user: user || undefined,
         };
       });
   }
@@ -1181,7 +1393,9 @@ export class MemStorage implements IStorage {
   }
 
   // Direct message operations
-  async createDirectMessage(messageData: InsertDirectMessage): Promise<DirectMessage> {
+  async createDirectMessage(
+    messageData: InsertDirectMessage,
+  ): Promise<DirectMessage> {
     const id = `dm_${this.nextDirectMessageId++}`;
     const message: DirectMessage = {
       ...messageData,
@@ -1194,49 +1408,66 @@ export class MemStorage implements IStorage {
     return message;
   }
 
-  async getDirectMessagesByConversation(conversationId: string): Promise<DirectMessage[]> {
+  async getDirectMessagesByConversation(
+    conversationId: string,
+  ): Promise<DirectMessage[]> {
     return Array.from(this.directMessages.values())
-      .filter(msg => msg.conversationId === conversationId)
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      .filter((msg) => msg.conversationId === conversationId)
+      .sort(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      );
   }
 
-  async getDirectMessagesBetweenUsers(senderId: string, recipientId: string): Promise<DirectMessage[]> {
+  async getDirectMessagesBetweenUsers(
+    senderId: string,
+    recipientId: string,
+  ): Promise<DirectMessage[]> {
     return Array.from(this.directMessages.values())
-      .filter(msg => 
-        (msg.senderId === senderId && msg.recipientId === recipientId) ||
-        (msg.senderId === recipientId && msg.recipientId === senderId)
+      .filter(
+        (msg) =>
+          (msg.senderId === senderId && msg.recipientId === recipientId) ||
+          (msg.senderId === recipientId && msg.recipientId === senderId),
       )
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      .sort(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      );
   }
 
   async markDirectMessageAsRead(messageId: string): Promise<DirectMessage> {
     const message = this.directMessages.get(messageId);
     if (!message) {
-      throw new Error('Direct message not found');
+      throw new Error("Direct message not found");
     }
 
     message.isRead = true;
     message.readAt = new Date().toISOString();
     this.directMessages.set(messageId, message);
-    
+
     return message;
   }
 
   async getUserConversations(userId: string): Promise<DirectMessage[]> {
     // Get the latest message from each conversation
     const conversationMap = new Map<string, DirectMessage>();
-    
+
     Array.from(this.directMessages.values())
-      .filter(msg => msg.senderId === userId || msg.recipientId === userId)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      .forEach(msg => {
+      .filter((msg) => msg.senderId === userId || msg.recipientId === userId)
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      )
+      .forEach((msg) => {
         if (!conversationMap.has(msg.conversationId)) {
           conversationMap.set(msg.conversationId, msg);
         }
       });
 
-    return Array.from(conversationMap.values())
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return Array.from(conversationMap.values()).sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
   }
 }
 
