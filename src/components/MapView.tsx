@@ -120,39 +120,55 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
 
       // Global community markers with contextually relevant content
       const localLocations = [
-        { id: 'san_francisco', coords: [-122.4194, 37.7749], name: 'San Francisco, CA', type: 'communities', category: 'Housing & Homelessness Solutions' },
-        { id: 'nairobi', coords: [36.8219, -1.2921], name: 'Nairobi, Kenya', type: 'communities', category: 'Wildlife Conservation Network' },
-        { id: 'miami', coords: [-80.1918, 25.7617], name: 'Miami, Florida', type: 'news', category: 'Hurricane Preparedness Initiative' },
-        { id: 'tokyo', coords: [139.6917, 35.6895], name: 'Tokyo, Japan', type: 'communities', category: 'Earthquake Response Team' },
-        { id: 'amsterdam', coords: [4.9041, 52.3676], name: 'Amsterdam, Netherlands', type: 'events', category: 'Climate Adaptation Forum' },
-        { id: 'sydney', coords: [151.2093, -33.8688], name: 'Sydney, Australia', type: 'news', category: 'Bushfire Preparedness Coalition' },
-        { id: 'mumbai', coords: [72.8777, 19.0760], name: 'Mumbai, India', type: 'communities', category: 'Monsoon Resilience Network' },
-        { id: 'sao_paulo', coords: [-46.6333, -23.5505], name: 'São Paulo, Brazil', type: 'events', category: 'Urban Sustainability Project' },
-        { id: 'dubai', coords: [55.2708, 25.2048], name: 'Dubai, UAE', type: 'news', category: 'Water Conservation Alliance' },
-        { id: 'vancouver', coords: [-123.1207, 49.2827], name: 'Vancouver, Canada', type: 'communities', category: 'Indigenous Community Hub' },
-        { id: 'reykjavik', coords: [-21.8174, 64.1466], name: 'Reykjavik, Iceland', type: 'events', category: 'Renewable Energy Collective' },
+        { id: 'san_francisco', communityId: 'community_sf', coords: [-122.4194, 37.7749], name: 'San Francisco, CA', type: 'communities', category: 'Housing & Homelessness Solutions' },
+        { id: 'nairobi', communityId: 'community_nairobi', coords: [36.8219, -1.2921], name: 'Nairobi, Kenya', type: 'communities', category: 'Wildlife Conservation Network' },
+        { id: 'miami', communityId: 'community_miami', coords: [-80.1918, 25.7617], name: 'Miami, Florida', type: 'communities', category: 'Hurricane Preparedness Initiative' },
+        { id: 'tokyo', communityId: 'community_tokyo', coords: [139.6917, 35.6895], name: 'Tokyo, Japan', type: 'communities', category: 'Earthquake Response Team' },
+        { id: 'amsterdam', communityId: 'community_amsterdam', coords: [4.9041, 52.3676], name: 'Amsterdam, Netherlands', type: 'communities', category: 'Climate Adaptation Forum' },
+        { id: 'sydney', communityId: 'community_sydney', coords: [151.2093, -33.8688], name: 'Sydney, Australia', type: 'communities', category: 'Bushfire Preparedness Coalition' },
+        { id: 'mumbai', communityId: 'community_mumbai', coords: [72.8777, 19.0760], name: 'Mumbai, India', type: 'communities', category: 'Monsoon Resilience Network' },
+        { id: 'sao_paulo', communityId: 'community_sao_paulo', coords: [-46.6333, -23.5505], name: 'São Paulo, Brazil', type: 'communities', category: 'Urban Sustainability Project' },
+        { id: 'dubai', communityId: 'community_dubai', coords: [55.2708, 25.2048], name: 'Dubai, UAE', type: 'communities', category: 'Water Conservation Alliance' },
+        { id: 'vancouver', communityId: 'community_vancouver', coords: [-123.1207, 49.2827], name: 'Vancouver, Canada', type: 'communities', category: 'Indigenous Community Hub' },
+        { id: 'reykjavik', communityId: 'community_reykjavik', coords: [-21.8174, 64.1466], name: 'Reykjavik, Iceland', type: 'communities', category: 'Renewable Energy Collective' },
       ];
 
       localLocations.forEach((location) => {
         const color = location.type === 'news' ? '#3b82f6' : 
                       location.type === 'communities' ? '#10b981' : '#f59e0b';
         
+        const popup = new mapboxgl.Popup({ offset: 25 })
+          .setHTML(`
+            <div class="p-3 bg-card text-card-foreground rounded cursor-pointer hover:bg-accent transition-colors" 
+                 data-community-id="${location.communityId}"
+                 data-community-name="${location.category}"
+                 style="cursor: pointer;">
+              <h3 class="font-semibold mb-1">${location.name}</h3>
+              <p class="text-sm text-muted-foreground mb-2">
+                ${location.category}
+              </p>
+              <div class="text-xs text-primary font-medium">
+                Click to open community →
+              </div>
+            </div>
+          `);
+        
+        // Add click handler to popup content
+        popup.on('open', () => {
+          const popupContent = document.querySelector(`[data-community-id="${location.communityId}"]`);
+          if (popupContent) {
+            popupContent.addEventListener('click', () => {
+              window.location.href = `/community-chat?id=${location.communityId}`;
+            });
+          }
+        });
+        
         const marker = new mapboxgl.Marker({
           color: color,
           scale: 0.8
         })
           .setLngLat(location.coords as [number, number])
-          .setPopup(
-            new mapboxgl.Popup({ offset: 25 })
-              .setHTML(`
-                <div class="p-2 bg-card text-card-foreground rounded">
-                  <h3 class="font-semibold">${location.name}</h3>
-                  <p class="text-sm text-muted-foreground">
-                    ${location.type}: ${location.category}
-                  </p>
-                </div>
-              `)
-          )
+          .setPopup(popup)
           .addTo(map.current!);
       });
     });

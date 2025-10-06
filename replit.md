@@ -17,6 +17,7 @@ This is a React-based crisis response and community mapping application that pro
   - Each marker has contextually relevant descriptions (e.g., Housing & Homelessness Solutions in SF, Wildlife Conservation in Nairobi, Hurricane Preparedness in Miami, Earthquake Response in Tokyo)
   - Created matching communities with appropriate categories and member counts
   - Added sample chat messages for each community with contextually relevant content (housing advocacy in SF, conservation discussions in Nairobi, hurricane prep tips in Miami, etc.)
+  - **Made marker popups clickable**: Clicking on a marker popup now navigates directly to the community chat page with hover effects and visual feedback
 - **Restored map load animation**:
   - Globe now animates from global view to user's location on initial load
   - Smooth 2-second fly-to animation centers map at city-level zoom (zoom 12)
