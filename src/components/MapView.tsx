@@ -120,6 +120,7 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
 
       // Global community markers with contextually relevant content
       const localLocations = [
+        { id: 'san_francisco', coords: [-122.4194, 37.7749], name: 'San Francisco, CA', type: 'communities', category: 'Housing & Homelessness Solutions' },
         { id: 'nairobi', coords: [36.8219, -1.2921], name: 'Nairobi, Kenya', type: 'communities', category: 'Wildlife Conservation Network' },
         { id: 'miami', coords: [-80.1918, 25.7617], name: 'Miami, Florida', type: 'news', category: 'Hurricane Preparedness Initiative' },
         { id: 'tokyo', coords: [139.6917, 35.6895], name: 'Tokyo, Japan', type: 'communities', category: 'Earthquake Response Team' },

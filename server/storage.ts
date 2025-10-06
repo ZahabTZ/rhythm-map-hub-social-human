@@ -229,6 +229,20 @@ export class MemStorage implements IStorage {
   private initializeSampleCommunities() {
     const sampleCommunities: Community[] = [
       {
+        id: 'community_sf',
+        name: 'Housing & Homelessness Solutions - San Francisco',
+        description: 'Community-driven initiatives to address housing affordability and homelessness through advocacy, resources, and direct support',
+        category: 'Humanitarian',
+        maxGeographicScope: 'city',
+        isActive: true,
+        memberCount: 4521,
+        globalDiscussions: [],
+        localDiscussions: [],
+        createdBy: 'user_sf_1',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      {
         id: 'community_nairobi',
         name: 'Wildlife Conservation Network - Nairobi',
         description: 'Protecting Kenya\'s wildlife through community-led conservation efforts and anti-poaching initiatives',
@@ -374,7 +388,7 @@ export class MemStorage implements IStorage {
       this.communities.set(community.id, community);
     });
     
-    this.nextCommunityId = 11; // Start at 11 since we have 10 sample communities
+    this.nextCommunityId = 12; // Start at 12 since we have 11 sample communities
     
     // Initialize sample chat messages for these communities
     this.initializeSampleChatMessages();
@@ -382,6 +396,28 @@ export class MemStorage implements IStorage {
 
   private initializeSampleChatMessages() {
     const sampleMessages = [
+      // San Francisco - Housing & Homelessness Solutions
+      {
+        id: 'msg_sf_1',
+        communityId: 'community_sf',
+        region: 'global' as const,
+        thread: 'intro' as const,
+        content: 'Hi everyone! I\'m Alex, a housing advocate working with local nonprofits. Let\'s collaborate to make SF more affordable and supportive for everyone.',
+        authorId: 'user_sf_1',
+        authorName: 'Alex Chen',
+        messageType: 'text' as const,
+      },
+      {
+        id: 'msg_sf_2',
+        communityId: 'community_sf',
+        region: 'global' as const,
+        thread: 'content' as const,
+        content: 'Our community housing initiative just secured 50 transitional housing units in the Tenderloin! We\'re also expanding our job placement program. Volunteers welcome!',
+        authorId: 'user_sf_1',
+        authorName: 'Alex Chen',
+        messageType: 'text' as const,
+      },
+      
       // Nairobi - Wildlife Conservation
       {
         id: 'msg_nairobi_1',
