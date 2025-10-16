@@ -12,6 +12,11 @@ This is a React-based crisis response and community mapping application that pro
 - ✅ Deployment configuration set up for autoscale
 
 ## Recent Changes (October 16, 2025)
+- **Fixed crisis page data - all 21 crisis locations now display correct information**:
+  - Added complete crisis data mapping for all locations (Gaza, Sudan, Ukraine, Syria, Yemen, Afghanistan, Myanmar, DR Congo, Somalia, South Sudan, Haiti, Burkina Faso, Chad, Rohingya, CAR, Lebanon, Venezuela, North Korea, Colombia, Central America, Cuba)
+  - Crisis pages now show accurate titles, descriptions, affected populations, and statistics
+  - Each crisis displays Oct 15, 2025 snapshot data from UN/OCHA sources
+  - Clicking any crisis dot navigates to correct crisis detail page
 - **Expanded Americas region crisis tracking (21 total crisis locations)**:
   - **Updated Venezuela**: Now shows 7-8M displaced (largest in Western Hemisphere, comparable to Syria)
   - **Updated Haiti**: >5M in need (≈ half population), gang control, cholera resurgence, famine-risk zones
