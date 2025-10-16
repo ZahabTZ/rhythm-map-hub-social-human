@@ -12,6 +12,13 @@ This is a React-based crisis response and community mapping application that pro
 - ✅ Deployment configuration set up for autoscale
 
 ## Recent Changes (October 16, 2025)
+- **Humanitarian mode now hides community pins, only shows crisis dots**:
+  - Community markers automatically hidden when humanitarian mode is activated
+  - Clean view showing only red crisis dots for focus on humanitarian emergencies
+  - Community pins reappear when humanitarian mode is toggled off
+- **Added North Korea to crisis tracking (18 total crisis locations)**:
+  - North Korea: ~10M+ facing food shortages due to severe food insecurity
+  - Intensity rating: 80, positioned at Pyongyang coordinates
 - **Updated with 17 real-world humanitarian crisis dots (Oct 15, 2025 snapshot)**:
   - **Updated existing crises with accurate data**:
     - Gaza (~2.1M need food aid, aid access heavily constrained)

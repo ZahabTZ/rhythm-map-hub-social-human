@@ -27,10 +27,21 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
   const humanitarianModeRef = useRef(false);
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
   const [mapReady, setMapReady] = useState(false);
+  const communityMarkersRef = useRef<mapboxgl.Marker[]>([]);
   
   // Update ref whenever state changes
   useEffect(() => {
     humanitarianModeRef.current = humanitarianMode;
+    
+    // Toggle community markers visibility based on humanitarian mode
+    communityMarkersRef.current.forEach(marker => {
+      const element = marker.getElement();
+      if (humanitarianMode) {
+        element.style.display = 'none';
+      } else {
+        element.style.display = 'block';
+      }
+    });
   }, [humanitarianMode]);
 
   // Sync external humanitarian mode if provided
@@ -183,6 +194,9 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
           .setLngLat(location.coords as [number, number])
           .setPopup(popup)
           .addTo(map.current!);
+        
+        // Store marker reference for toggling visibility
+        communityMarkersRef.current.push(marker);
       });
     });
 
@@ -379,6 +393,15 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
             "description": "Regional displacement crisis across Latin America and Caribbean.",
             "affected": "~6.87M refugees & migrants",
             "image": "https://images.unsplash.com/photo-1589909202802-8f4aadce1849?w=400&h=300&fit=crop"
+          }},
+          // North Korea - Severe food insecurity
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [127.5101, 40.3399]}, "properties": {
+            "intensity": 80, 
+            "id": "north-korea-2025",
+            "name": "North Korea", 
+            "description": "Severe food insecurity and chronic malnutrition crisis.",
+            "affected": "~10M+ facing food shortages",
+            "image": "https://images.unsplash.com/photo-1564859228273-274232fdb516?w=400&h=300&fit=crop"
           }}
         ]
       };
