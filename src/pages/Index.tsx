@@ -10,6 +10,7 @@ import SupportCard from '@/components/SupportCard';
 import CrisesSidebar from '@/components/CrisesSidebar';
 import { ModerationStatus } from '@/components/ModerationStatus';
 import { SocialProfiles } from '@/components/SocialProfiles';
+import { DevToolbar } from '@/components/DevToolbar';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -35,6 +36,7 @@ const Index = () => {
   const [crisesSidebarOpen, setCrisesSidebarOpen] = useState(false);
   const [mapViewRef, setMapViewRef] = useState<any>(null);
   const [selectedRegion, setSelectedRegion] = useState<'neighborhood' | 'city' | 'state' | 'national' | 'global'>('global');
+  const [devLocation, setDevLocation] = useState<{lat: number, lng: number, name: string} | null>(null);
 
   const handleSearch = (query: string) => {
     // TODO: Implement actual search logic
@@ -98,6 +100,21 @@ const Index = () => {
     setSidebarOpen(true);
   };
 
+  const handleDevLocationChange = (lat: number, lng: number, name: string) => {
+    console.log('Dev location set:', { lat, lng, name });
+    setDevLocation({ lat, lng, name });
+    
+    // Center map on the new location
+    if (mapViewRef && mapViewRef.centerOnLocation) {
+      mapViewRef.centerOnLocation([lng, lat], name);
+    }
+  };
+
+  const handleUseRealLocation = () => {
+    // Clear dev location override to use real geolocation
+    setDevLocation(null);
+  };
+
   // Admin access: Ctrl+Shift+M to access moderation dashboard
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -118,6 +135,7 @@ const Index = () => {
         onHumanitarianClick={handleHumanitarianClick}
         onMapReady={setMapViewRef}
         onRegionSelect={handleRegionSelect}
+        devLocation={devLocation}
       />
       
       {/* Authentication & User Status Bar */}
@@ -260,6 +278,12 @@ const Index = () => {
 
       {/* Moderation Status - Shows when stories need review */}
       <ModerationStatus />
+
+      {/* Dev Toolbar - Development Mode Only */}
+      <DevToolbar 
+        onLocationChange={handleDevLocationChange}
+        onUseRealLocation={handleUseRealLocation}
+      />
     </div>
   );
 };

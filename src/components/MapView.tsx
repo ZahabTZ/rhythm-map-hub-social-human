@@ -11,12 +11,14 @@ interface MapViewProps {
   humanitarianMode?: boolean;
   onMapReady?: (mapControls: { centerOnLocation: (coordinates: [number, number], locationName?: string) => void }) => void;
   onRegionSelect?: (region: 'neighborhood' | 'city' | 'state' | 'national' | 'global') => void;
+  devLocation?: { lat: number; lng: number; name: string } | null;
 }
 
-const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick, humanitarianMode: externalHumanitarianMode, onMapReady, onRegionSelect }) => {
+const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick, humanitarianMode: externalHumanitarianMode, onMapReady, onRegionSelect, devLocation }) => {
   console.log('MapView component rendered');
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
+  const devLocationMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const [mapboxToken, setMapboxToken] = useState<string | undefined>(
     import.meta.env.VITE_MAPBOX_TOKEN
   )
@@ -50,6 +52,60 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
       setHumanitarianMode(externalHumanitarianMode);
     }
   }, [externalHumanitarianMode]);
+
+  // Handle dev location changes
+  useEffect(() => {
+    if (!map.current) return;
+
+    // Remove existing dev location marker
+    if (devLocationMarkerRef.current) {
+      devLocationMarkerRef.current.remove();
+      devLocationMarkerRef.current = null;
+    }
+
+    // If devLocation is set, add a marker and update userLocation
+    if (devLocation) {
+      console.log('Setting dev location marker at:', devLocation);
+      
+      // Create a custom HTML marker element for dev location
+      const el = document.createElement('div');
+      el.className = 'dev-location-marker';
+      el.style.width = '30px';
+      el.style.height = '30px';
+      el.style.borderRadius = '50%';
+      el.style.backgroundColor = '#FF6B00';
+      el.style.border = '3px solid white';
+      el.style.boxShadow = '0 0 10px rgba(255, 107, 0, 0.5)';
+      el.style.cursor = 'pointer';
+      el.title = `Dev Location: ${devLocation.name}`;
+
+      // Add pulsing animation
+      el.style.animation = 'pulse 2s infinite';
+      
+      // Add popup with location name
+      const popup = new mapboxgl.Popup({ offset: 25 })
+        .setHTML(`
+          <div class="p-2">
+            <p class="font-semibold text-orange-600">🛠️ Dev Location</p>
+            <p class="text-sm">${devLocation.name}</p>
+            <p class="text-xs text-muted-foreground mt-1">
+              ${devLocation.lat.toFixed(4)}, ${devLocation.lng.toFixed(4)}
+            </p>
+          </div>
+        `);
+
+      devLocationMarkerRef.current = new mapboxgl.Marker(el)
+        .setLngLat([devLocation.lng, devLocation.lat])
+        .setPopup(popup)
+        .addTo(map.current);
+
+      // Update userLocation state
+      setUserLocation({ lat: devLocation.lat, lng: devLocation.lng });
+    } else {
+      // If devLocation is cleared, use real geolocation
+      getUserLocation();
+    }
+  }, [devLocation]);
 
   // Regional local data
   const getRegionData = (region: string) => {
@@ -842,7 +898,7 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
       // Smooth fly animation from global view to user's location
       map.current.flyTo({
         center: [userLocation.lng, userLocation.lat],
-        zoom: 2, // City-level zoom
+        zoom: 12, // City-level zoom
         duration: 2000, // 2 second animation
         essential: true
       });
