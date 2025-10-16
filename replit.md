@@ -11,7 +11,17 @@ This is a React-based crisis response and community mapping application that pro
 - ✅ MapBox integration working with provided API token
 - ✅ Deployment configuration set up for autoscale
 
-## Recent Changes (October 6, 2025)
+## Recent Changes (October 16, 2025)
+- **Added 12 red humanitarian crisis dots (GeoJSON circle layers)**:
+  - Gaza (2.3M in need), Sudan (largest crisis - 30.4M in need, 12M displaced), Syria (14 years conflict, 17M need aid)
+  - Ukraine (nearly 3 years war, 12.7M need aid), Myanmar (20M need aid, 3.5M displaced), Yemen (17.1M food insecure)
+  - DR Congo (armed conflict), Haiti (gang violence), Burkina Faso (most neglected, 2M displaced)
+  - Somalia (drought & conflict), Afghanistan (half population food insecure), Chad (2M refugees from Sudan)
+  - Crisis dots use circle layer visualization with intensity-based sizing (intensity 75-100)
+  - Red heatmap layer shows crisis intensity and can be toggled in humanitarian mode
+  - All crisis dots are clickable with detailed popups showing affected populations and crisis images
+
+## Previous Changes (October 6, 2025)
 - **Replaced local San Francisco markers with global distribution**:
   - 11 markers now spread across major world cities: San Francisco (CA), Nairobi (Kenya), Miami (Florida), Tokyo (Japan), Amsterdam (Netherlands), Sydney (Australia), Mumbai (India), São Paulo (Brazil), Dubai (UAE), Vancouver (Canada), Reykjavik (Iceland)
   - Each marker has contextually relevant descriptions (e.g., Housing & Homelessness Solutions in SF, Wildlife Conservation in Nairobi, Hurricane Preparedness in Miami, Earthquake Response in Tokyo)

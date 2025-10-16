@@ -223,7 +223,7 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
     map.current.on('load', () => {
       if (!map.current) return;
 
-      // Humanitarian crisis data points (current major crises)
+      // Humanitarian crisis data points (current major crises 2025)
       const crisisData = {
         "type": "FeatureCollection" as const,
         "features": [
@@ -235,6 +235,105 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
             "description": "Severe humanitarian crisis with limited access to food, water, and medical supplies.",
             "affected": "2.3 million people in need",
             "image": "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop"
+          }},
+          // Sudan - Largest crisis ever recorded
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [32.5599, 15.5007]}, "properties": {
+            "intensity": 100, 
+            "id": "sudan-2025",
+            "name": "Sudan", 
+            "description": "Largest humanitarian crisis ever recorded with widespread famine and displacement.",
+            "affected": "30.4 million people in need, 12 million displaced",
+            "image": "https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=400&h=300&fit=crop"
+          }},
+          // Syria - 14 years of conflict
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [36.2021, 36.2021]}, "properties": {
+            "intensity": 95, 
+            "id": "syria-2025",
+            "name": "Syria", 
+            "description": "14 years of devastating conflict, displacement, and economic collapse.",
+            "affected": "17 million people need assistance",
+            "image": "https://images.unsplash.com/photo-1591608971362-f08b2a75731a?w=400&h=300&fit=crop"
+          }},
+          // Ukraine - Nearly 3 years of war
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [30.5234, 50.4501]}, "properties": {
+            "intensity": 90, 
+            "id": "ukraine-2025",
+            "name": "Ukraine", 
+            "description": "Ongoing war with infrastructure destruction and energy crisis.",
+            "affected": "12.7 million people need assistance",
+            "image": "https://images.unsplash.com/photo-1605818610003-0a1476dfbc26?w=400&h=300&fit=crop"
+          }},
+          // Myanmar - Civil conflict
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [96.1951, 16.8661]}, "properties": {
+            "intensity": 85, 
+            "id": "myanmar-2025",
+            "name": "Myanmar", 
+            "description": "Civil conflict causing mass displacement and protection crisis.",
+            "affected": "20 million people need assistance, 3.5 million displaced",
+            "image": "https://images.unsplash.com/photo-1528181304800-259b08848526?w=400&h=300&fit=crop"
+          }},
+          // Yemen - Nearly 10 years of war
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [44.2075, 15.5527]}, "properties": {
+            "intensity": 90, 
+            "id": "yemen-2025",
+            "name": "Yemen", 
+            "description": "Nearly 10 years of war causing severe famine and economic collapse.",
+            "affected": "17.1 million food insecure, 4.5 million displaced",
+            "image": "https://images.unsplash.com/photo-1591608971362-f08b2a75731a?w=400&h=300&fit=crop"
+          }},
+          // DR Congo - Complex crisis
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [15.2663, -4.0383]}, "properties": {
+            "intensity": 85, 
+            "id": "drc-2025",
+            "name": "DR Congo", 
+            "description": "Complex humanitarian and protection crisis with armed conflict.",
+            "affected": "Millions affected by armed groups and displacement",
+            "image": "https://images.unsplash.com/photo-1584380931214-dbb5b72e7fd0?w=400&h=300&fit=crop"
+          }},
+          // Haiti - Gang violence
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [-72.2852, 18.5944]}, "properties": {
+            "intensity": 80, 
+            "id": "haiti-2025",
+            "name": "Haiti", 
+            "description": "Gang violence and state collapse causing widespread hunger.",
+            "affected": "Millions at risk from violence and disease outbreaks",
+            "image": "https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=400&h=300&fit=crop"
+          }},
+          // Burkina Faso - Neglected crisis
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [-1.5616, 12.2383]}, "properties": {
+            "intensity": 80, 
+            "id": "burkina-faso-2025",
+            "name": "Burkina Faso", 
+            "description": "Most neglected crisis with 37 blockaded towns and mass casualties.",
+            "affected": "2 million displaced, severe humanitarian access restrictions",
+            "image": "https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=400&h=300&fit=crop"
+          }},
+          // Somalia - Drought and conflict
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [45.3182, 2.0469]}, "properties": {
+            "intensity": 75, 
+            "id": "somalia-2025",
+            "name": "Somalia", 
+            "description": "Prolonged drought and conflict creating severe food insecurity.",
+            "affected": "Millions facing hunger and displacement",
+            "image": "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=400&h=300&fit=crop"
+          }},
+          // Afghanistan - 4 decades of conflict
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [69.2075, 34.5553]}, "properties": {
+            "intensity": 85, 
+            "id": "afghanistan-2025",
+            "name": "Afghanistan", 
+            "description": "Four decades of conflict with collapsed health and economic systems.",
+            "affected": "Half the population lacks adequate food access",
+            "image": "https://images.unsplash.com/photo-1564859228273-274232fdb516?w=400&h=300&fit=crop"
+          }},
+          // Chad - Refugee crisis
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [15.0444, 12.1348]}, "properties": {
+            "intensity": 75, 
+            "id": "chad-2025",
+            "name": "Chad", 
+            "description": "Hosting 2 million refugees from Sudan amid climate and hunger crisis.",
+            "affected": "Nearly 2 million refugees, climate change impacts",
+            "image": "https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=400&h=300&fit=crop"
           }}
         ]
       };
