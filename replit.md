@@ -12,14 +12,29 @@ This is a React-based crisis response and community mapping application that pro
 - ✅ Deployment configuration set up for autoscale
 
 ## Recent Changes (October 16, 2025)
-- **Added 12 red humanitarian crisis dots (GeoJSON circle layers)**:
-  - Gaza (2.3M in need), Sudan (largest crisis - 30.4M in need, 12M displaced), Syria (14 years conflict, 17M need aid)
-  - Ukraine (nearly 3 years war, 12.7M need aid), Myanmar (20M need aid, 3.5M displaced), Yemen (17.1M food insecure)
-  - DR Congo (armed conflict), Haiti (gang violence), Burkina Faso (most neglected, 2M displaced)
-  - Somalia (drought & conflict), Afghanistan (half population food insecure), Chad (2M refugees from Sudan)
-  - Crisis dots use circle layer visualization with intensity-based sizing (intensity 75-100)
-  - Red heatmap layer shows crisis intensity and can be toggled in humanitarian mode
-  - All crisis dots are clickable with detailed popups showing affected populations and crisis images
+- **Updated with 17 real-world humanitarian crisis dots (Oct 15, 2025 snapshot)**:
+  - **Updated existing crises with accurate data**:
+    - Gaza (~2.1M need food aid, aid access heavily constrained)
+    - Sudan (30.4M in need, >4M refugees in neighboring states - largest crisis ever)
+    - Ukraine (12.7M need assistance, ongoing infrastructure strikes)
+    - Syria (~17M need aid, severely underfunded response)
+    - Yemen (~19.5M need aid, acute funding gaps)
+    - Afghanistan (~22.9M need aid, winter risks & service shutdowns)
+    - Myanmar (~20-22M need aid, ~3.6M IDPs)
+    - DR Congo (~28M require assistance, record hunger)
+    - Somalia (~6M in need, >3.5M displaced)
+    - Haiti (~6M in need, spiraling gang violence)
+    - Burkina Faso (~5.9M in need, >2M IDPs, severely neglected)
+    - Chad (~1.28M Sudanese refugees)
+  - **Added 5 new crisis locations**:
+    - South Sudan (~9.3M in need, flooding + violence, 0.5M newly displaced)
+    - Rohingya/Bangladesh (~1.1-1.2M refugees in Cox's Bazar)
+    - Central African Republic (~2.4M highly vulnerable, limited access)
+    - Lebanon (~4.1M in need, economic collapse)
+    - Venezuela (~6.87M refugees & migrants across Latin America/Caribbean)
+  - Crisis dots use GeoJSON circle layer visualization with intensity 70-100
+  - Red heatmap layer toggleable via Humanitarian Mode button
+  - All dots clickable with detailed popups and crisis page navigation
 
 ## Previous Changes (October 6, 2025)
 - **Replaced local San Francisco markers with global distribution**:
