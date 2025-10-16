@@ -184,6 +184,156 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
           .setPopup(popup)
           .addTo(map.current!);
       });
+
+      // Humanitarian crisis markers (red) - Real world crises 2025
+      const crisisLocations = [
+        { 
+          id: 'sudan', 
+          coords: [32.5599, 15.5007], 
+          name: 'Sudan Crisis', 
+          location: 'Khartoum, Sudan',
+          description: 'Largest humanitarian crisis ever recorded',
+          details: '30.4M people in need, 12M displaced, famine declared',
+          crisisId: 'sudan-2025'
+        },
+        { 
+          id: 'gaza', 
+          coords: [34.4668, 31.5], 
+          name: 'Gaza Humanitarian Crisis', 
+          location: 'Gaza Strip, Palestine',
+          description: 'Ongoing conflict and displacement',
+          details: '90% of population displaced, 2.3M people affected',
+          crisisId: 'gaza-2024'
+        },
+        { 
+          id: 'syria', 
+          coords: [36.2021, 36.2021], 
+          name: 'Syria Crisis', 
+          location: 'Aleppo, Syria',
+          description: '14 years of conflict and displacement',
+          details: '17M people need assistance, regime uncertainty',
+          crisisId: 'syria-2025'
+        },
+        { 
+          id: 'ukraine', 
+          coords: [30.5234, 50.4501], 
+          name: 'Ukraine Crisis', 
+          location: 'Kyiv, Ukraine',
+          description: 'Nearly 3 years of war',
+          details: '12.7M need assistance, infrastructure destroyed',
+          crisisId: 'ukraine-2025'
+        },
+        { 
+          id: 'myanmar', 
+          coords: [96.1951, 16.8661], 
+          name: 'Myanmar Crisis', 
+          location: 'Yangon, Myanmar',
+          description: 'Civil conflict and mass displacement',
+          details: '20M people need assistance, 3.5M displaced',
+          crisisId: 'myanmar-2025'
+        },
+        { 
+          id: 'yemen', 
+          coords: [44.2075, 15.5527], 
+          name: 'Yemen Crisis', 
+          location: 'Sana\'a, Yemen',
+          description: 'Nearly 10 years of war and famine',
+          details: '17.1M food insecure, 4.5M displaced',
+          crisisId: 'yemen-2025'
+        },
+        { 
+          id: 'drc', 
+          coords: [15.2663, -4.0383], 
+          name: 'DR Congo Crisis', 
+          location: 'Kinshasa, DR Congo',
+          description: 'Complex humanitarian and protection crisis',
+          details: 'Armed groups targeting civilians, mass displacement',
+          crisisId: 'drc-2025'
+        },
+        { 
+          id: 'haiti', 
+          coords: [-72.2852, 18.5944], 
+          name: 'Haiti Crisis', 
+          location: 'Port-au-Prince, Haiti',
+          description: 'Gang violence and state collapse',
+          details: 'Millions at risk, hunger and disease outbreaks',
+          crisisId: 'haiti-2025'
+        },
+        { 
+          id: 'burkina_faso', 
+          coords: [-1.5616, 12.2383], 
+          name: 'Burkina Faso Crisis', 
+          location: 'Ouagadougou, Burkina Faso',
+          description: 'Most neglected crisis, 37 blockaded towns',
+          details: '2M displaced, mass civilian casualties',
+          crisisId: 'burkina-faso-2025'
+        },
+        { 
+          id: 'somalia', 
+          coords: [45.3182, 2.0469], 
+          name: 'Somalia Crisis', 
+          location: 'Mogadishu, Somalia',
+          description: 'Prolonged drought and conflict',
+          details: 'Millions facing hunger and displacement',
+          crisisId: 'somalia-2025'
+        },
+        { 
+          id: 'afghanistan', 
+          coords: [69.2075, 34.5553], 
+          name: 'Afghanistan Crisis', 
+          location: 'Kabul, Afghanistan',
+          description: '4 decades of conflict, collapsed systems',
+          details: 'Half the population lacks adequate food',
+          crisisId: 'afghanistan-2025'
+        },
+        { 
+          id: 'chad', 
+          coords: [15.0444, 12.1348], 
+          name: 'Chad Refugee Crisis', 
+          location: 'N\'Djamena, Chad',
+          description: 'Hosting 2M refugees from Sudan',
+          details: 'Climate change and hunger compound crisis',
+          crisisId: 'chad-2025'
+        },
+      ];
+
+      crisisLocations.forEach((crisis) => {
+        const popup = new mapboxgl.Popup({ offset: 25 })
+          .setHTML(`
+            <div class="p-3 bg-card text-card-foreground rounded cursor-pointer hover:bg-accent transition-colors border-l-4 border-red-500" 
+                 data-crisis-id="${crisis.crisisId}"
+                 style="cursor: pointer; max-width: 280px;">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="text-red-500 font-bold text-lg">🔴</span>
+                <h3 class="font-semibold text-red-400">${crisis.name}</h3>
+              </div>
+              <p class="text-xs text-muted-foreground mb-1">${crisis.location}</p>
+              <p class="text-sm font-medium mb-1">${crisis.description}</p>
+              <p class="text-xs text-muted-foreground mb-2">${crisis.details}</p>
+              <div class="text-xs text-red-400 font-medium">
+                Click to learn more →
+              </div>
+            </div>
+          `);
+        
+        // Add click handler to popup content
+        popup.on('open', () => {
+          const popupContent = document.querySelector(`[data-crisis-id="${crisis.crisisId}"]`);
+          if (popupContent) {
+            popupContent.addEventListener('click', () => {
+              navigate(`/crisis/${crisis.crisisId}`);
+            });
+          }
+        });
+        
+        const marker = new mapboxgl.Marker({
+          color: '#ef4444', // Red color for crises
+          scale: 0.9
+        })
+          .setLngLat(crisis.coords as [number, number])
+          .setPopup(popup)
+          .addTo(map.current!);
+      });
     });
 
     // Add navigation controls

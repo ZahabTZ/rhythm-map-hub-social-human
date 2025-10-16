@@ -12,6 +12,13 @@ This is a React-based crisis response and community mapping application that pro
 - ✅ Deployment configuration set up for autoscale
 
 ## Recent Changes (October 6, 2025)
+- **Added 12 red humanitarian crisis markers for real-world crises 2025**:
+  - Sudan (largest crisis ever - 30.4M in need), Gaza (90% displaced), Syria (14 years of conflict), Ukraine (nearly 3 years of war)
+  - Myanmar (20M need assistance), Yemen (10 years of war, 17.1M food insecure), DR Congo (complex protection crisis)
+  - Haiti (gang violence, state collapse), Burkina Faso (most neglected, 37 blockaded towns), Somalia (drought & conflict)
+  - Afghanistan (4 decades of conflict), Chad (hosting 2M Sudan refugees)
+  - All crisis markers are clickable and navigate to crisis detail pages
+  - Red markers (color: #ef4444) with detailed popup information including affected population and crisis status
 - **Replaced local San Francisco markers with global distribution**:
   - 11 markers now spread across major world cities: San Francisco (CA), Nairobi (Kenya), Miami (Florida), Tokyo (Japan), Amsterdam (Netherlands), Sydney (Australia), Mumbai (India), São Paulo (Brazil), Dubai (UAE), Vancouver (Canada), Reykjavik (Iceland)
   - Each marker has contextually relevant descriptions (e.g., Housing & Homelessness Solutions in SF, Wildlife Conservation in Nairobi, Hurricane Preparedness in Miami, Earthquake Response in Tokyo)
