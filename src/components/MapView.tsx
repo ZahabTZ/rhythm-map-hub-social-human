@@ -331,13 +331,13 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
             "affected": "~9.3M in need",
             "image": "https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=400&h=300&fit=crop"
           }},
-          // Haiti - Spiraling gang violence
+          // Haiti - Gang control and state collapse
           {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [-72.2852, 18.5944]}, "properties": {
-            "intensity": 80, 
+            "intensity": 85, 
             "id": "haiti-2025",
             "name": "Haiti", 
-            "description": "Spiraling gang violence, collapsing services; major facilities forced to close.",
-            "affected": "~6M in need",
+            "description": "Gang control over Port-au-Prince, political vacuum, kidnappings, cholera resurgence, famine-risk zones.",
+            "affected": ">5M in need (≈ half the population)",
             "image": "https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=400&h=300&fit=crop"
           }},
           // Burkina Faso - Severely neglected
@@ -385,13 +385,13 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
             "affected": "~4.1M people in need",
             "image": "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=400&h=300&fit=crop"
           }},
-          // Venezuela - Regional displacement
+          // Venezuela - Largest displacement in Western Hemisphere
           {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [-66.5897, 6.4238]}, "properties": {
-            "intensity": 85, 
+            "intensity": 90, 
             "id": "venezuela-2025",
             "name": "Venezuela", 
-            "description": "Regional displacement crisis across Latin America and Caribbean.",
-            "affected": "~6.87M refugees & migrants",
+            "description": "Largest displacement in Western Hemisphere - comparable to Syria. Economic collapse, food/medicine shortages.",
+            "affected": "~7-8M Venezuelans displaced across Latin America",
             "image": "https://images.unsplash.com/photo-1589909202802-8f4aadce1849?w=400&h=300&fit=crop"
           }},
           // North Korea - Severe food insecurity
@@ -402,6 +402,33 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
             "description": "Severe food insecurity and chronic malnutrition crisis.",
             "affected": "~10M+ facing food shortages",
             "image": "https://images.unsplash.com/photo-1564859228273-274232fdb516?w=400&h=300&fit=crop"
+          }},
+          // Colombia - Post-peace instability
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [-74.0721, 4.7110]}, "properties": {
+            "intensity": 75, 
+            "id": "colombia-2025",
+            "name": "Colombia", 
+            "description": "Resurgent armed groups (ELN, FARC dissidents), coca-economy violence, Venezuelan refugee strain.",
+            "affected": "~6M in humanitarian need",
+            "image": "https://images.unsplash.com/photo-1589909202802-8f4aadce1849?w=400&h=300&fit=crop"
+          }},
+          // Central America (Northern Triangle)
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [-90.5069, 14.6349]}, "properties": {
+            "intensity": 70, 
+            "id": "central-america-2025",
+            "name": "Central America (Northern Triangle)", 
+            "description": "Chronic violence, extortion, corruption, climate crop failures. Millions displaced or migrating north.",
+            "affected": "Millions displaced/migrating (Guatemala, El Salvador, Honduras)",
+            "image": "https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=400&h=300&fit=crop"
+          }},
+          // Cuba - Economic crisis
+          {"type": "Feature" as const, "geometry": {"type": "Point" as const, "coordinates": [-82.3666, 23.1136]}, "properties": {
+            "intensity": 65, 
+            "id": "cuba-2025",
+            "name": "Cuba", 
+            "description": "Severe economic crisis, power shortages, medicine scarcity, record outward migration to U.S.",
+            "affected": "Humanitarian stress, record migration in 2024-25",
+            "image": "https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=400&h=300&fit=crop"
           }}
         ]
       };
