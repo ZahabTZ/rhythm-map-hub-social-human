@@ -55,9 +55,10 @@ export const DevToolbar: React.FC<DevToolbarProps> = ({
   const [customLng, setCustomLng] = useState('');
 
   // Only show in development mode
-  if (import.meta.env.PROD) {
-    return null;
-  }
+  // Temporarily disabled check for testing
+  // if (import.meta.env.PROD) {
+  //   return null;
+  // }
 
   const handlePresetSelect = (value: string) => {
     const location = PRESET_LOCATIONS.find(loc => loc.name === value);
