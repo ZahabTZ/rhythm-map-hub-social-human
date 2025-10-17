@@ -54,7 +54,7 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
   // Filter communities based on selected region and maxGeographicScope
   // Communities shown should have maxGeographicScope <= selectedRegion
   // (e.g., if user selects "city", show neighborhood and city communities)
-  const filteredCommunities = communities
+  const filteredCommunities = (Array.isArray(communities) ? communities : [])
     .filter(community => {
       const communityIndex = scopeHierarchy.indexOf(community.maxGeographicScope || 'global');
       return communityIndex <= selectedScopeIndex;

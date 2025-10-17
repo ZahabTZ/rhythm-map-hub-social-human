@@ -8,7 +8,7 @@
 FROM socialengine/nginx-spa:latest
 
 # Cache buster - forces Docker to rebuild from this point
-ARG CACHEBUST=1760681999
+ARG CACHEBUST=1760682304
 RUN echo "Cache bust: $CACHEBUST"
 
 COPY /dist /app
