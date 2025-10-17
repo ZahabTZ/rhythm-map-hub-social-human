@@ -102,8 +102,23 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
       // Update userLocation state
       setUserLocation({ lat: devLocation.lat, lng: devLocation.lng });
     } else {
-      // If devLocation is cleared, use real geolocation
-      getUserLocation();
+      // If devLocation is cleared, use real geolocation inline
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            setUserLocation({ lat: latitude, lng: longitude });
+          },
+          (error) => {
+            console.error('Error getting location:', error);
+            // Fallback to San Francisco coordinates as example
+            setUserLocation({ lat: 37.7749, lng: -122.4194 });
+          }
+        );
+      } else {
+        // Fallback to San Francisco coordinates if geolocation not supported
+        setUserLocation({ lat: 37.7749, lng: -122.4194 });
+      }
     }
   }, [devLocation]);
 
