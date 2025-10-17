@@ -1,15 +1,32 @@
-# # production stage
-# FROM nginx:stable-alpine as production-stage
-# COPY /dist /usr/share/nginx/html
-# # COPY /dist /
-# EXPOSE 80
-# CMD ["nginx", "-g", "daemon off;"]
+# Production stage - Node.js server with static files
+FROM node:20-alpine
 
-FROM socialengine/nginx-spa:latest
+# Set working directory
+WORKDIR /app
 
 # Cache buster - forces Docker to rebuild from this point
-ARG CACHEBUST=1760682304
+ARG CACHEBUST=1760685130
 RUN echo "Cache bust: $CACHEBUST"
 
-COPY /dist /app
-RUN chmod -R 777 /app
+# Copy package files
+COPY package*.json ./
+
+# Install all dependencies (we need tsx to run TypeScript in production)
+RUN npm ci
+
+# Copy built frontend
+COPY /dist ./dist
+
+# Copy server code
+COPY /server ./server
+COPY /shared ./shared
+
+# Set environment to production
+ENV NODE_ENV=production
+ENV PORT=5000
+
+# Expose port
+EXPOSE 5000
+
+# Start the Node.js server (it serves both API and static files)
+CMD ["npx", "tsx", "server/index.ts"]
