@@ -155,7 +155,7 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
         style: 'mapbox://styles/mapbox/dark-v11',
         center: [0, 20], // Global view
         zoom: 1.2, // Show full globe
-        projection: 'globe' as any
+        projection: 'globe' as any,
       });
 
       console.log('Map created successfully');
@@ -164,14 +164,6 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
       map.current.on('load', () => {
         setMapReady(true);
         console.log('Map loaded and ready');
-        
-        // Adjust map padding to account for left sidebar
-        if (map.current) {
-          map.current.easeTo({
-            padding: { left: 200, top: 0, right: 0, bottom: 0 },
-            duration: 0 // Instant adjustment
-          });
-        }
         
         // Notify parent component that map is ready and provide controls
         if (onMapReady) {
@@ -851,8 +843,7 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
     map.current.flyTo({
       center: coordinates,
       zoom: 10, // City-level zoom for searched locations
-      duration: 1500,
-      padding: { left: 200, top: 0, right: 0, bottom: 0 } // Account for left sidebar
+      duration: 1500
     });
 
     if (locationName) {
@@ -873,8 +864,7 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
     map.current.flyTo({
       center: center,
       zoom: zoom,
-      duration: 1500,
-      padding: { left: 200, top: 0, right: 0, bottom: 0 } // Account for left sidebar
+      duration: 1500
     });
 
     // Notify parent component of region selection
@@ -925,8 +915,7 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
         center: [userLocation.lng, userLocation.lat],
         zoom: 12, // City-level zoom
         duration: 2000, // 2 second animation
-        essential: true,
-        padding: { left: 200, top: 0, right: 0, bottom: 0 } // Account for left sidebar
+        essential: true
       });
     }
   }, [userLocation, mapReady]);

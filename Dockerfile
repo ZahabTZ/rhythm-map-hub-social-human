@@ -5,7 +5,7 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Cache buster - forces Docker to rebuild from this point
-ARG CACHEBUST=1760687722
+ARG CACHEBUST=1760685130
 RUN echo "Cache bust: $CACHEBUST"
 
 # Copy package files
