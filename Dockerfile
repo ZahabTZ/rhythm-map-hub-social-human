@@ -6,8 +6,10 @@
 # CMD ["nginx", "-g", "daemon off;"]
 
 FROM socialengine/nginx-spa:latest
+
+# Cache buster - forces Docker to rebuild from this point
+ARG CACHEBUST=1760681999
+RUN echo "Cache bust: $CACHEBUST"
+
 COPY /dist /app
 RUN chmod -R 777 /app
-
-
-# Build 1760681813
