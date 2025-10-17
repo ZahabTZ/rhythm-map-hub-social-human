@@ -14,11 +14,14 @@ import {
 import { storage } from './storage';
 import { requireAuth, optionalAuth } from './auth';
 
-// Initialize Stripe
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
+// Initialize Stripe (optional for development)
+const stripe = process.env.STRIPE_SECRET_KEY 
+  ? new Stripe(process.env.STRIPE_SECRET_KEY)
+  : null;
+
+if (!stripe) {
+  console.warn('⚠️  Stripe not initialized - STRIPE_SECRET_KEY missing. Payment features will be disabled.');
 }
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 const router = express.Router();
 
@@ -498,6 +501,10 @@ router.get('/users/:userId/events', defaultJsonParser, async (req, res) => {
 // Payment routes for verified host subscription
 router.post('/create-verified-host-payment', requireAuth, defaultJsonParser, async (req: any, res) => {
   try {
+    if (!stripe) {
+      return res.status(503).json({ error: 'Payment system not available' });
+    }
+    
     const user = req.user;
     
     // Create payment intent for annual verified host fee ($50)
@@ -540,6 +547,10 @@ router.post('/stripe-webhook', express.raw({ type: 'application/json' }), async 
   if (!sig) {
     console.error('Missing stripe-signature header');
     return res.status(400).send('Missing stripe-signature header');
+  }
+
+  if (!stripe) {
+    return res.status(503).send('Payment system not available');
   }
 
   let event;
