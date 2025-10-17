@@ -45,6 +45,21 @@ const PRESET_LOCATIONS = [
   { name: 'Port-au-Prince, Haiti', lat: 18.5944, lng: -72.3074, category: 'Crisis Zones' },
 ];
 
+const LOCATION_CATEGORIES = [
+  'US West',
+  'US Southeast', 
+  'US Northeast',
+  'US Midwest',
+  'North America',
+  'Europe',
+  'Asia',
+  'Middle East',
+  'Africa',
+  'South America',
+  'Oceania',
+  'Crisis Zones'
+];
+
 export const DevToolbar: React.FC<DevToolbarProps> = ({ 
   onLocationChange, 
   onUseRealLocation 
@@ -168,9 +183,9 @@ export const DevToolbar: React.FC<DevToolbarProps> = ({
                 <SelectValue placeholder="Choose a city..." />
               </SelectTrigger>
               <SelectContent className="max-h-[300px]">
-                {['US West', 'US Southeast', 'US Northeast', 'US Midwest', 'North America', 'Europe', 'Asia', 'Middle East', 'Africa', 'South America', 'Oceania', 'Crisis Zones'].map(category => {
-                  const locations = PRESET_LOCATIONS.filter(loc => loc.category === category);
-                  if (locations.length === 0) return null;
+                {LOCATION_CATEGORIES.map((category) => {
+                  const locations = PRESET_LOCATIONS.filter((loc) => loc.category === category);
+                  if (!locations || locations.length === 0) return null;
                   
                   return (
                     <React.Fragment key={category}>
