@@ -6,6 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   CheckCircle, 
   XCircle, 
@@ -15,11 +18,15 @@ import {
   User,
   Eye,
   Lock,
-  AlertCircle
+  AlertCircle,
+  Plus,
+  Edit,
+  Trash
 } from 'lucide-react';
 import { queryClient, apiRequest } from '@/lib/queryClient';
-import type { Story, ModerationAction } from '../../shared/schema';
+import type { Story, ModerationAction, Topic } from '../../shared/schema';
 import { useToast } from '@/hooks/use-toast';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 export default function Supadmin() {
   const [password, setPassword] = useState('');
@@ -27,6 +34,16 @@ export default function Supadmin() {
   const [moderatorKey, setModeratorKey] = useState('');
   const [selectedStory, setSelectedStory] = useState<Story | null>(null);
   const [moderationNotes, setModerationNotes] = useState('');
+  const [activeTab, setActiveTab] = useState('moderation');
+  
+  // Topic form state
+  const [topicName, setTopicName] = useState('');
+  const [topicDescription, setTopicDescription] = useState('');
+  const [topicCategory, setTopicCategory] = useState('');
+  const [topicLevel, setTopicLevel] = useState<'neighborhood' | 'city' | 'state' | 'national' | 'global'>('city');
+  const [topicLat, setTopicLat] = useState('');
+  const [topicLng, setTopicLng] = useState('');
+  
   const { toast } = useToast();
 
   const handleLogin = async () => {
@@ -131,6 +148,112 @@ export default function Supadmin() {
     });
   };
 
+  // Fetch topics from Supabase - must be before conditional returns
+  const { data: topics = [], refetch: refetchTopics } = useQuery<Topic[]>({
+    queryKey: ['supabase-topics'],
+    queryFn: async () => {
+      if (!isSupabaseConfigured || !supabase) {
+        // Fallback to API if Supabase not configured
+        const response = await fetch('/api/communities');
+        if (!response.ok) throw new Error('Failed to fetch topics');
+        return response.json();
+      }
+
+      const { data, error } = await supabase
+        .from('topics')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Transform Supabase data to match Topic type
+      return (data || []).map((topic: any) => ({
+        id: topic.id,
+        name: topic.name,
+        description: topic.description || '',
+        category: topic.category,
+        createdBy: topic.created_by,
+        maxGeographicScope: topic.max_geographic_scope,
+        coordinates: topic.coordinates,
+        isActive: topic.is_active,
+        memberCount: topic.member_count,
+        globalDiscussions: topic.global_discussions || [],
+        localDiscussions: topic.local_discussions || [],
+        createdAt: topic.created_at,
+        updatedAt: topic.updated_at,
+      }));
+    },
+    enabled: isAuthenticated,
+  });
+
+  const createTopicMutation = useMutation({
+    mutationFn: async (topicData: any) => {
+      if (!isSupabaseConfigured || !supabase) {
+        throw new Error('Supabase not configured');
+      }
+
+      const { data, error } = await supabase
+        .from('topics')
+        .insert([{
+          name: topicData.name,
+          description: topicData.description,
+          category: topicData.category,
+          created_by: 'supadmin',
+          max_geographic_scope: topicData.level,
+          coordinates: topicData.lat && topicData.lng 
+            ? { lat: parseFloat(topicData.lat), lng: parseFloat(topicData.lng) }
+            : null,
+          is_active: true,
+          member_count: 0,
+        }])
+        .select();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      refetchTopics();
+      queryClient.invalidateQueries({ queryKey: ['supabase-topics'] });
+      setTopicName('');
+      setTopicDescription('');
+      setTopicCategory('');
+      setTopicLevel('city');
+      setTopicLat('');
+      setTopicLng('');
+      toast({
+        title: 'Success',
+        description: 'Topic created successfully',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Failed to create topic',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const handleCreateTopic = () => {
+    if (!topicName || !topicCategory) {
+      toast({
+        title: 'Missing fields',
+        description: 'Please fill in name and category',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    createTopicMutation.mutate({
+      name: topicName,
+      description: topicDescription,
+      category: topicCategory,
+      level: topicLevel,
+      lat: topicLat,
+      lng: topicLng,
+    });
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center p-4">
@@ -178,10 +301,10 @@ export default function Supadmin() {
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2" data-testid="text-panel-title">
               <Lock className="h-6 w-6 text-purple-500" />
-              Story Moderation Panel
+              Super Admin Panel
             </h1>
             <p className="text-gray-400 text-sm" data-testid="text-panel-description">
-              Review and approve humanitarian crisis stories
+              Manage stories and topics
             </p>
           </div>
           <div className="flex items-center gap-4">
@@ -204,6 +327,13 @@ export default function Supadmin() {
       </div>
 
       <div className="container mx-auto p-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="bg-gray-900 mb-6">
+            <TabsTrigger value="moderation">Story Moderation</TabsTrigger>
+            <TabsTrigger value="topics">Topic Management</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="moderation">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Stories List */}
           <div>
@@ -421,6 +551,191 @@ export default function Supadmin() {
             )}
           </div>
         </div>
+          </TabsContent>
+
+          <TabsContent value="topics">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Create Topic Form */}
+              <Card className="bg-gray-900 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Plus className="h-5 w-5" />
+                    Create New Topic
+                  </CardTitle>
+                  <CardDescription>
+                    Add topics for specific locations and levels
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {!isSupabaseConfigured && (
+                    <div className="bg-orange-900/30 border border-orange-600 rounded p-3 mb-4">
+                      <p className="text-orange-400 text-sm">
+                        ⚠️ Supabase not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <Label htmlFor="topic-name">Topic Name *</Label>
+                    <Input
+                      id="topic-name"
+                      placeholder="e.g. Housing Solutions - San Francisco"
+                      value={topicName}
+                      onChange={(e) => setTopicName(e.target.value)}
+                      className="bg-gray-800 border-gray-600 text-white"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="topic-description">Description</Label>
+                    <Textarea
+                      id="topic-description"
+                      placeholder="Describe this topic..."
+                      value={topicDescription}
+                      onChange={(e) => setTopicDescription(e.target.value)}
+                      className="bg-gray-800 border-gray-600 text-white min-h-20"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="topic-category">Category *</Label>
+                    <Select value={topicCategory} onValueChange={setTopicCategory}>
+                      <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Humanitarian">Humanitarian</SelectItem>
+                        <SelectItem value="Environmental">Environmental</SelectItem>
+                        <SelectItem value="Community">Community</SelectItem>
+                        <SelectItem value="Social Justice">Social Justice</SelectItem>
+                        <SelectItem value="Health">Health</SelectItem>
+                        <SelectItem value="Education">Education</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="topic-level">Geographic Level</Label>
+                    <Select value={topicLevel} onValueChange={(val: any) => setTopicLevel(val)}>
+                      <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="neighborhood">🟢 Neighborhood</SelectItem>
+                        <SelectItem value="city">🔵 City</SelectItem>
+                        <SelectItem value="state">🟣 State/Region</SelectItem>
+                        <SelectItem value="national">🟠 National</SelectItem>
+                        <SelectItem value="global">🔴 Global</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="topic-lat">Latitude</Label>
+                      <Input
+                        id="topic-lat"
+                        type="number"
+                        step="0.000001"
+                        placeholder="37.7749"
+                        value={topicLat}
+                        onChange={(e) => setTopicLat(e.target.value)}
+                        className="bg-gray-800 border-gray-600 text-white"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="topic-lng">Longitude</Label>
+                      <Input
+                        id="topic-lng"
+                        type="number"
+                        step="0.000001"
+                        placeholder="-122.4194"
+                        value={topicLng}
+                        onChange={(e) => setTopicLng(e.target.value)}
+                        className="bg-gray-800 border-gray-600 text-white"
+                      />
+                    </div>
+                  </div>
+
+                  <Button
+                    onClick={handleCreateTopic}
+                    disabled={createTopicMutation.isPending || !isSupabaseConfigured}
+                    className="w-full"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    {createTopicMutation.isPending ? 'Creating...' : 'Create Topic'}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Topics List */}
+              <Card className="bg-gray-900 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white">Existing Topics</CardTitle>
+                  <CardDescription>
+                    {topics.length} topics in database
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ScrollArea className="h-[600px] pr-4">
+                    <div className="space-y-3">
+                      {topics.map((topic) => (
+                        <Card key={topic.id} className="bg-gray-800 border-gray-700">
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between mb-2">
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-white text-sm mb-1">
+                                  {topic.name}
+                                </h4>
+                                <p className="text-xs text-gray-400 line-clamp-2">
+                                  {topic.description}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs flex-wrap mt-3">
+                              <Badge
+                                variant="outline"
+                                style={{
+                                  backgroundColor:
+                                    topic.maxGeographicScope === 'neighborhood' ? '#10b981' :
+                                    topic.maxGeographicScope === 'city' ? '#3b82f6' :
+                                    topic.maxGeographicScope === 'state' ? '#a855f7' :
+                                    topic.maxGeographicScope === 'national' ? '#f97316' :
+                                    '#ef4444',
+                                  color: 'white',
+                                  borderColor: 'transparent'
+                                }}
+                              >
+                                {topic.maxGeographicScope === 'neighborhood' && '🟢'}
+                                {topic.maxGeographicScope === 'city' && '🔵'}
+                                {topic.maxGeographicScope === 'state' && '🟣'}
+                                {topic.maxGeographicScope === 'national' && '🟠'}
+                                {topic.maxGeographicScope === 'global' && '🔴'}
+                                {' '}{topic.maxGeographicScope}
+                              </Badge>
+                              <Badge variant="secondary">
+                                {topic.category}
+                              </Badge>
+                              {topic.coordinates && (
+                                <Badge variant="outline" className="text-gray-400">
+                                  <MapPin className="h-3 w-3 mr-1" />
+                                  {topic.coordinates.lat.toFixed(4)}, {topic.coordinates.lng.toFixed(4)}
+                                </Badge>
+                              )}
+                              <Badge variant="outline" className="text-gray-400">
+                                {topic.memberCount} members
+                              </Badge>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

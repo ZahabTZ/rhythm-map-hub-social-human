@@ -13,6 +13,7 @@ import {
 } from '../shared/schema';
 import { storage } from './storage';
 import { requireAuth, optionalAuth } from './auth';
+import { supabase, isSupabaseConfigured } from './supabase';
 
 // Initialize Stripe (optional for development)
 const stripe = process.env.STRIPE_SECRET_KEY 
@@ -32,6 +33,9 @@ const defaultJsonParser = express.json({ limit: '1mb' });
 const checkModeratorAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
   const moderatorKey = req.headers['x-moderator-key'];
   const validKey = process.env.MODERATOR_SECRET_KEY;
+  console.log('validKey:', validKey);
+  console.log('moderatorKey:', moderatorKey);
+
   
   if (!validKey) {
     console.error('MODERATOR_SECRET_KEY not configured');
@@ -281,6 +285,42 @@ router.delete('/user/social-profiles/:platform', requireAuth, defaultJsonParser,
 // Community routes
 router.get('/communities', defaultJsonParser, async (req, res) => {
   try {
+    // Try Supabase first if configured
+    if (isSupabaseConfigured && supabase) {
+      const { data, error } = await supabase
+        .from('topics')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Supabase error:', error);
+        // Fallback to in-memory storage
+        const communities = await storage.getAllCommunities();
+        return res.json(communities);
+      }
+      
+      // Transform Supabase data to match Community/Topic type
+      const communities = (data || []).map((topic: any) => ({
+        id: topic.id,
+        name: topic.name,
+        description: topic.description || '',
+        category: topic.category,
+        createdBy: topic.created_by,
+        maxGeographicScope: topic.max_geographic_scope,
+        coordinates: topic.coordinates,
+        isActive: topic.is_active,
+        memberCount: topic.member_count || 0,
+        globalDiscussions: topic.global_discussions || [],
+        localDiscussions: topic.local_discussions || [],
+        createdAt: topic.created_at,
+        updatedAt: topic.updated_at,
+      }));
+      
+      return res.json(communities);
+    }
+    
+    // Fallback to in-memory storage
     const communities = await storage.getAllCommunities();
     res.json(communities);
   } catch (error) {
@@ -627,18 +667,103 @@ router.get('/chat/:communityId', defaultJsonParser, async (req, res) => {
   try {
     const { communityId } = req.params;
     const { region, thread } = req.query;
+    
+    // Try Supabase first if configured
+    if (isSupabaseConfigured && supabase) {
+      let query = supabase
+        .from('chat_messages')
+        .select('*')
+        .eq('topic_id', communityId)
+        .order('created_at', { ascending: true });
+      
+      if (region) {
+        query = query.eq('region', region);
+      }
+      if (thread) {
+        query = query.eq('thread', thread);
+      }
+      
+      const { data, error } = await query;
+      
+      if (error) {
+        console.error('Supabase error:', error);
+        // Fallback to in-memory storage
+        const messages = await storage.getChatMessagesByCommunity(communityId, region as string, thread as string);
+        return res.json(messages);
+      }
+      
+      // Transform Supabase data to match ChatMessage type
+      const messages = (data || []).map((msg: any) => ({
+        id: msg.id,
+        communityId: msg.topic_id,
+        region: msg.region,
+        thread: msg.thread,
+        content: msg.content,
+        authorId: msg.author_id,
+        authorName: msg.author_name,
+        messageType: msg.message_type || 'text',
+        createdAt: msg.created_at,
+      }));
+      
+      return res.json(messages);
+    }
+    
+    // Fallback to in-memory storage
     const messages = await storage.getChatMessagesByCommunity(communityId, region as string, thread as string);
     res.json(messages);
   } catch (error) {
+    console.error('Error fetching chat messages:', error);
     res.status(500).json({ error: 'Failed to fetch chat messages' });
   }
 });
 
 router.post('/chat', defaultJsonParser, validateBody(InsertChatMessageSchema), async (req, res) => {
   try {
+    // Try Supabase first if configured
+    if (isSupabaseConfigured && supabase) {
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .insert([{
+          id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          topic_id: req.body.communityId,
+          region: req.body.region,
+          thread: req.body.thread,
+          content: req.body.content,
+          author_id: req.body.authorId,
+          author_name: req.body.authorName,
+          message_type: req.body.messageType || 'text',
+        }])
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Supabase error:', error);
+        // Fallback to in-memory storage
+        const message = await storage.createChatMessage(req.body);
+        return res.status(201).json(message);
+      }
+      
+      // Transform response
+      const message = {
+        id: data.id,
+        communityId: data.topic_id,
+        region: data.region,
+        thread: data.thread,
+        content: data.content,
+        authorId: data.author_id,
+        authorName: data.author_name,
+        messageType: data.message_type,
+        createdAt: data.created_at,
+      };
+      
+      return res.status(201).json(message);
+    }
+    
+    // Fallback to in-memory storage
     const message = await storage.createChatMessage(req.body);
     res.status(201).json(message);
   } catch (error) {
+    console.error('Error creating chat message:', error);
     res.status(500).json({ error: 'Failed to create chat message' });
   }
 });

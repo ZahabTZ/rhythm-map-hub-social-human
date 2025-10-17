@@ -172,7 +172,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onFilterChange }) => {
         {showFilters && (
           <div className="space-y-3 border-t pt-4">
             <div>
-              <h5 className="text-sm font-medium mb-2">Community Types</h5>
+              <h5 className="text-sm font-medium mb-2">Topic Types</h5>
               <div className="flex flex-wrap gap-1">
                 {communityFilters.map((type) => (
                   <Badge
@@ -193,7 +193,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onFilterChange }) => {
         <div className="flex items-center gap-4 text-xs text-muted-foreground border-t pt-3">
           <div className="flex items-center gap-1">
             <div className="w-2 h-2 rounded-full bg-communities"></div>
-            <span>Communities</span>
+            <span>Topics</span>
           </div>
           <div className="flex items-center gap-1">
             <div className="w-2 h-2 rounded-full bg-events"></div>

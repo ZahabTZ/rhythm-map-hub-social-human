@@ -83,10 +83,10 @@ export const UserSchema = z.object({
 
 export type User = z.infer<typeof UserSchema>;
 
-// Community schema with global/local filtering
-export const CommunitySchema = z.object({
+// Topic schema with global/local filtering
+export const TopicSchema = z.object({
   id: z.string(),
-  name: z.string().min(1, "Community name is required").max(100, "Community name too long"),
+  name: z.string().min(1, "Topic name is required").max(100, "Topic name too long"),
   description: z.string().max(500, "Description too long"),
   category: z.string(), // e.g., "Health", "Education", "Environment", etc.
   createdBy: z.string(), // User ID of verified host who created it
@@ -103,10 +103,10 @@ export const CommunitySchema = z.object({
   updatedAt: z.string().datetime().default(() => new Date().toISOString()),
 });
 
-export type Community = z.infer<typeof CommunitySchema>;
+export type Topic = z.infer<typeof TopicSchema>;
 
-// Insert schema for creating new communities
-export const InsertCommunitySchema = CommunitySchema.omit({
+// Insert schema for creating new topics
+export const InsertTopicSchema = TopicSchema.omit({
   id: true,
   memberCount: true,
   globalDiscussions: true,
@@ -115,12 +115,19 @@ export const InsertCommunitySchema = CommunitySchema.omit({
   updatedAt: true,
 });
 
-export type InsertCommunity = z.infer<typeof InsertCommunitySchema>;
+export type InsertTopic = z.infer<typeof InsertTopicSchema>;
 
-// Discussion schema for community conversations
+// Backwards compatibility aliases
+export const CommunitySchema = TopicSchema;
+export type Community = Topic;
+export const InsertCommunitySchema = InsertTopicSchema;
+export type InsertCommunity = InsertTopic;
+
+// Discussion schema for topic conversations
 export const DiscussionSchema = z.object({
   id: z.string(),
-  communityId: z.string(),
+  topicId: z.string(),
+  communityId: z.string().optional(), // Backwards compatibility
   title: z.string().min(1, "Title is required").max(200, "Title too long"),
   content: z.string().min(1, "Content is required").max(2000, "Content too long"),
   authorId: z.string(),

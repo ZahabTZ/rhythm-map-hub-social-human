@@ -229,7 +229,7 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
     id: community.id,
     type: 'community',
     name: community.name,
-    type_detail: 'Community Group',
+    type_detail: 'Topic Group',
     location: getLevelDisplay(community),
     category: community.category,
     members: community.memberCount,
@@ -291,7 +291,7 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
           <div className="flex items-center justify-between mb-3">
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold">Communities</h2>
+                <h2 className="text-lg font-semibold">Topics</h2>
                 <Button variant="ghost" size="sm" onClick={onClose} className="ml-auto">
                   <X className="h-4 w-4" />
                 </Button>
@@ -360,7 +360,7 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
           <div className="flex gap-1">
             {[
               { id: 'all', label: 'All', count: dataToUse.length },
-              { id: 'communities', label: 'Communities', count: dataToUse.filter(r => r.type === 'community').length },
+              { id: 'communities', label: 'Topics', count: dataToUse.filter(r => r.type === 'community').length },
               { id: 'events', label: 'Events', count: dataToUse.filter(r => r.type === 'event').length }
             ].map(tab => (
               <Button
@@ -403,7 +403,7 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
                         </div>
                         <div className="flex items-center gap-1 text-sm">
                           <Users className="h-3 w-3" />
-                          {result.members ? result.members.toLocaleString() + ' members' : 'Community Group'}
+                          {result.members ? result.members.toLocaleString() + ' members' : 'Topic Group'}
                         </div>
                         {result.meetingTime && (
                           <p className="text-xs text-muted-foreground">Meets: {result.meetingTime}</p>
@@ -463,7 +463,7 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
                         data-testid={`button-join-community-${result.id}`}
                       >
                         <Mail className="h-3 w-3 mr-1" />
-                        Join Community
+                        Join Topic
                       </Button>
                       <Button variant="outline" size="sm">
                         <ExternalLink className="h-3 w-3" />

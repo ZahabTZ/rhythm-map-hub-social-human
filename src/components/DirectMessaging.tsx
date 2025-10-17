@@ -213,7 +213,7 @@ const DirectMessaging: React.FC<DirectMessagingProps> = ({
                     <MessageCircle className="h-8 w-8 text-gray-600 mx-auto mb-2" />
                     <p className="text-sm text-gray-400">No conversations yet</p>
                     <p className="text-xs text-gray-500 mt-1">
-                      Start a conversation by clicking on someone's name in the community chat
+                      Start a conversation by clicking on someone's name in the topic chat
                     </p>
                   </div>
                 ) : (

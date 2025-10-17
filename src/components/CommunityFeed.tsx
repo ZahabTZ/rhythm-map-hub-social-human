@@ -190,7 +190,7 @@ const CommunityFeed: React.FC<CommunityFeedProps> = ({ posts, onOpenDM, onJoinEv
                 <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <h3 className="text-lg font-semibold mb-2">No posts to show</h3>
                 <p className="text-muted-foreground">
-                  Join some communities to see posts and events in your feed
+                  Join some topics to see posts and events in your feed
                 </p>
               </div>
             ) : (

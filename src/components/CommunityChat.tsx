@@ -296,7 +296,7 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
               <div>
                 <h2 className="font-semibold">{communityName}</h2>
                 <p className="text-sm text-muted-foreground">
-                  Regional Community Chat
+                  Regional Topic Chat
                 </p>
               </div>
             </div>
@@ -316,7 +316,7 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
             </CardHeader>
             <CardContent className="px-4 pb-4">
               <p className="text-sm text-muted-foreground mb-4">
-                {community?.description || 'Community description'}
+                {community?.description || 'Topic description'}
               </p>
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-sm">
@@ -328,7 +328,7 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
                 <div className="text-sm">
                   <span className="font-medium">Category</span>
                   <br />
-                  <span className="text-muted-foreground">{community?.category || 'Community'}</span>
+                  <span className="text-muted-foreground">{community?.category || 'Topic'}</span>
                 </div>
                 
                 {creator && (
@@ -453,7 +453,7 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
                             {message.content}
                           </p>
                           
-                          {message.reactions.length > 0 && (
+                          {message.reactions && message.reactions.length > 0 && (
                             <div className="flex gap-1 mt-2">
                               {message.reactions.map((reaction, idx) => (
                                 <Button
