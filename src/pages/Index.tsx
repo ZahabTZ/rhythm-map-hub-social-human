@@ -205,7 +205,7 @@ const Index = () => {
       
       {/* Main Title Banner */}
       {titleCardVisible && (
-        <div className="absolute top-10 left-1/2 transform -translate-x-1/2 z-10 text-center">
+        <div className="absolute top-4 left-60 transform -translate-x-1/2 z-30 text-center">
           <div 
             className="bg-background/90 backdrop-blur-sm rounded-lg border shadow-2xl p-8 max-w-md mx-auto relative" 
             onClick={(e) => e.stopPropagation()}
