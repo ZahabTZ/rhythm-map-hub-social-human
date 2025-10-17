@@ -37,6 +37,7 @@ const Index = () => {
   const [mapViewRef, setMapViewRef] = useState<any>(null);
   const [selectedRegion, setSelectedRegion] = useState<'neighborhood' | 'city' | 'state' | 'national' | 'global'>('global');
   const [devLocation, setDevLocation] = useState<{lat: number, lng: number, name: string} | null>(null);
+  const [selectedCommunityLevel, setSelectedCommunityLevel] = useState<string | 'all'>('all'); // New: level filter
 
   const handleSearch = (query: string) => {
     // TODO: Implement actual search logic
@@ -100,6 +101,11 @@ const Index = () => {
     setSidebarOpen(true);
   };
 
+  const handleLevelSelect = (level: string | 'all') => {
+    setSelectedCommunityLevel(level);
+    setSidebarOpen(true); // Open sidebar when level is selected
+  };
+
   const handleDevLocationChange = (lat: number, lng: number, name: string) => {
     console.log('Dev location set:', { lat, lng, name });
     setDevLocation({ lat, lng, name });
@@ -135,6 +141,7 @@ const Index = () => {
         onHumanitarianClick={handleHumanitarianClick}
         onMapReady={setMapViewRef}
         onRegionSelect={handleRegionSelect}
+        onLevelSelect={handleLevelSelect}
         devLocation={devLocation}
       />
       
@@ -250,6 +257,8 @@ const Index = () => {
         searchResults={searchResults}
         onCommunityClick={handleCommunityClick}
         selectedRegion={selectedRegion}
+        selectedCommunityLevel={selectedCommunityLevel}
+        userLocation={devLocation ? { lat: devLocation.lat, lng: devLocation.lng } : null}
       />
       
       {/* Crises Sidebar */}

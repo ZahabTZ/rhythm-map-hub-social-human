@@ -94,6 +94,13 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
     },
   });
 
+  // Initialize selectedRegion to the community's level (not global)
+  useEffect(() => {
+    if (community?.maxGeographicScope) {
+      setSelectedRegion(community.maxGeographicScope);
+    }
+  }, [community?.maxGeographicScope]);
+
   // Fetch creator's user data to show their social profiles
   const { data: creator } = useQuery<User>({
     queryKey: ['/api/users', community?.createdBy],
@@ -128,23 +135,65 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
     refetchInterval: 10000, // Refresh every 10 seconds
   });
   
+  // Extract location name from community name
+  const getLocationFromName = (name: string) => {
+    // Try to extract location from patterns like "Name - Location" or "Name (Location)"
+    const dashMatch = name.match(/\s-\s([^-]+)$/);
+    if (dashMatch) return dashMatch[1];
+    
+    const parenMatch = name.match(/\(([^)]+)\)$/);
+    if (parenMatch) return parenMatch[1];
+    
+    // For neighborhood communities, extract from beginning
+    if (community?.maxGeographicScope === 'neighborhood') {
+      const words = name.split(' ');
+      if (words.length >= 2) return words.slice(0, 2).join(' ');
+    }
+    
+    return null;
+  };
+
+  const locationContext = getLocationFromName(communityName);
+
   // Determine available regions based on community's maxGeographicScope
+  // Only show levels AT OR BELOW the community's level (NOT above)
   const getAvailableRegions = () => {
     const maxScope = community?.maxGeographicScope || 'global';
     const scopeHierarchy = ['neighborhood', 'city', 'state', 'national', 'global'];
     const maxIndex = scopeHierarchy.indexOf(maxScope);
     
-    // Always include global, then add regions up to maxScope
-    const available = ['global'];
+    // Only include regions from neighborhood UP TO the community's level (inclusive)
+    const available: string[] = [];
     for (let i = 0; i <= maxIndex; i++) {
-      if (scopeHierarchy[i] !== 'global') {
-        available.push(scopeHierarchy[i]);
-      }
+      available.push(scopeHierarchy[i]);
     }
+    
     return available;
   };
   
   const availableRegions = getAvailableRegions();
+
+  // Get region display name with location context
+  const getRegionDisplayName = (region: string) => {
+    if (!locationContext) return region.charAt(0).toUpperCase() + region.slice(1);
+    
+    switch (region) {
+      case 'neighborhood':
+        return `${locationContext}`;
+      case 'city':
+        return `${locationContext}`;
+      case 'state':
+        return locationContext.includes('California') ? 'California' : 
+               locationContext.includes('Texas') ? 'Texas' : 
+               `${locationContext} (State)`;
+      case 'national':
+        return 'USA';
+      case 'global':
+        return 'Global';
+      default:
+        return region.charAt(0).toUpperCase() + region.slice(1);
+    }
+  };
 
   // Send message mutation
   const sendMessageMutation = useMutation({
@@ -331,7 +380,7 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
                     data-testid={`badge-current-region`}
                   >
                     {getRegionIcon(selectedRegion)}
-                    <span className="ml-1 capitalize">{selectedRegion} Chat</span>
+                    <span className="ml-1">{getRegionDisplayName(selectedRegion)} Chat</span>
                   </Badge>
                 </div>
                 
@@ -340,11 +389,11 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {availableRegions.includes('global') && <SelectItem value="global">🌍 Global Chat</SelectItem>}
-                    {availableRegions.includes('national') && <SelectItem value="national">🏛️ National Chat</SelectItem>}
-                    {availableRegions.includes('state') && <SelectItem value="state">🗺️ State Chat</SelectItem>}
-                    {availableRegions.includes('city') && <SelectItem value="city">🏢 City Chat</SelectItem>}
-                    {availableRegions.includes('neighborhood') && <SelectItem value="neighborhood">🏠 Neighborhood Chat</SelectItem>}
+                    {availableRegions.includes('global') && <SelectItem value="global">🌍 {getRegionDisplayName('global')}</SelectItem>}
+                    {availableRegions.includes('national') && <SelectItem value="national">🏛️ {getRegionDisplayName('national')}</SelectItem>}
+                    {availableRegions.includes('state') && <SelectItem value="state">🗺️ {getRegionDisplayName('state')}</SelectItem>}
+                    {availableRegions.includes('city') && <SelectItem value="city">🏢 {getRegionDisplayName('city')}</SelectItem>}
+                    {availableRegions.includes('neighborhood') && <SelectItem value="neighborhood">🏠 {getRegionDisplayName('neighborhood')}</SelectItem>}
                   </SelectContent>
                 </Select>
               </div>

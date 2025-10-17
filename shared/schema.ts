@@ -91,6 +91,10 @@ export const CommunitySchema = z.object({
   category: z.string(), // e.g., "Health", "Education", "Environment", etc.
   createdBy: z.string(), // User ID of verified host who created it
   maxGeographicScope: z.enum(['neighborhood', 'city', 'state', 'national', 'global']).default('global'), // Maximum geographic scope for filtering
+  coordinates: z.object({
+    lat: z.number(),
+    lng: z.number(),
+  }).optional(), // Geographic coordinates for location-based filtering
   isActive: z.boolean().default(true),
   memberCount: z.number().default(0),
   globalDiscussions: z.array(z.string()).default([]), // Array of discussion IDs

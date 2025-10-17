@@ -29,6 +29,8 @@ interface ResultsSidebarProps {
   searchResults?: any[];
   onCommunityClick?: (community: any) => void;
   selectedRegion?: 'neighborhood' | 'city' | 'state' | 'national' | 'global';
+  selectedCommunityLevel?: string | 'all'; // New: level filter
+  userLocation?: { lat: number; lng: number } | null; // User's location for proximity sorting
 }
 
 const ResultsSidebar: React.FC<ResultsSidebarProps> = ({ 
@@ -36,7 +38,9 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
   onClose, 
   searchResults = [],
   onCommunityClick,
-  selectedRegion = 'global'
+  selectedRegion = 'global',
+  selectedCommunityLevel = 'all',
+  userLocation
 }) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'all' | 'communities' | 'events'>('all');
@@ -51,15 +55,174 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
   const scopeHierarchy = ['neighborhood', 'city', 'state', 'national', 'global'];
   const selectedScopeIndex = scopeHierarchy.indexOf(selectedRegion);
 
-  // Filter communities based on selected region and maxGeographicScope
-  // Communities shown should have maxGeographicScope <= selectedRegion
-  // (e.g., if user selects "city", show neighborhood and city communities)
+  // Haversine distance calculation (in kilometers)
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  // Extract location from community name (needs to be before getUserGeographicContext)
+  const getLocationFromName = (name: string) => {
+    const dashMatch = name.match(/\s-\s([^-]+)$/);
+    if (dashMatch) return dashMatch[1];
+    
+    const parenMatch = name.match(/\(([^)]+)\)$/);
+    if (parenMatch) return parenMatch[1];
+    
+    return null;
+  };
+
+  // Determine user's geographic context based on closest communities
+  const getUserGeographicContext = () => {
+    if (!userLocation) return { city: null, state: null, country: 'USA' };
+    
+    // Find closest city, state communities
+    const cityCommunities = communities.filter(c => c.maxGeographicScope === 'city' && c.coordinates);
+    const stateCommunities = communities.filter(c => c.maxGeographicScope === 'state' && c.coordinates);
+    
+    let closestCity = null;
+    let minCityDist = Infinity;
+    
+    cityCommunities.forEach(c => {
+      if (c.coordinates) {
+        const dist = calculateDistance(userLocation.lat, userLocation.lng, c.coordinates.lat, c.coordinates.lng);
+        if (dist < minCityDist) {
+          minCityDist = dist;
+          closestCity = getLocationFromName(c.name);
+        }
+      }
+    });
+    
+    let closestState = null;
+    let minStateDist = Infinity;
+    
+    stateCommunities.forEach(c => {
+      if (c.coordinates) {
+        const dist = calculateDistance(userLocation.lat, userLocation.lng, c.coordinates.lat, c.coordinates.lng);
+        if (dist < minStateDist) {
+          minStateDist = dist;
+          closestState = getLocationFromName(c.name);
+        }
+      }
+    });
+    
+    return { city: closestCity, state: closestState, country: 'USA' };
+  };
+
+  const geoContext = getUserGeographicContext();
+
+  // Get current location context based on selected level
+  const getCurrentLocationContext = () => {
+    if (selectedCommunityLevel === 'all') return 'All Locations';
+    
+    switch (selectedCommunityLevel) {
+      case 'neighborhood':
+        return geoContext.city || 'Local Area';
+      case 'city':
+        return geoContext.city || 'Your City';
+      case 'state':
+        return geoContext.state || 'Your State';
+      case 'national':
+        return geoContext.country;
+      case 'global':
+        return 'Global';
+      default:
+        return 'All Locations';
+    }
+  };
+
+  const locationContext = getCurrentLocationContext();
+
+  // Filter communities based on:
+  // 1. Selected community level (exact match, not hierarchy)
+  // 2. Geographic proximity (only show communities in user's location at that level)
   const filteredCommunities = (Array.isArray(communities) ? communities : [])
     .filter(community => {
-      const communityIndex = scopeHierarchy.indexOf(community.maxGeographicScope || 'global');
-      return communityIndex <= selectedScopeIndex;
+      // If 'all', show everything
+      if (selectedCommunityLevel === 'all') return true;
+
+      // Must match the selected level EXACTLY
+      if (community.maxGeographicScope !== selectedCommunityLevel) return false;
+
+      // For global, show all global communities
+      if (selectedCommunityLevel === 'global') return true;
+
+      // If no user location, show all communities of this level (sorted by popularity)
+      if (!userLocation) return true;
+
+      // For other levels, filter by proximity to user location if coordinates exist
+      if (!community.coordinates) return true; // Show communities without coordinates
+
+      const distance = calculateDistance(
+        userLocation.lat,
+        userLocation.lng,
+        community.coordinates.lat,
+        community.coordinates.lng
+      );
+
+      // Distance thresholds by level (in km)
+      const thresholds = {
+        neighborhood: 5,    // Within 5km
+        city: 50,           // Within 50km (same city/metro area)
+        state: 500,         // Within 500km (same state/region)
+        national: 10000,    // Within country
+      };
+
+      return distance <= (thresholds[selectedCommunityLevel as keyof typeof thresholds] || Infinity);
     })
-    .sort((a, b) => (b.memberCount || 0) - (a.memberCount || 0)); // Sort by member count (most popular first)
+    .map(community => {
+      // Calculate distance if user location and community coordinates are available
+      const distance = (userLocation && community.coordinates)
+        ? calculateDistance(
+            userLocation.lat,
+            userLocation.lng,
+            community.coordinates.lat,
+            community.coordinates.lng
+          )
+        : Infinity;
+      return { ...community, distance };
+    })
+    .sort((a, b) => {
+      // Sort by proximity first (if user location is available)
+      if (userLocation) {
+        const distanceDiff = a.distance - b.distance;
+        if (distanceDiff !== 0) return distanceDiff;
+      }
+      // Then by member count (most popular first)
+      return (b.memberCount || 0) - (a.memberCount || 0);
+    });
+
+  // Get level display with location context
+  const getLevelDisplay = (community: any) => {
+    const location = getLocationFromName(community.name);
+    const level = community.maxGeographicScope;
+    
+    if (!location) return level.charAt(0).toUpperCase() + level.slice(1);
+    
+    switch (level) {
+      case 'neighborhood':
+        return location;
+      case 'city':
+        return location;
+      case 'state':
+        return location.includes('California') || location.includes('Texas') 
+          ? location.split(',')[0].trim() 
+          : `${location} (State)`;
+      case 'national':
+        return 'National (USA)';
+      case 'global':
+        return 'Global';
+      default:
+        return level.charAt(0).toUpperCase() + level.slice(1);
+    }
+  };
 
   // Convert to results format
   const communityResults = filteredCommunities.map(community => ({
@@ -67,14 +230,15 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
     type: 'community',
     name: community.name,
     type_detail: 'Community Group',
-    location: `${community.category}`,
+    location: getLevelDisplay(community),
     category: community.category,
     members: community.memberCount,
     image: '/api/placeholder/80/80',
     meetingTime: '',
     verified: true,
     description: community.description,
-    maxGeographicScope: community.maxGeographicScope
+    maxGeographicScope: community.maxGeographicScope,
+    distance: (community as any).distance
   }));
 
   // Mock event data (keep for now)
@@ -125,15 +289,41 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
         {/* Header */}
         <div className="p-4 border-b">
           <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold">Communities</h2>
-              <Badge variant="secondary" className="capitalize">
-                {selectedRegion}
-              </Badge>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-semibold">Communities</h2>
+                <Button variant="ghost" size="sm" onClick={onClose} className="ml-auto">
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              {selectedCommunityLevel !== 'all' && locationContext && (
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge 
+                    variant="default" 
+                    className="text-xs font-medium"
+                    style={{
+                      backgroundColor: 
+                        selectedCommunityLevel === 'neighborhood' ? '#10b981' :
+                        selectedCommunityLevel === 'city' ? '#3b82f6' :
+                        selectedCommunityLevel === 'state' ? '#a855f7' :
+                        selectedCommunityLevel === 'national' ? '#f97316' :
+                        selectedCommunityLevel === 'global' ? '#ef4444' : undefined,
+                      color: 'white'
+                    }}
+                  >
+                    {selectedCommunityLevel === 'neighborhood' && '🟢'}
+                    {selectedCommunityLevel === 'city' && '🔵'}
+                    {selectedCommunityLevel === 'state' && '🟣'}
+                    {selectedCommunityLevel === 'national' && '🟠'}
+                    {selectedCommunityLevel === 'global' && '🔴'}
+                    {' '}{locationContext}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">
+                    {selectedCommunityLevel.charAt(0).toUpperCase() + selectedCommunityLevel.slice(1)} level
+                  </span>
+                </div>
+              )}
             </div>
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
           </div>
           
           {/* Local/Global Filter Toggle */}
@@ -222,9 +412,34 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
                     </div>
                     
                     <div className="flex flex-wrap gap-1">
+                      <Badge 
+                        variant="default" 
+                        className="text-xs"
+                        style={{
+                          backgroundColor: 
+                            result.maxGeographicScope === 'neighborhood' ? '#10b981' :
+                            result.maxGeographicScope === 'city' ? '#3b82f6' :
+                            result.maxGeographicScope === 'state' ? '#a855f7' :
+                            result.maxGeographicScope === 'national' ? '#f97316' :
+                            result.maxGeographicScope === 'global' ? '#ef4444' : undefined,
+                          color: 'white'
+                        }}
+                      >
+                        {result.maxGeographicScope === 'neighborhood' && '🟢 '}
+                        {result.maxGeographicScope === 'city' && '🔵 '}
+                        {result.maxGeographicScope === 'state' && '🟣 '}
+                        {result.maxGeographicScope === 'national' && '🟠 '}
+                        {result.maxGeographicScope === 'global' && '🔴 '}
+                        {result.maxGeographicScope.charAt(0).toUpperCase() + result.maxGeographicScope.slice(1)}
+                      </Badge>
                       <Badge variant="outline" className="text-xs">
                         {result.category}
                       </Badge>
+                      {result.distance && result.distance !== Infinity && (
+                        <Badge variant="secondary" className="text-xs">
+                          📍 {result.distance < 1 ? '<1' : Math.round(result.distance)} km
+                        </Badge>
+                      )}
                     </div>
                     
                     <p className="text-sm text-muted-foreground">{result.description}</p>

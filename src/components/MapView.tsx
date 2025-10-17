@@ -11,10 +11,11 @@ interface MapViewProps {
   humanitarianMode?: boolean;
   onMapReady?: (mapControls: { centerOnLocation: (coordinates: [number, number], locationName?: string) => void }) => void;
   onRegionSelect?: (region: 'neighborhood' | 'city' | 'state' | 'national' | 'global') => void;
+  onLevelSelect?: (level: string | 'all') => void; // New: callback for level filter
   devLocation?: { lat: number; lng: number; name: string } | null;
 }
 
-const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick, humanitarianMode: externalHumanitarianMode, onMapReady, onRegionSelect, devLocation }) => {
+const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick, humanitarianMode: externalHumanitarianMode, onMapReady, onRegionSelect, onLevelSelect, devLocation }) => {
   console.log('MapView component rendered');
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -30,6 +31,7 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const communityMarkersRef = useRef<mapboxgl.Marker[]>([]);
+  const [selectedLevel, setSelectedLevel] = useState<string | 'all'>('all'); // Level filter state
   
   // Update ref whenever state changes
   useEffect(() => {
@@ -203,24 +205,46 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
         'star-intensity': 0.6,
       });
 
+      // Community level color scheme
+      const getLevelColor = (level: string) => {
+        switch(level) {
+          case 'neighborhood': return '#10b981'; // 🟢 Green
+          case 'city': return '#3b82f6';         // 🔵 Blue
+          case 'state': return '#a855f7';        // 🟣 Purple
+          case 'national': return '#f97316';     // 🟠 Orange
+          case 'global': return '#ef4444';       // 🔴 Red
+          default: return '#6b7280';             // Gray fallback
+        }
+      };
+
       // Global community markers with contextually relevant content
       const localLocations = [
-        { id: 'san_francisco', communityId: 'community_sf', coords: [-122.4194, 37.7749], name: 'San Francisco, CA', type: 'communities', category: 'Housing & Homelessness Solutions' },
-        { id: 'arusha', communityId: 'community_arusha', coords: [36.6833, -3.3667], name: 'Arusha, Tanzania', type: 'communities', category: 'Wildlife Conservation Network' },
-        { id: 'miami', communityId: 'community_miami', coords: [-80.1918, 25.7617], name: 'Miami, Florida', type: 'communities', category: 'Hurricane Preparedness Initiative' },
-        { id: 'tokyo', communityId: 'community_tokyo', coords: [139.6917, 35.6895], name: 'Tokyo, Japan', type: 'communities', category: 'Earthquake Response Team' },
-        { id: 'amsterdam', communityId: 'community_amsterdam', coords: [4.9041, 52.3676], name: 'Amsterdam, Netherlands', type: 'communities', category: 'Climate Adaptation Forum' },
-        { id: 'sydney', communityId: 'community_sydney', coords: [151.2093, -33.8688], name: 'Sydney, Australia', type: 'communities', category: 'Bushfire Preparedness Coalition' },
-        { id: 'mumbai', communityId: 'community_mumbai', coords: [72.8777, 19.0760], name: 'Mumbai, India', type: 'communities', category: 'Monsoon Resilience Network' },
-        { id: 'sao_paulo', communityId: 'community_sao_paulo', coords: [-46.6333, -23.5505], name: 'São Paulo, Brazil', type: 'communities', category: 'Urban Sustainability Project' },
-        { id: 'dubai', communityId: 'community_dubai', coords: [55.2708, 25.2048], name: 'Dubai, UAE', type: 'communities', category: 'Water Conservation Alliance' },
-        { id: 'vancouver', communityId: 'community_vancouver', coords: [-123.1207, 49.2827], name: 'Vancouver, Canada', type: 'communities', category: 'Indigenous Community Hub' },
-        { id: 'reykjavik', communityId: 'community_reykjavik', coords: [-21.8174, 64.1466], name: 'Reykjavik, Iceland', type: 'communities', category: 'Renewable Energy Collective' },
+        { id: 'san_francisco', communityId: 'community_sf', coords: [-122.4194, 37.7749], name: 'San Francisco, CA', type: 'communities', category: 'Housing & Homelessness Solutions', level: 'city' },
+        { id: 'arusha', communityId: 'community_arusha', coords: [36.6833, -3.3667], name: 'Arusha, Tanzania', type: 'communities', category: 'Wildlife Conservation Network', level: 'city' },
+        { id: 'miami', communityId: 'community_miami', coords: [-80.1918, 25.7617], name: 'Miami, Florida', type: 'communities', category: 'Hurricane Preparedness Initiative', level: 'city' },
+        { id: 'tokyo', communityId: 'community_tokyo', coords: [139.6917, 35.6895], name: 'Tokyo, Japan', type: 'communities', category: 'Earthquake Response Team', level: 'city' },
+        { id: 'amsterdam', communityId: 'community_amsterdam', coords: [4.9041, 52.3676], name: 'Amsterdam, Netherlands', type: 'communities', category: 'Climate Adaptation Forum', level: 'city' },
+        { id: 'sydney', communityId: 'community_sydney', coords: [151.2093, -33.8688], name: 'Sydney, Australia', type: 'communities', category: 'Bushfire Preparedness Coalition', level: 'city' },
+        { id: 'mumbai', communityId: 'community_mumbai', coords: [72.8777, 19.0760], name: 'Mumbai, India', type: 'communities', category: 'Monsoon Resilience Network', level: 'city' },
+        { id: 'sao_paulo', communityId: 'community_sao_paulo', coords: [-46.6333, -23.5505], name: 'São Paulo, Brazil', type: 'communities', category: 'Urban Sustainability Project', level: 'city' },
+        { id: 'dubai', communityId: 'community_dubai', coords: [55.2708, 25.2048], name: 'Dubai, UAE', type: 'communities', category: 'Water Conservation Alliance', level: 'city' },
+        { id: 'vancouver', communityId: 'community_vancouver', coords: [-123.1207, 49.2827], name: 'Vancouver, Canada', type: 'communities', category: 'Indigenous Community Hub', level: 'city' },
+        { id: 'reykjavik', communityId: 'community_reykjavik', coords: [-21.8174, 64.1466], name: 'Reykjavik, Iceland', type: 'communities', category: 'Renewable Energy Collective', level: 'city' },
       ];
 
       localLocations.forEach((location) => {
-        const color = location.type === 'news' ? '#3b82f6' : 
-                      location.type === 'communities' ? '#10b981' : '#f59e0b';
+        const color = getLevelColor(location.level);
+        
+        const getLevelLabel = (level: string) => {
+          switch(level) {
+            case 'neighborhood': return '🟢 Neighborhood';
+            case 'city': return '🔵 City';
+            case 'state': return '🟣 State';
+            case 'national': return '🟠 National';
+            case 'global': return '🔴 Global';
+            default: return level;
+          }
+        };
         
         const popup = new mapboxgl.Popup({ offset: 25 })
           .setHTML(`
@@ -228,6 +252,9 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
                  data-community-id="${location.communityId}"
                  data-community-name="${location.category}"
                  style="cursor: pointer;">
+              <div class="text-xs font-medium mb-1" style="color: ${color}">
+                ${getLevelLabel(location.level)}
+              </div>
               <h3 class="font-semibold mb-1">${location.name}</h3>
               <p class="text-sm text-muted-foreground mb-2">
                 ${location.category}
@@ -266,7 +293,8 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
           .setPopup(popup)
           .addTo(map.current!);
         
-        // Store marker reference for toggling visibility
+        // Store marker reference with level information for filtering
+        (marker as any)._level = location.level; // Store level for filtering
         communityMarkersRef.current.push(marker);
       });
     });
@@ -705,6 +733,27 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
     }
   };
 
+  // Filter markers by community level
+  const filterMarkersByLevel = (level: string | 'all') => {
+    setSelectedLevel(level);
+    
+    communityMarkersRef.current.forEach(marker => {
+      const markerLevel = (marker as any)._level;
+      const element = marker.getElement();
+      
+      if (level === 'all' || markerLevel === level) {
+        element.style.display = 'block';
+      } else {
+        element.style.display = 'none';
+      }
+    });
+
+    // Notify parent component about level selection
+    if (onLevelSelect) {
+      onLevelSelect(level);
+    }
+  };
+
   // Get user's current location
   const getUserLocation = () => {
     if (navigator.geolocation) {
@@ -932,8 +981,67 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
     <div className="relative w-full h-screen">
       <div ref={mapContainer} className="absolute inset-0" />
       
-      {/* Geographic Zoom Level Buttons - Top Row */}
+      {/* Community Level Filter Buttons - NEW */}
       <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
+        <div className="flex gap-1 bg-background/95 backdrop-blur-sm rounded-lg p-1.5 shadow-lg border">
+          <Button
+            onClick={() => filterMarkersByLevel('all')}
+            variant={selectedLevel === 'all' ? 'default' : 'ghost'}
+            size="sm"
+            className="text-xs px-3"
+          >
+            All
+          </Button>
+          <Button
+            onClick={() => filterMarkersByLevel('neighborhood')}
+            variant={selectedLevel === 'neighborhood' ? 'default' : 'ghost'}
+            size="sm"
+            className="text-xs px-3"
+            style={selectedLevel === 'neighborhood' ? { backgroundColor: '#10b981', color: 'white' } : {}}
+          >
+            🟢 Neighborhood
+          </Button>
+          <Button
+            onClick={() => filterMarkersByLevel('city')}
+            variant={selectedLevel === 'city' ? 'default' : 'ghost'}
+            size="sm"
+            className="text-xs px-3"
+            style={selectedLevel === 'city' ? { backgroundColor: '#3b82f6', color: 'white' } : {}}
+          >
+            🔵 City
+          </Button>
+          <Button
+            onClick={() => filterMarkersByLevel('state')}
+            variant={selectedLevel === 'state' ? 'default' : 'ghost'}
+            size="sm"
+            className="text-xs px-3"
+            style={selectedLevel === 'state' ? { backgroundColor: '#a855f7', color: 'white' } : {}}
+          >
+            🟣 State
+          </Button>
+          <Button
+            onClick={() => filterMarkersByLevel('national')}
+            variant={selectedLevel === 'national' ? 'default' : 'ghost'}
+            size="sm"
+            className="text-xs px-3"
+            style={selectedLevel === 'national' ? { backgroundColor: '#f97316', color: 'white' } : {}}
+          >
+            🟠 National
+          </Button>
+          <Button
+            onClick={() => filterMarkersByLevel('global')}
+            variant={selectedLevel === 'global' ? 'default' : 'ghost'}
+            size="sm"
+            className="text-xs px-3"
+            style={selectedLevel === 'global' ? { backgroundColor: '#ef4444', color: 'white' } : {}}
+          >
+            🔴 Global
+          </Button>
+        </div>
+      </div>
+
+      {/* Geographic Zoom Level Buttons - Moved down */}
+      <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-10">
         <div className="flex gap-2 bg-background/90 backdrop-blur-sm rounded-lg p-2 shadow-lg border">
           <Button
             onClick={() => zoomToLevel('neighborhood')}
