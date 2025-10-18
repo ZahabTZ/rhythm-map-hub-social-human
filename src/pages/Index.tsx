@@ -274,6 +274,7 @@ const Index = () => {
           communityName={selectedCommunity.name || 'Unknown Community'}
           currentUserId="user-1"
           currentUserName="Demo User"
+          userLocation={devLocation}
           onClose={handleChatClose}
         />
       )}

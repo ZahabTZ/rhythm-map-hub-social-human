@@ -27,6 +27,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 import ThreadNav from '@/components/ThreadNav';
 import { SocialProfileDisplay } from '@/components/SocialProfileDisplay';
+import { getLocationContextFromCoordinates, getLocationDisplayName, type LocationContext } from '@/lib/locationUtils';
 import type { ChatMessage, User } from '../../shared/schema';
 
 interface CommunityUser {
@@ -45,6 +46,7 @@ interface CommunityChatProps {
   communityName: string;
   currentUserId: string;
   currentUserName: string;
+  userLocation?: { lat: number; lng: number } | null;
   onOpenDM?: (userId: string, userName: string) => void;
   onClose?: () => void;
 }
@@ -54,6 +56,7 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
   communityName,
   currentUserId,
   currentUserName,
+  userLocation,
   onOpenDM,
   onClose
 }) => {
@@ -61,6 +64,12 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
   const [newMessage, setNewMessage] = useState('');
   const [activeThread, setActiveThread] = useState<'intro' | 'content' | 'faq'>('content');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Determine user's location context for smart filtering
+  const locationContext: LocationContext | null = React.useMemo(() => {
+    if (!userLocation) return null;
+    return getLocationContextFromCoordinates(userLocation.lat, userLocation.lng);
+  }, [userLocation]);
 
   // Thread definitions for the community
   const threads = [
@@ -113,11 +122,33 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
     enabled: !!community?.createdBy,
   });
 
-  // Fetch chat messages with React Query
+  // Fetch chat messages with React Query (with location-aware filtering)
   const { data: messages = [], isLoading, refetch } = useQuery<ChatMessage[]>({
-    queryKey: ['/api/chat', communityId, selectedRegion, activeThread],
+    queryKey: ['/api/chat', communityId, selectedRegion, activeThread, locationContext],
     queryFn: async () => {
-      const response = await fetch(`/api/chat/${communityId}?region=${selectedRegion}&thread=${activeThread}`);
+      // Build query params with location context for smart filtering
+      const params = new URLSearchParams({
+        region: selectedRegion,
+        thread: activeThread,
+      });
+      
+      // Add location context for filtering
+      if (locationContext) {
+        if (locationContext.countryCode) {
+          params.append('userCountryCode', locationContext.countryCode);
+        }
+        if (locationContext.stateCode) {
+          params.append('userStateCode', locationContext.stateCode);
+        }
+        if (locationContext.cityName) {
+          params.append('userCityName', locationContext.cityName);
+        }
+        if (locationContext.neighborhoodName) {
+          params.append('userNeighborhood', locationContext.neighborhoodName);
+        }
+      }
+      
+      const response = await fetch(`/api/chat/${communityId}?${params.toString()}`);
       if (!response.ok) throw new Error('Failed to fetch chat messages');
       return response.json();
     },
@@ -135,26 +166,6 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
     refetchInterval: 10000, // Refresh every 10 seconds
   });
   
-  // Extract location name from community name
-  const getLocationFromName = (name: string) => {
-    // Try to extract location from patterns like "Name - Location" or "Name (Location)"
-    const dashMatch = name.match(/\s-\s([^-]+)$/);
-    if (dashMatch) return dashMatch[1];
-    
-    const parenMatch = name.match(/\(([^)]+)\)$/);
-    if (parenMatch) return parenMatch[1];
-    
-    // For neighborhood communities, extract from beginning
-    if (community?.maxGeographicScope === 'neighborhood') {
-      const words = name.split(' ');
-      if (words.length >= 2) return words.slice(0, 2).join(' ');
-    }
-    
-    return null;
-  };
-
-  const locationContext = getLocationFromName(communityName);
-
   // Determine available regions based on community's maxGeographicScope
   // Only show levels AT OR BELOW the community's level (NOT above)
   const getAvailableRegions = () => {
@@ -177,22 +188,10 @@ const CommunityChat: React.FC<CommunityChatProps> = ({
   const getRegionDisplayName = (region: string) => {
     if (!locationContext) return region.charAt(0).toUpperCase() + region.slice(1);
     
-    switch (region) {
-      case 'neighborhood':
-        return `${locationContext}`;
-      case 'city':
-        return `${locationContext}`;
-      case 'state':
-        return locationContext.includes('California') ? 'California' : 
-               locationContext.includes('Texas') ? 'Texas' : 
-               `${locationContext} (State)`;
-      case 'national':
-        return 'USA';
-      case 'global':
-        return 'Global';
-      default:
-        return region.charAt(0).toUpperCase() + region.slice(1);
-    }
+    return getLocationDisplayName(
+      region as 'neighborhood' | 'city' | 'state' | 'national' | 'global',
+      locationContext
+    );
   };
 
   // Send message mutation

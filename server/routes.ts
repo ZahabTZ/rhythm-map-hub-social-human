@@ -666,7 +666,7 @@ router.get('/chat/:communityId/active-members', defaultJsonParser, async (req, r
 router.get('/chat/:communityId', defaultJsonParser, async (req, res) => {
   try {
     const { communityId } = req.params;
-    const { region, thread } = req.query;
+    const { region, thread, userCountryCode, userStateCode, userCityName, userNeighborhood } = req.query;
     
     // Try Supabase first if configured
     if (isSupabaseConfigured && supabase) {
@@ -676,11 +676,38 @@ router.get('/chat/:communityId', defaultJsonParser, async (req, res) => {
         .eq('topic_id', communityId)
         .order('created_at', { ascending: true });
       
+      // Filter by region level
       if (region) {
         query = query.eq('region', region);
       }
       if (thread) {
         query = query.eq('thread', thread);
+      }
+      
+      // Smart location-aware filtering based on region level
+      if (region && region !== 'global') {
+        // For neighborhood level: match exact neighborhood in the same city
+        if (region === 'neighborhood' && userNeighborhood && userCityName) {
+          query = query.eq('neighborhood_name', userNeighborhood).eq('city_name', userCityName);
+        }
+        // For city level: match exact city in the same state
+        else if (region === 'city' && userCityName) {
+          query = query.eq('city_name', userCityName);
+          if (userStateCode) {
+            query = query.eq('state_code', userStateCode);
+          }
+        }
+        // For state level: match exact state in the same country
+        else if (region === 'state' && userStateCode) {
+          query = query.eq('state_code', userStateCode);
+          if (userCountryCode) {
+            query = query.eq('country_code', userCountryCode);
+          }
+        }
+        // For national level: match exact country
+        else if (region === 'national' && userCountryCode) {
+          query = query.eq('country_code', userCountryCode);
+        }
       }
       
       const { data, error } = await query;
@@ -703,6 +730,13 @@ router.get('/chat/:communityId', defaultJsonParser, async (req, res) => {
         authorName: msg.author_name,
         messageType: msg.message_type || 'text',
         createdAt: msg.created_at,
+        // Include location context for debugging
+        locationContext: {
+          countryCode: msg.country_code,
+          stateCode: msg.state_code,
+          cityName: msg.city_name,
+          neighborhoodName: msg.neighborhood_name,
+        }
       }));
       
       return res.json(messages);
