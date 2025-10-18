@@ -748,7 +748,32 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
       }
     });
 
-    // Notify parent component about level selection
+    // Also zoom to the appropriate level (except for 'all')
+    if (level !== 'all' && map.current && mapReady) {
+      const validLevel = level as 'neighborhood' | 'city' | 'state' | 'national' | 'global';
+      if (level !== 'global' && !userLocation) {
+        // Still notify level selection even if we can't zoom
+        if (onLevelSelect) {
+          onLevelSelect(level);
+        }
+        return;
+      }
+
+      const { zoom } = ZOOM_LEVELS[validLevel];
+      const center = level === 'global' && !userLocation 
+        ? [0, 20] as [number, number]
+        : getGeographicCenter(validLevel, userLocation!.lat, userLocation!.lng);
+
+      map.current.flyTo({
+        center: center,
+        zoom: zoom,
+        duration: 1500,
+        padding: { left: 0, top: 0, right: 0, bottom: 0 }
+      });
+    }
+
+    // Always notify parent component about level selection (for sidebar filtering)
+    // This must happen AFTER zoom to avoid race conditions
     if (onLevelSelect) {
       onLevelSelect(level);
     }
@@ -1036,62 +1061,6 @@ const MapView: React.FC<MapViewProps> = ({ onLocationSelect, onHumanitarianClick
             style={selectedLevel === 'global' ? { backgroundColor: '#ef4444', color: 'white' } : {}}
           >
             🔴 Global
-          </Button>
-        </div>
-      </div>
-
-      {/* Geographic Zoom Level Buttons - Moved down */}
-      <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-10">
-        <div className="flex gap-2 bg-background/90 backdrop-blur-sm rounded-lg p-2 shadow-lg border">
-          <Button
-            onClick={() => zoomToLevel('neighborhood')}
-            variant="outline"
-            size="sm"
-            className="text-xs"
-            data-testid="button-zoom-neighborhood"
-            disabled={!userLocation || !mapReady}
-          >
-            Neighborhood
-          </Button>
-          <Button
-            onClick={() => zoomToLevel('city')}
-            variant="outline"
-            size="sm"
-            className="text-xs"
-            data-testid="button-zoom-city"
-            disabled={!userLocation || !mapReady}
-          >
-            City
-          </Button>
-          <Button
-            onClick={() => zoomToLevel('state')}
-            variant="outline"
-            size="sm"
-            className="text-xs"
-            data-testid="button-zoom-state"
-            disabled={!userLocation || !mapReady}
-          >
-            State
-          </Button>
-          <Button
-            onClick={() => zoomToLevel('national')}
-            variant="outline"
-            size="sm"
-            className="text-xs"
-            data-testid="button-zoom-national"
-            disabled={!userLocation || !mapReady}
-          >
-            National
-          </Button>
-          <Button
-            onClick={() => zoomToLevel('global')}
-            variant="outline"
-            size="sm"
-            className="text-xs"
-            data-testid="button-zoom-global"
-            disabled={!mapReady}
-          >
-            Global
           </Button>
         </div>
       </div>

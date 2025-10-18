@@ -48,7 +48,7 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
 
   // Fetch communities from API
   const { data: communities = [], isLoading } = useQuery<Community[]>({
-    queryKey: ["/api/communities"],
+    queryKey: ["/api/communities", selectedCommunityLevel, userLocation],
   });
 
   // Geographic scope hierarchy
@@ -140,6 +140,13 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
 
   const locationContext = getCurrentLocationContext();
 
+  // Debug logging
+  console.log('ResultsSidebar filtering:', {
+    selectedCommunityLevel,
+    totalCommunities: communities.length,
+    userLocation
+  });
+
   // Filter communities based on:
   // 1. Selected community level (exact match, not hierarchy)
   // 2. Geographic proximity (only show communities in user's location at that level)
@@ -198,6 +205,17 @@ const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
       // Then by member count (most popular first)
       return (b.memberCount || 0) - (a.memberCount || 0);
     });
+
+  // Debug logging for filtered results
+  console.log('Filtered communities:', {
+    selectedLevel: selectedCommunityLevel,
+    filteredCount: filteredCommunities.length,
+    sampleCommunities: filteredCommunities.slice(0, 3).map(c => ({
+      name: c.name,
+      level: c.maxGeographicScope,
+      distance: c.distance
+    }))
+  });
 
   // Get level display with location context
   const getLevelDisplay = (community: any) => {
